@@ -10,16 +10,16 @@
   <!-- SOUMIK ONLINE: search engine and sharing metadata -->
   <meta name="description" content="SOUMIK ONLINE offers digital service assistance, online application forms, PAN and Voter Card services, application status tracking, document support and downloads."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <link rel="canonical" href="https://soumik-online.github.io/"/>
+  <link rel="canonical" href="https://soumikonline.github.io/"/>
   <link rel="icon" type="image/png" sizes="512x512" href="./favicon.png"/>
   <link rel="apple-touch-icon" href="./favicon.png"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="SOUMIK ONLINE"/>
   <meta property="og:title" content="SOUMIK ONLINE | Digital Services"/>
   <meta property="og:description" content="Digital service assistance, application forms, PAN and Voter Card services, status tracking and document support."/>
-  <meta property="og:url" content="https://soumik-online.github.io/"/>
+  <meta property="og:url" content="https://soumikonline.github.io/"/>
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"SOUMIK ONLINE","alternateName":"Soumik Online Digital Services","url":"https://soumik-online.github.io/"}
+  {"@context":"https://schema.org","@type":"WebSite","name":"SOUMIK ONLINE","alternateName":"Soumik Online Digital Services","url":"https://soumikonline.github.io/"}
   </script>
   <style>
    :root{
@@ -1431,6 +1431,32 @@ button.btn.green[onclick*="soumikCashDecision"]:hover{background:#066b43!importa
 .soumik-checkout-v2 .soumik-download-actions button{border-radius:11px!important;min-height:44px!important;font-weight:750!important}
 @media(max-width:650px){.soumik-checkout.soumik-checkout-v2{margin:12px auto!important;width:calc(100% - 20px)!important;padding:19px 15px!important;border-radius:19px!important}.soumik-checkout-v2 .soumik-checkout-heading{flex-wrap:wrap!important}.soumik-checkout-v2 .soumik-checkout-grid{grid-template-columns:1fr!important;gap:12px!important}.soumik-checkout-v2 .soumik-pay-option{min-height:160px!important;padding:19px!important}.soumik-checkout-v2 .soumik-pay-meta{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:15px!important}.soumik-checkout-v2 .soumik-pay-meta>div{min-width:0!important}.soumik-checkout-v2 .soumik-download-actions button{flex:1 1 145px!important}#soumikOwnerSettingsOverlay .soumik-settings-grid{grid-template-columns:1fr!important}}
 </style>
+
+<style id="soumik-document-upload-2026">
+.soumik-doc-guide{padding:18px 20px;margin:14px 0 20px;border:1px solid #bcd3ff;border-left:5px solid #1465f6;border-radius:15px;background:linear-gradient(115deg,#eef5ff,#fff);color:#17396e;line-height:1.65}
+.soumik-doc-guide strong{font-size:16px}.soumik-doc-guide p{margin:9px 0 0;font-size:14px}
+.soumik-doc-lang{display:inline-flex;gap:5px;float:right;background:#e4edff;border-radius:11px;padding:4px}
+.soumik-doc-lang button{border:0;border-radius:8px;padding:7px 12px;background:transparent;color:#24477f;font-weight:750}
+.soumik-doc-lang button.active{background:#175de5;color:white;box-shadow:0 2px 8px #154cbb30}
+.soumik-doc-field{min-width:0;gap:9px!important}.soumik-doc-field select{width:100%;min-height:43px;border:1px solid #cbdcf6;border-radius:9px;padding:9px;background:white;color:#183764}
+.soumik-doc-helper{font-size:12px;font-weight:500;color:#607495}.soumik-doc-field input[type=file]{font-size:13px;max-width:100%}
+@media(max-width:650px){.soumik-doc-guide{padding:14px}.soumik-doc-lang{float:none;display:flex;width:max-content;margin-top:10px}.soumik-doc-field{padding:14px!important}}
+</style>
+<script>
+window.soumikDocLang='en';
+function soumikSetDocLang(lang){
+ window.soumikDocLang=lang==='bn'?'bn':'en';
+ const guide=document.querySelector('.soumik-doc-guide');if(!guide)return;
+ const bn=window.soumikDocLang==='bn';
+ guide.querySelector('strong').textContent=bn?'📄 ডকুমেন্ট আপলোডের নির্দেশনা':'📄 Document Upload Instructions';
+ guide.querySelector('p').textContent=bn?'আধার কার্ডের একটি পাতায় সম্পূর্ণ তথ্য থাকলে একবার আপলোড করুন। সামনে ও পেছনে আলাদা তথ্য থাকলে উভয় পাশ আপলোড করুন।':'If all Aadhaar details appear on one page, upload it once. If information is on separate front and back sides, upload both sides.';
+ guide.querySelectorAll('.soumik-doc-lang button').forEach((b,i)=>b.classList.toggle('active',bn?i===0:i===1));
+ const address=document.getElementById('addressProofType'),dob=document.getElementById('dobProofType');
+ if(address){address.options[0].text=bn?'ডকুমেন্ট নির্বাচন করুন':'Select document';address.parentElement.querySelector('.soumik-doc-helper').textContent=bn?'ঠিকানার প্রমাণের ধরন নির্বাচন করুন':'Select the address proof document';}
+ if(dob){dob.options[0].text=bn?'ডকুমেন্ট নির্বাচন করুন':'Select document';dob.parentElement.querySelector('.soumik-doc-helper').textContent=bn?'জন্মতারিখের প্রমাণ নির্বাচন করুন':'Select date of birth proof';}
+ const back=document.getElementById('aadhaarBack');if(back)back.parentElement.querySelector('small').textContent=bn?'পেছনে আলাদা তথ্য থাকলে আপলোড করুন (সর্বোচ্চ ১০ MB)।':'Upload if the back contains additional details (max 10 MB).';
+}
+</script>
 </head>
  <body>
   <header class="top noprint">
@@ -1876,10 +1902,9 @@ ${field('Post Office','postOffice',true)}
 ${field('Police Station','policeStation')}
 ${field('PIN Code','pin',true)}
 <label class="field">Country<input id="country" value="${esc(draft.country||'India')}" required></label><label class="field span2">Full Address (you can type or edit it)<textarea id="fullAddress" required minlength="8" placeholder="Write the complete address here">${esc(draft.fullAddress||'')}
-</textarea></label></div>`:step===2?(panContact||voterMobile?`<h3>03 — Supporting Document (Optional)</h3><p class="muted">You may continue without uploading a document, or attach a supporting card image.</p><label class="field">Supporting Document<input type="file" accept="image/*,.pdf" id="correctionProof"></label>`:`<h3>03 — Upload Required Documents</h3><div class="formgrid">${(pan?[['Upload Photo','photo'],['Signature','signature'],['Aadhaar Card','aadhaar'],['Date of Birth Proof','dobProof'],...(service==='pancorrection'?[['Old PAN Card','oldPanProof']]:[])]:voter?[['Upload Photo','photo'],['Aadhaar Card','aadhaar'],['Address Proof','addressProof'],['Date of Birth Proof','dobProof'],['Relation Voter Card (if applicable)','relationVoter'],['Relation Slip (if applicable)','relationSlip'],...(service==='votercorrection'?[['Correction Supporting Proof','correctionProof']]:[])]:[['Aadhaar Card','aadhaar']]).map(([label,k])=>`<label class="field">${label}
-<input type="file" accept="${['photo','signature'].includes(k)?'image/jpeg,image/png,image/webp,image/heic,image/heif':'image/*,.pdf'}" id="${k}" onchange="soumikImageSelected(this,'${k}')" ${['photo','signature','aadhaar','addressProof','dobProof','oldPanProof','correctionProof'].includes(k)?'required':''}
-><small class="muted">${['photo','signature'].includes(k)?'JPG, PNG, WEBP or supported phone photo. PDF not allowed. Adjust crop, zoom and brightness after selecting.':'Upload a clear photo or PDF (maximum 10 MB).'}</small>${['photo','signature'].includes(k)?`<div id="${k}EditStatus" class="soumik-edit-status"></div><img id="${k}EditPreview" class="soumik-upload-preview" alt="Edited image preview" hidden><button type="button" class="btn outline mini" onclick="soumikReeditImage('${k}')">✎ Adjust ${label}</button>`:''}</label>`).join('')}
-</div>`):step===3?`<h3>04 — Review Your Application</h3><div class="formgrid">${Object.entries(draft).filter(([k,v])=>typeof v==='string'&&!v.startsWith('data:')).map(([k,v])=>`<div><small class="muted">${esc(k)}
+</textarea></label></div>`:step===2?(panContact||voterMobile?`<h3>03 — Supporting Document (Optional)</h3><p class="muted">You may continue without uploading a document, or attach a supporting card image.</p><label class="field">Supporting Document<input type="file" accept="image/*,.pdf" id="correctionProof"></label>`:`<h3>03 — Upload Required Documents</h3>
+<div class="soumik-doc-guide"><strong>📄 ${window.soumikDocLang==='bn'?'ডকুমেন্ট আপলোডের নির্দেশনা':'Document Upload Instructions'}</strong><div class="soumik-doc-lang"><button type="button" class="${window.soumikDocLang==='bn'?'active':''}" onclick="soumikSetDocLang('bn')">বাংলা</button><button type="button" class="${window.soumikDocLang!=='bn'?'active':''}" onclick="soumikSetDocLang('en')">English</button></div><p>${window.soumikDocLang==='bn'?'আধার কার্ডের একটি পাতায় সম্পূর্ণ তথ্য থাকলে একবার আপলোড করুন। সামনে ও পেছনে আলাদা তথ্য থাকলে উভয় পাশ আপলোড করুন।':'If all Aadhaar details appear on one page, upload it once. If information is on separate front and back sides, upload both sides.'}</p></div>
+<div class="formgrid">${(pan?[['Upload Photo','photo'],['Signature','signature'],['Aadhaar Card – Front / Full Page','aadhaar'],['Aadhaar Card – Back Side (if needed)','aadhaarBack'],['Date of Birth Proof','dobProof'],...(service==='pancorrection'?[['Old PAN Card','oldPanProof']]:[])]:voter?[['Upload Photo','photo'],['Aadhaar Card – Front / Full Page','aadhaar'],['Aadhaar Card – Back Side (if needed)','aadhaarBack'],['Address Proof','addressProof'],['Date of Birth Proof','dobProof'],['Relation Voter Card (if applicable)','relationVoter'],['Relation Slip (if applicable)','relationSlip'],...(service==='votercorrection'?[['Correction Supporting Proof','correctionProof']]:[])]:[['Aadhaar Card – Front / Full Page','aadhaar'],['Aadhaar Card – Back Side (if needed)','aadhaarBack']]).map(([label,k])=>`<label class="field soumik-doc-field">${label}${k==='addressProof'?`<span class="soumik-doc-helper">${window.soumikDocLang==='bn'?'ঠিকানার প্রমাণের ধরন নির্বাচন করুন':'Select the address proof document'}</span><select id="addressProofType" onchange="draft.addressProofType=this.value"><option value="">${window.soumikDocLang==='bn'?'ডকুমেন্ট নির্বাচন করুন':'Select document'}</option>${[['Aadhaar Card','Aadhaar Card'],['Voter ID Card','Voter ID Card'],['Passport','Passport'],['Driving Licence','Driving Licence'],['Other Accepted Document','Other Accepted Document']].map(([v,t])=>`<option value="${v}" ${draft.addressProofType===v?'selected':''}>${t}</option>`).join('')}</select>`:''}${k==='dobProof'?`<span class="soumik-doc-helper">${window.soumikDocLang==='bn'?'জন্মতারিখের প্রমাণ নির্বাচন করুন':'Select date of birth proof'}</span><select id="dobProofType" onchange="draft.dobProofType=this.value"><option value="">${window.soumikDocLang==='bn'?'ডকুমেন্ট নির্বাচন করুন':'Select document'}</option>${['Madhyamik / Class 10 Marksheet','Birth Certificate','Other Accepted Document'].map(v=>`<option value="${v}" ${draft.dobProofType===v?'selected':''}>${v}</option>`).join('')}</select>`:''}<input type="file" accept="${['photo','signature'].includes(k)?'image/jpeg,image/png,image/webp,image/heic,image/heif':'image/*,.pdf'}" id="${k}" onchange="soumikImageSelected(this,'${k}')" ${['photo','signature','aadhaar','addressProof','dobProof','oldPanProof','correctionProof'].includes(k)?'required':''}><small class="muted">${['photo','signature'].includes(k)?'JPG, PNG, WEBP or supported phone photo. PDF not allowed. Adjust crop, zoom and brightness after selecting.':k==='aadhaarBack'?(window.soumikDocLang==='bn'?'পেছনে আলাদা তথ্য থাকলে আপলোড করুন (সর্বোচ্চ ১০ MB)।':'Upload if the back contains additional details (max 10 MB).'):'Upload a clear photo or PDF (maximum 10 MB).'}</small>${['photo','signature'].includes(k)?`<div id="${k}EditStatus" class="soumik-edit-status"></div><img id="${k}EditPreview" class="soumik-upload-preview" alt="Edited image preview" hidden><button type="button" class="btn outline mini" onclick="soumikReeditImage('${k}')">✎ Adjust ${label}</button>`:''}</label>`).join('')}</div>`):step===3?`<h3>04 — Review Your Application</h3><div class="formgrid">${Object.entries(draft).filter(([k,v])=>typeof v==='string'&&!v.startsWith('data:')).map(([k,v])=>`<div><small class="muted">${esc(k)}
 </small><div><b>${esc(v)}
 </b></div></div>`).join('')}
 </div><div class="toolbar">${['photo','signature'].map(k=>draft[k]?.startsWith('data:image')?`<img class="previewimg" alt="${k}" src="${draft[k]}">`:'').join('')}
@@ -2022,15 +2047,14 @@ return true}
 async function nextStep(){
 if(window.soumikImageEditing){alert('Please save or cancel the photo editor first.');return;}
 if(step<2&&!capture())return;
-if(step===2){
-const requiredFiles=(service==='pancontact'||service==='votermobile')?[]:service.startsWith('pan')?['photo','signature','aadhaar','dobProof',...(service==='pancorrection'?['oldPanProof']:[])]:service.startsWith('voter')?['photo','aadhaar','addressProof','dobProof',...(service==='votercorrection'?['correctionProof']:[])]:['aadhaar'];
+if(step===2){ if(document.getElementById('addressProof')&&!document.getElementById('addressProofType')?.value){alert('Please select the Address Proof document type.');document.getElementById('addressProofType')?.focus();return;} if(document.getElementById('dobProof')&&!document.getElementById('dobProofType')?.value){alert('Please select the Date of Birth Proof document type.');document.getElementById('dobProofType')?.focus();return;} const requiredFiles=(service==='pancontact'||service==='votermobile')?[]:service.startsWith('pan')?['photo','signature','aadhaar','dobProof',...(service==='pancorrection'?['oldPanProof']:[])]:service.startsWith('voter')?['photo','aadhaar','addressProof','dobProof',...(service==='votercorrection'?['correctionProof']:[])]:['aadhaar'];
 for(const k of requiredFiles){
 if(!draft[k]&&!document.getElementById(k)?.files?.length){
 alert('Please upload the required document: '+k);
 document.getElementById(k)?.focus();
 return}
 }
-for(const k of ['photo','signature','aadhaar','addressProof','dobProof','oldPanProof','relationVoter','relationSlip','correctionProof']){
+for(const k of ['photo','signature','aadhaar','aadhaarBack','addressProof','dobProof','oldPanProof','relationVoter','relationSlip','correctionProof']){
 const f=document.getElementById(k)?.files?.[0];
 if(f){
 if(f.size>10*1024*1024){
@@ -2053,6 +2077,7 @@ r.readAsDataURL(file)}
 
 function backStep(){
 if(step>0){
+if(step===2){draft.addressProofType=document.getElementById('addressProofType')?.value||draft.addressProofType;draft.dobProofType=document.getElementById('dobProofType')?.value||draft.dobProofType;}
 if(step<3)capture();
 step--;
 goStep()}
@@ -4012,7 +4037,7 @@ button,.btn{min-height:44px;touch-action:manipulation}
      'Updated At: '+(when||'Not recorded'),
      e?.note?'Update Note: '+String(e.note).slice(0,300):'',
      'Please check the latest status with your Tracking ID.',
-     'Leave a review: https://soumik-online.github.io/#reviews'
+     'Leave a review: https://soumikonline.github.io/#reviews'
    ].filter(Boolean).join('\n');
  }
  window.soumikShareUpdate=async function(id,channel){
@@ -4546,8 +4571,8 @@ window.soumikOwnerPaymentShare=function(encodedId,channel){
  const id=decodeURIComponent(encodedId);
  const a=state.applications.find(x=>String(x.id)===id);
  if(!a)return alert('Application not found');
- const link='https://soumik-online.github.io/?resume_payment='+encodeURIComponent(id);
- const message='*SOUMIK ONLINE | Payment Reminder*\n\nপ্রিয় গ্রাহক,\nআপনার আবেদনের পেমেন্ট এখনও সম্পূর্ণ হয়নি।\n\n*Tracking ID:* '+id+'\n*পেমেন্ট লিংক:* '+link+'\n\nলিংকটি খুলে আবেদনে দেওয়া মোবাইল নম্বর লিখুন। আপনার আবেদন/রেজিস্ট্রেশনে ব্যবহার করা ইমেইল ঠিকানায় যাচাইকরণের OTP পাঠানো হবে। সঠিক OTP যাচাই করার পরই পেমেন্ট পেজ খুলবে (OTP সেবা সক্রিয় থাকলে)।\n\n*নিরাপত্তা:* OTP কাউকে জানাবেন না।\n\nধন্যবাদ,\nSOUMIK ONLINE Support\nReview: https://soumik-online.github.io/#reviews';
+ const link='https://soumikonline.github.io/?resume_payment='+encodeURIComponent(id);
+ const message='*SOUMIK ONLINE | Payment Reminder*\n\nপ্রিয় গ্রাহক,\nআপনার আবেদনের পেমেন্ট এখনও সম্পূর্ণ হয়নি।\n\n*Tracking ID:* '+id+'\n*পেমেন্ট লিংক:* '+link+'\n\nলিংকটি খুলে আবেদনে দেওয়া মোবাইল নম্বর লিখুন। আপনার আবেদন/রেজিস্ট্রেশনে ব্যবহার করা ইমেইল ঠিকানায় যাচাইকরণের OTP পাঠানো হবে। সঠিক OTP যাচাই করার পরই পেমেন্ট পেজ খুলবে (OTP সেবা সক্রিয় থাকলে)।\n\n*নিরাপত্তা:* OTP কাউকে জানাবেন না।\n\nধন্যবাদ,\nSOUMIK ONLINE Support\nReview: https://soumikonline.github.io/#reviews';
  if(channel==='whatsapp'){
    let mobile=String(a.mobile||'').replace(/\D/g,'');
    if(mobile.length===10)mobile='91'+mobile;
@@ -4927,7 +4952,7 @@ window.soumikDocExists=isDoc;
 <script id="soumik-nov19-enhancements-js">
 (function(){
 'use strict';
-const url='https://soumik-online.github.io/#reviews';
+const url='https://soumikonline.github.io/#reviews';
 window.soumikShareReview=async function(){
  const message='SOUMIK ONLINE — Share your review: '+url;
  if(navigator.share){try{await navigator.share({title:'SOUMIK ONLINE Reviews',text:message,url});return}catch(e){if(e.name==='AbortError')return;}}
@@ -4962,7 +4987,7 @@ window.addEventListener('hashchange',()=>{if(location.hash==='#reviews'&&typeof 
 <script id="soumik-nov19-final-patches">
 (function(){
  'use strict';
- const reviewUrl='https://soumik-online.github.io/#reviews';
+ const reviewUrl='https://soumikonline.github.io/#reviews';
  // Review links open the dedicated review route, not Help or Support.
  window.addEventListener('hashchange',()=>{if(location.hash==='#reviews'&&typeof go==='function')go('reviews')});
  const translations={
@@ -4992,7 +5017,7 @@ window.addEventListener('hashchange',()=>{if(location.hash==='#reviews'&&typeof 
 (function(){
 'use strict';
 const endpoint='https://utowfubjmyfixmucoujr.supabase.co/functions/v1/';
-const review='https://soumik-online.github.io/#reviews';
+const review='https://soumikonline.github.io/#reviews';
 const pick=(obj,keys,depth=0)=>{if(!obj||typeof obj!=='object'||depth>4)return '';for(const [k,v] of Object.entries(obj)){if(keys.includes(k.toLowerCase())&&typeof v==='string'&&v.trim())return v.trim();}for(const v of Object.values(obj)){if(v&&typeof v==='object'){const result=pick(v,keys,depth+1);if(result)return result;}}return '';};
 const labels={bn:{email:'ইমেইল পাঠান',wa:'হোয়াটসঅ্যাপ',sent:'ইমেইল সেবাদাতা বার্তাটি গ্রহণ করেছে।',failed:'ইমেইল পাঠানো যায়নি',noMobile:'আবেদনকারীর সঠিক মোবাইল নম্বর পাওয়া যায়নি।',noEmail:'আবেদনকারীর ইমেইল পাওয়া যায়নি।',login:'মালিক হিসেবে আবার লগইন করুন।',busy:'অনুগ্রহ করে অপেক্ষা করুন।'},hi:{email:'ईमेल भेजें',wa:'व्हाट्सऐप',sent:'ईमेल सेवा ने संदेश स्वीकार कर लिया है।',failed:'ईमेल नहीं भेजा जा सका',noMobile:'आवेदक का सही मोबाइल नंबर नहीं मिला।',noEmail:'आवेदक का ईमेल नहीं मिला।',login:'मालिक के रूप में फिर लॉगिन करें।',busy:'कृपया प्रतीक्षा करें।'},en:{email:'Send Email',wa:'WhatsApp',sent:'Email provider accepted the message.',failed:'Email could not be sent',noMobile:'Valid applicant mobile number not found.',noEmail:'Applicant email not found.',login:'Please sign in as owner again.',busy:'Please wait.'}};
 const lang=()=>labels[document.getElementById('lang')?.value]||labels.en;
@@ -5001,7 +5026,7 @@ function applicationMessage(a){
  const service=pick(a.payload||a,['servicename','service_name','service','type'])||a.type||'Digital Service';
  const history=a.payload?.history||a.history||[];const latest=Array.isArray(history)?history[history.length-1]:null;
  const reason=pick(a.payload||a,['cancellationreason','cancelreason','objection_note'])||latest?.note||'';
- return ['SOUMIK ONLINE — Application Update','Tracking ID: '+id,'Service: '+service,'Current Application Status: '+status,reason?'Update Note: '+reason:'','Track your application: https://soumik-online.github.io/','Review our website: '+review,'Support: +91 9593106177'].filter(Boolean).join('\n');
+ return ['SOUMIK ONLINE — Application Update','Tracking ID: '+id,'Service: '+service,'Current Application Status: '+status,reason?'Update Note: '+reason:'','Track your application: https://soumikonline.github.io/','Review our website: '+review,'Support: +91 9593106177'].filter(Boolean).join('\n');
 }
 window.soumikShareUpdate=async function(id,channel){
  // WhatsApp navigation must happen in the original click gesture, before any await.
@@ -5120,7 +5145,7 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
             // Never navigate away immediately after requesting a download: browsers
             // can cancel the download or block it after an async payment callback.
             // Provide a user-initiated retry on this page and a separate Home button.
-            try{if(receiptReady){sessionStorage.setItem('soumik_checkout_return_home_until',String(Date.now()+120000));setTimeout(()=>{window.location.assign(window.soumikPublicWebsiteUrl?.()||'https://soumik-online.github.io/')},2200)}else window.soumikShowPaidReceiptActions?.(a,verified,response,false);}catch(e){console.warn('Receipt actions:',e)}
+            try{if(receiptReady){sessionStorage.setItem('soumik_checkout_return_home_until',String(Date.now()+120000));setTimeout(()=>{window.location.assign(window.soumikPublicWebsiteUrl?.()||'https://soumikonline.github.io/')},2200)}else window.soumikShowPaidReceiptActions?.(a,verified,response,false);}catch(e){console.warn('Receipt actions:',e)}
             resolve();
           }catch(e){reject(e);}},
           modal:{ondismiss:()=>reject(Error('Payment window closed. If money was debited, contact support with your payment reference before retrying.'))}
@@ -5191,7 +5216,7 @@ function drawReceipt(a,p){
  row('Order ID',p.order_id,70,1053,1095);
  row('Gateway','Razorpay',70,1114,1095);
  
- let publicSite='https://soumik-online.github.io/';try{const settings=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}');if(/^https:\/\//i.test(settings.website_url||''))publicSite=settings.website_url;}catch(_){}text(publicSite.replace(/^https?:\/\//i,''),77,1320,22,'#153e80',true,1060);
+ let publicSite='https://soumikonline.github.io/';try{const settings=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}');if(/^https:\/\//i.test(settings.website_url||''))publicSite=settings.website_url;}catch(_){}text(publicSite.replace(/^https?:\/\//i,''),77,1320,22,'#153e80',true,1060);
  x.fillStyle='#0a55ac';x.fillRect(25,1344,W-50,18);x.fillStyle='#e5ae45';x.fillRect(25,1340,W-50,5);
  return c;
 }
@@ -5227,7 +5252,7 @@ window.soumikVerifiedPaidInvoice=async function(a,v,r){
  try{sessionStorage.setItem(verifiedStoreKey(a.id),JSON.stringify(p));}catch(_){}
  return download(a,p);
 };
-window.soumikPublicWebsiteUrl=function(){try{const x=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}').website_url;if(/^https:\/\//i.test(x||''))return x}catch(_){}return 'https://soumik-online.github.io/'};
+window.soumikPublicWebsiteUrl=function(){try{const x=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}').website_url;if(/^https:\/\//i.test(x||''))return x}catch(_){}return 'https://soumikonline.github.io/'};
 window.soumikShowPaidReceiptActions=function(a,v,r,automaticRequested){
  const id=String(a?.id||'');
  let panel=document.getElementById('soumik-paid-receipt-recovery');
@@ -5653,6 +5678,62 @@ window.soumikSharePaidReceipt=async function(id,channel){
  });}
  window.soumikConfirmReceiptEmail=({recipient,tracking})=>show({title:'Send Payment Receipt',recipient:recipient||'Not available',tracking,subtitle:'Verified receipt · Email delivery'});
  window.soumikReceiptNotice=(title,notice,kind)=>show({title,notice,kind,subtitle:'SOUMIK ONLINE · Payment receipt'});
+})();
+</script>
+
+<style id="soumik-mobile-dashboard-submit-20261121">
+/* Mobile-only enhancements; desktop dashboard layout remains unchanged. */
+@media(max-width:700px){
+ .soumik-admin-layout{display:block!important;min-width:0!important}
+ .soumik-admin-layout>.soumik-admin-sidebar,.soumik-admin-layout>.sidebar.soumik-admin-sidebar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;max-width:100%!important;overflow:visible!important;max-height:none!important;position:static!important;padding:12px!important;box-sizing:border-box}
+ .soumik-admin-sidebar-head{grid-column:1/-1;min-width:0!important;width:100%;border-bottom:1px solid #ffffff26!important;padding:8px 4px 12px!important}
+ .soumik-admin-sidebar .soumik-sidebar-label{display:block!important;grid-column:1/-1;padding:10px 4px 0!important}
+ .soumik-admin-sidebar button{width:100%!important;min-width:0!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;text-align:left!important;min-height:48px!important;margin:0!important;padding:11px 9px!important;font-size:12px!important;line-height:1.35!important}
+ .soumik-admin-main{width:100%;min-width:0!important}
+ .soumik-admin-applications .tablewrap{overflow-x:auto!important;max-width:100%;-webkit-overflow-scrolling:touch}
+ .layout:not(.soumik-admin-layout)>.sidebar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;overflow:visible!important;position:static!important;width:100%!important}
+ .layout:not(.soumik-admin-layout)>.sidebar>div{grid-column:1/-1}
+ .layout:not(.soumik-admin-layout)>.sidebar button{width:100%!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;min-height:44px!important}
+ .cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .cards .tile{min-width:0!important;min-height:125px!important;padding:16px 9px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;overflow-wrap:anywhere}
+ .cards .tile .emoji{font-size:31px;margin:0 0 4px}
+ .cards .tile b{font-size:14px;line-height:1.4}
+ .cards .tile small{font-size:11px;line-height:1.4}
+ .service-choice-grid{grid-template-columns:1fr!important}
+ .service-choice{min-width:0;padding:18px!important}
+ .service-choice .btn{width:100%;min-height:46px}
+ .steps{overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+ .steps .step{min-width:85px;line-height:1.4}
+}
+@media(max-width:370px){.soumik-admin-layout .owner-service-grid{grid-template-columns:1fr 1fr!important}.soumik-admin-sidebar button{font-size:11px!important}}
+.soumik-submit-progress{position:fixed;inset:0;z-index:999998;background:rgba(6,19,49,.58);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+.soumik-submit-progress-card{background:white;border-radius:20px;padding:26px 22px;width:min(100%,380px);box-shadow:0 20px 60px #0004;text-align:center;color:#15336d}
+.soumik-submit-spinner{width:42px;height:42px;border-radius:50%;border:4px solid #dce9ff;border-top-color:#1465f6;animation:soumik-submit-spin .8s linear infinite;margin:0 auto 14px}
+@keyframes soumik-submit-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.soumik-submit-spinner{animation:none}}
+</style>
+<script id="soumik-mobile-submit-feedback-20261121">
+(function(){
+  let submitting=false;
+  function install(){
+    if(typeof window.submitApplication!=='function'||window.submitApplication.__soumikBusyGuard)return;
+    const original=window.submitApplication;
+    async function guardedSubmit(){
+      if(submitting)return;
+      submitting=true;
+      const button=Array.from(document.querySelectorAll('button')).find(b=>/Submit Application & Get Receipt/i.test(b.textContent||''));
+      const oldDisabled=button?.disabled;
+      if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+      const overlay=document.createElement('div');overlay.className='soumik-submit-progress';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
+      overlay.innerHTML='<div class="soumik-submit-progress-card"><div class="soumik-submit-spinner" aria-hidden="true"></div><strong>Submitting your application…</strong><p style="font-size:13px;line-height:1.6;color:#506584">আপনার আবেদন নিরাপদে জমা হচ্ছে। অনুগ্রহ করে অপেক্ষা করুন।<br>Do not tap Submit again.</p></div>';
+      document.body.appendChild(overlay);
+      try{return await original.apply(this,arguments)}
+      finally{overlay.remove();if(button?.isConnected){button.disabled=!!oldDisabled;button.removeAttribute('aria-busy');}submitting=false;}
+    }
+    guardedSubmit.__soumikBusyGuard=true;
+    window.submitApplication=guardedSubmit;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
 </script>
 </body>
