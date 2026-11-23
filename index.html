@@ -3110,6 +3110,1270 @@ el.value=el.value.replace(/\D/g,'').slice(0,12).replace(/(\d{4})(?=\d)/g,'$1 ')}
 }
 );
   </script>
+<script id="so53-offline-qr-generator">
+/* Offline QRCode generator, Kazuhiko Arase, MIT license (qrcode-terminal vendor/QRCode). */
+(function(){
+const modules=Object.create(null),cache=Object.create(null);
+function requireLocal(path){const key=String(path).replace(/^\.\//,'');if(cache[key])return cache[key].exports;if(!modules[key])throw Error('QR module unavailable: '+key);const module={exports:{}};cache[key]=module;modules[key](requireLocal,module);return module.exports;}
+modules['QRMode']=function(require,module){
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+};
+modules['QRErrorCorrectLevel']=function(require,module){
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+};
+modules['QRMaskPattern']=function(require,module){
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+};
+modules['QRMath']=function(require,module){
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+};
+modules['QRPolynomial']=function(require,module){
+var QRMath = require('./QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+};
+modules['QRBitBuffer']=function(require,module){
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+};
+modules['QR8bitByte']=function(require,module){
+var QRMode = require('./QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+};
+modules['QRRSBlock']=function(require,module){
+var QRErrorCorrectLevel = require('./QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+};
+modules['QRUtil']=function(require,module){
+var QRMode = require('./QRMode');
+var QRPolynomial = require('./QRPolynomial');
+var QRMath = require('./QRMath');
+var QRMaskPattern = require('./QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+};
+modules['index']=function(require,module){
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = require('./QR8bitByte');
+var QRUtil = require('./QRUtil');
+var QRPolynomial = require('./QRPolynomial');
+var QRRSBlock = require('./QRRSBlock');
+var QRBitBuffer = require('./QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+};
+const QRCode=requireLocal('index'),ECL=requireLocal('QRErrorCorrectLevel');
+window.soumikReceiptQR=function(message){const qr=new QRCode(-1,ECL.M);qr.addData(String(message||''));qr.make();return qr;};
+})();
+</script>
   <script>
    /* Offline receipt generator: produces an actual one-page A4 PDF, no external library. */
 (function(){
@@ -3188,137 +4452,198 @@ ctx.drawImage(img,x+(w-ww)/2,y+(h-hh)/2,ww,hh);
 ctx.restore()}
 
 async function buildReceiptImage(a){
+// SOUMIK ONLINE V55: Design 1 exact-style icons + navy typography + matching support footer.
+// Data always comes from the actual application; no reference-image sample values are inserted.
 const c=document.createElement('canvas');
-c.width=1240;
-c.height=1754;
-const x=c.getContext('2d');
-x.fillStyle='#fff';
-x.fillRect(0,0,1240,1754);
-
-// Keep edited images from the just-submitted application when cloud mapping omits them.
-const sameCurrentApplication=String(trackQuery||'')===String(a.id||'');
-// Storage uploads replace data URLs with storage:path. Resolve private documents
-// to temporary signed URLs before drawing them on the application PDF.
-async function receiptImageSource(value,fallback){
-  if(typeof value==='string'&&value.startsWith('data:image/'))return value;
-  if(typeof value==='string'&&value.startsWith('storage:')){
-    try{
-      const db=typeof getClient==='function'?getClient():null;
-      if(db){
-        const {data,error}=await db.storage.from('documents').createSignedUrl(value.slice(8),120);
-        if(!error&&data?.signedUrl)return data.signedUrl;
-        console.warn('Application image signed URL unavailable',error);
-      }
-    }catch(e){console.warn('Application image lookup failed',e);}
-  }
-  if(typeof value==='string'&&/^https:\/\//.test(value))return value;
-  return typeof fallback==='string'&&fallback.startsWith('data:image/')?fallback:'';
+c.width=1860;c.height=2631;
+const x=c.getContext('2d',{alpha:false});
+x.scale(1.5,1.5);
+const W=1240,H=1754;
+const C={navy:'#08265f',navy2:'#061946',blue:'#0755c9',royal:'#0874ed',gold:'#f5ba43',gold2:'#e8a32b',ink:'#081936',muted:'#42536d',border:'#bad5f8',green:'#078c54',orange:'#ad5d00',purple:'#5933ac',white:'#ffffff'};
+function grad(x1,y1,x2,y2,stops){const g=x.createLinearGradient(x1,y1,x2,y2);stops.forEach(([p,col])=>g.addColorStop(p,col));return g;}
+function box(px,py,w,h,r,fill,stroke='',lw=2){x.beginPath();x.roundRect(px,py,w,h,r);x.fillStyle=fill;x.fill();if(stroke){x.lineWidth=lw;x.strokeStyle=stroke;x.stroke();}}
+function text(v,px,py,size=21,col=C.ink,bold=false,max=1e7,align='left'){
+ const raw=String(v===undefined||v===null||v===''?'—':v); x.save();x.fillStyle=col;x.font=`${bold?'800':'500'} ${size}px Arial, 'Noto Sans', sans-serif`;x.textAlign=align;
+ let val=raw;if(x.measureText(val).width>max){while(val.length>1&&x.measureText(val+'…').width>max)val=val.slice(0,-1);val+='…';}
+ x.fillText(val,px,py);x.restore();
 }
-const photoSource=await receiptImageSource(a.photo||a.passportPhoto||a.photoData,sameCurrentApplication&&typeof draft!=='undefined'?draft.photo:'');
-const signatureSource=await receiptImageSource(a.signature||a.signatureData||a.sign,sameCurrentApplication&&typeof draft!=='undefined'?draft.signature:'');
-const [logo,photo,sig]=await Promise.all([imageLoad(ASSETS.logo),imageLoad(photoSource),imageLoad(signatureSource)]);
+function wrap(v,px,py,maxWidth,maxLines,lineHeight=27,size=20,col=C.ink,bold=false){
+ const words=String(v||'—').replace(/\s+/g,' ').split(' ');let ln='',out=[];
+ x.font=`${bold?'800':'500'} ${size}px Arial, 'Noto Sans', sans-serif`;
+ for(const word of words){let cand=ln?ln+' '+word:word;if(x.measureText(cand).width<=maxWidth){ln=cand;continue;}if(ln)out.push(ln);ln=word;}
+ if(ln)out.push(ln);
+ out.slice(0,maxLines).forEach((t,i)=>text(t,px,py+i*lineHeight,size,col,bold,maxWidth));
+ if(out.length>maxLines)text('…',px+maxWidth-22,py+(maxLines-1)*lineHeight,size,col,bold);return out.length;
+}
+// Consistent SVG-path pictograms, painted as vectors into the receipt canvas.
+// These are not font glyphs, so the same icons appear in PDFs on Android and Windows.
+const glyphs={
+ user:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8a4 4 0 1 0 0 8',
+ users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
+ calendar:'M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2 M8 14h3 M14 14h3 M8 18h3 M14 18h3',
+ gender:'M15 9l6-6 M15 3h6v6 M14.5 9.5a6.5 6.5 0 1 0 0 9.2a6.5 6.5 0 0 0 0-9.2',
+ phone:'M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 2.09 4.18A2 2 0 0 1 4.08 2h3a2 2 0 0 1 2 1.72l.4 2.81a2 2 0 0 1-.57 1.71l-1.4 1.4a16 16 0 0 0 6.86 6.86l1.4-1.4a2 2 0 0 1 1.71-.57l2.81.4A2 2 0 0 1 22 16.92',
+ mail:'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2 M22 6l-10 7L2 6',
+ layers:'M12 2L2 8l10 6 10-6-10-6 M2 12l10 6 10-6 M2 16l10 6 10-6',
+ id:'M3 5h18v14H3z M8 12a2 2 0 1 0 0-4a2 2 0 1 0 0 4 M5.5 16c.5-2 4.5-2 5 0 M14 10h5 M14 14h5',
+ credit:'M2 5h20v14H2z M2 10h20 M6 15h5',
+ rupee:'M6 3h12 M6 8h12 M7 3a5 5 0 0 1 0 10h-1l9 9',
+ location:'M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0 M12 12a2.5 2.5 0 1 0 0-5a2.5 2.5 0 1 0 0 5',
+ home:'M3 10l9-7 9 7 M5 9v12h14V9 M9 21v-9h6v9',
+ clock:'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20 M12 6v6l4 3',
+ headset:'M3 14v-3a9 9 0 0 1 18 0v3 M3 14h4v7H5a2 2 0 0 1-2-2z M21 14h-4v7h2a2 2 0 0 0 2-2z M17 21c-.5 1-2.5 1.5-5 1.5',
+ whatsapp:'M21 11.7a9 9 0 0 1-13 8L3 21l1.4-4.5A9 9 0 1 1 21 11.7 M8.6 7.5c-.3.1-.9.7-.9 1.5c0 1.1 2.1 4.9 5.9 6.7c1.4.7 2.6.8 3.1.3l.7-1.2l-2.5-1.2l-1.1 1.1a9 9 0 0 1-3.8-3.8l1.1-1.2l-1.2-2.4z',
+ check:'M5 12l4 4L19 6',
+ file:'M5 3h9l5 5v13H5z M14 3v5h5 M8 12h8 M8 16h8',
+ shield:'M12 2l8 4v6c0 5-4 8-8 10c-4-2-8-5-8-10V6z M8 12l3 3 5-6'
+};
+function drawIcon(kind,centerX,centerY,size,color='#0757b5',strokeWidth=2.15){
+ const def=glyphs[kind]||glyphs.file;
+ x.save();x.translate(centerX-size/2,centerY-size/2);x.scale(size/24,size/24);
+ x.strokeStyle=color;x.lineWidth=strokeWidth;x.lineCap='round';x.lineJoin='round';
+ try{x.stroke(new Path2D(def));}catch(e){/* canvas still renders all text if SVG paths unavailable */}
+ x.restore();
+}
+function section(y,title,accent,icon){
+ const gradBlue=grad(51,y,510,y+48,[[0,'#0356bc'],[.55,'#076ee1'],[1,'#073c99']]);
+ x.strokeStyle='#0c72e0';x.lineWidth=2.2;x.beginPath();x.moveTo(52,y+40);x.lineTo(1186,y+40);x.stroke();
+ box(51,y,441,50,15,gradBlue,'#0b56b6',1.2);
+ box(56,y+4,63,42,10,grad(56,y,119,y+45,[[0,'#2698ff'],[1,'#003e96']]));
+ drawIcon(icon,87,y+25,29,'#ffffff',2.75);
+ text(title,128,y+35,28,'#ffffff',true,342);
+}
 
-x.fillStyle='#071c50';
-x.fillRect(0,0,1240,205);
-x.fillStyle='#d9ad53';
-x.fillRect(0,190,1240,12);
-paintImg(x,logo,75,30,115,115);
-txt(x,'SOUMIK',210,94,57,'#fff','bold');
-txt(x,'ONLINE',455,94,57,'#e9b75b','bold');
-txt(x,'Digital Services',213,137,25,'#e2eafa');
-txt(x,'APPLICATION RECEIPT',380,252,39,'#071c50','bold');
-txt(x,'Thank you for choosing Soumik Online',418,287,19,'#6b7791');
-
-drawRounded(x,260,313,720,96,14,'#fff4f9','#e02c77');
-drawRounded(x,437,299,366,37,15,'#d70a62');
-txt(x,'APPLICATION NUMBER',483,326,19,'#fff','bold');
-x.font='bold 35px Arial, sans-serif';
-const receiptId=String(a.id||'');
-const idWidth=x.measureText(receiptId).width;
-txt(x,receiptId,620-idWidth/2,379,35,'#071c50','bold',660);
-
-function bar(y,title,color){
-drawRounded(x,70,y,1100,45,8,color);
-txt(x,title,91,y+31,24,'#fff','bold')}
-
-bar(440,'APPLICANT DETAILS','#0867b9');
-drawRounded(x,70,491,1100,390,10,'#fbfdff','#d6e4f3');
-const applicantRows=a.type==='pancontact'?[
- ['Full Name',a.fullName],
- ['Aadhaar Number',a.aadhaarNumber],
- ['PAN Number',a.oldPan],
- ['Old Mobile (Optional)',a.oldMobile],
- ['New Mobile Number',a.mobile],
- ['New Email ID',a.email],
- ['Applied For',SERVICES[a.type]?.name||a.type],
- ['Application Date',new Date(a.date).toLocaleString()]
-]:a.type==='votermobile'?[
- ['Full Name',a.fullName],
- ['Voter / EPIC Number',a.epicNumber],
- ['New Mobile Number',a.mobile],
- ['Email Address',a.email],
- ['Applied For',SERVICES[a.type]?.name||a.type],
- ['Application Date',new Date(a.date).toLocaleString()],
- ['Payment Method',a.paymentMethod],
- ['Payment Status',a.paymentStatus]
-]:[
- ['Full Name',a.fullName],
- ["Father / Husband",a.fatherName],
- ['Date of Birth',a.dob],
- ['Gender',a.gender],
- ['Mobile Number',a.mobile],
- ['Email Address',a.email],
- ['Applied For',SERVICES[a.type]?.name||a.type],
- ['Application Date',new Date(a.date).toLocaleString()]
-];
-applicantRows.forEach(([label,value],i)=>line(x,label,value,527+i*43));
-
-// Only display uploaded images; never print empty Photo/Signature placeholders.
-if(photo){drawRounded(x,902,515,111,145,7,'#eef4fc','#cad7e8');paintImg(x,photo,908,521,99,133);txt(x,'PHOTO',921,681,14,'#1c4575','bold');}
-if(sig){drawRounded(x,1022,515,127,145,7,'#fff','#cad7e8');paintImg(x,sig,1028,546,115,73);txt(x,'SIGNATURE',1030,681,14,'#1c4575','bold');}
-
-bar(904,'PAYMENT DETAILS','#128a55');
-drawRounded(x,70,956,1100,223,10,'#fbfffd','#d4e8dc');
-line(x,'Payment Method',a.paymentMethod,993);
-line(x,'Payment Status',a.paymentStatus||'Pending',1038);
-line(x,'Amount','₹'+a.fee+'.00',1083);
-line(x,'Payment Date',a.paymentDate?new Date(a.paymentDate).toLocaleString():'Not recorded',1128);
-
-
-bar(1202,'ADDRESS DETAILS','#b5680c');
-drawRounded(x,70,1254,1100,210,10,'#fffdfa','#eedecb');
-let addr=[a.house,a.area,a.postOffice,a.policeStation,a.district,a.state,a.pin,a.country].filter(Boolean).join(', ');
-txt(x,'Full Address',95,1301,23,'#8a4a08','bold');
-const words=addr.split(/\s+/);
-let lines=[],cur='';
-for(const w of words){
-if(x.measureText(cur+' '+w).width>985){
-lines.push(cur);
-cur=w}
-else cur+=(cur?' ':'')+w}
-if(cur)lines.push(cur);
-lines.slice(0,4).forEach((l,i)=>txt(x,l,95,1345+i*30,22,'#263e5e'));
-
-bar(1486,'TRACKING STATUS','#503099');
-drawRounded(x,70,1539,1100,113,10,'#f9f8ff','#e2d9f2');
-const payState=String(a.paymentStatus||'Pending');
-const verified=/^(verified|paid|completed|success|successful)$/i.test(payState);
+function underCurve(y,fill){x.fillStyle=fill;x.beginPath();x.moveTo(0,y);x.bezierCurveTo(450,y-65,660,y+67,1240,y-30);x.lineTo(1240,H);x.lineTo(0,H);x.closePath();x.fill();}
+function stampBadge(px,py,w,h,fill,tt){box(px,py,w,h,15,fill);text(tt,px+w/2,py+h*.67,24,'#fff',true,w-20,'center');}
+function formatDate(v,includeTime=false){if(!v)return 'Not recorded';const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);return new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',...(includeTime?{hour:'2-digit',minute:'2-digit',hour12:true}:{})}).format(d);}
+function masked(v,visible=4){const str=String(v||'').replace(/\s+/g,'');return str.length>visible?'XXXX XXXX '+str.slice(-visible):str||'—';}
+async function photoSrc(v,fallback){
+ if(typeof v==='string'&&v.startsWith('data:image/'))return v;
+ if(typeof v==='string'&&v.startsWith('storage:')){
+  const client=window.soumikSupabase;
+  if(client){const path=v.slice(8);for(const bucket of ['documents','application-documents']){
+    try{const {data,error}=await client.storage.from(bucket).createSignedUrl(path,120);if(!error&&data?.signedUrl)return data.signedUrl;}catch(err){console.warn('Photo signature source:',err);}
+  }}
+ }
+ if(typeof v==='string'&&/^https:\/\//.test(v))return v;
+ return typeof fallback==='string'&&fallback.startsWith('data:image/')?fallback:'';
+}
+function loadImage(src){return new Promise(resolve=>{if(!src)return resolve(null);const im=new Image();if(/^https:\/\//.test(src))im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=src;});}
+function paintImage(img,px,py,w,h,cover=false){if(!img)return false;x.save();x.beginPath();x.roundRect(px,py,w,h,7);x.clip();const scale=cover?Math.max(w/img.width,h/img.height):Math.min(w/img.width,h/img.height);const iw=img.width*scale,ih=img.height*scale;x.drawImage(img,px+(w-iw)/2,py+(h-ih)/2,iw,ih);x.restore();return true;}
+const current=String(trackQuery||'')===String(a.id||'');
+const fallbackPhoto=current&&typeof draft!=='undefined'?draft.photo:'';
+const fallbackSign=current&&typeof draft!=='undefined'?draft.signature:'';
+const [logo,photo,sig]=await Promise.all([loadImage(ASSETS.logo),photoSrc(a.photo||a.passportPhoto||a.photoData,fallbackPhoto).then(loadImage),photoSrc(a.signature||a.signatureData||a.sign,fallbackSign).then(loadImage)]);
+const appName=SERVICES[a.type]?.name||a.serviceName||a.type||'Application';
+const payRaw=String(a.paymentStatus||'PENDING').toUpperCase().replace(/\s+/g,'_');
+const isPaid=/^(PAID|CASH_CONFIRMED|CONFIRMED|VERIFIED|SUCCESS|SUCCESSFUL|COMPLETED)$/.test(payRaw);
+const isFailed=/^(FAILED|CASH_REJECTED|REJECTED|PAYMENT_FAILED|CANCELLED)$/.test(payRaw);
+const paymentDisplay=payRaw.replace(/_/g,' ');
+const payColor=isPaid?C.green:isFailed?'#c23e3e':C.orange;
+const fee=Number(a.fee??SERVICES[a.type]?.fee??0);
+const amount='₹'+new Intl.NumberFormat('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number.isFinite(fee)?fee:0);
 const currentState=String(a.status||'Submitted');
-const steps=[['Submitted',true],['Payment Verified',verified],['Under Review',['Under Review','Processing','Approved','Completed','Dispatched','Delivered'].includes(currentState)],['Processing',['Processing','Approved','Completed','Dispatched','Delivered'].includes(currentState)],['Completed',['Completed','Dispatched','Delivered'].includes(currentState)]];
-steps.forEach(([label,done],i)=>{
- const xx=165+i*218;
- x.beginPath();x.arc(xx,1576,16,0,Math.PI*2);x.fillStyle=done?'#0a9e60':'#aebed3';x.fill();
- txt(x,done?'✓':String(i+1),xx-7,1583,18,'#fff','bold');
- txt(x,label,xx-76,1618,15,done?'#087748':'#506079','bold',150);
-});
-txt(x,'Application: '+currentState+'    |    Payment: '+payState,95,1647,19,'#203a66','bold',1000);
-x.fillStyle='#071c50';
-x.fillRect(0,1676,1240,78);
-x.fillStyle='#d7ad53';
-x.fillRect(0,1676,1240,8);
-txt(x,'SOUMIK ONLINE  |  Customer Help & Support',340,1705,23,'#fff','bold');
-txt(x,'WhatsApp: +91 9593106177   |   Email: tutotisonlines@gmail.com',270,1737,21,'#fff','normal');
-return c}
+// V54: Approved first reference design (navy + gold ribbons, independent tabs,
+// large photo/signature, dedicated gold pending panel, QR, and five-step timeline).
+// Keep ALL application information dynamic; do not put example data into receipts.
+x.fillStyle='#f5fbff';x.fillRect(0,0,W,H);
+// Deep navy brand header and layered geometric blue/gold waves.
+x.fillStyle=grad(0,0,1230,166,[[0,'#071b49'],[.50,'#092c68'],[1,'#0867c8']]);x.fillRect(0,0,W,176);
+x.save();x.beginPath();x.moveTo(0,0);x.lineTo(550,0);x.bezierCurveTo(310,48,220,98,0,135);x.closePath();x.fillStyle='#0d72d7';x.fill();
+x.beginPath();x.moveTo(0,0);x.lineTo(395,0);x.bezierCurveTo(195,57,142,79,0,99);x.closePath();x.fillStyle='#3ab5ff';x.fill();
+x.beginPath();x.moveTo(0,0);x.lineTo(300,0);x.bezierCurveTo(170,25,79,60,0,77);x.closePath();x.fillStyle='#085baf';x.fill();x.restore();
+x.fillStyle='#edaa31';x.beginPath();x.moveTo(0,173);x.bezierCurveTo(285,124,610,207,1240,134);x.lineTo(1240,146);x.bezierCurveTo(640,214,282,138,0,186);x.closePath();x.fill();
+x.fillStyle='#174987';x.beginPath();x.moveTo(0,181);x.bezierCurveTo(300,142,652,212,1240,151);x.lineTo(1240,176);x.bezierCurveTo(670,216,308,162,0,195);x.closePath();x.fill();
+// Gold-ring logo and SOUMIK ONLINE wordmark.
+x.beginPath();x.arc(126,79,63,0,Math.PI*2);x.fillStyle='#f9c84e';x.fill();
+x.beginPath();x.arc(126,79,56,0,Math.PI*2);x.fillStyle='#062958';x.fill();
+if(logo)paintImage(logo,74,27,104,104,true);else text('SO',126,96,56,'#ffffff',true,108,'center');
+x.fillStyle='#ffffff99';x.fillRect(225,29,2,111);
+text('SOUMIK',255,79,56,'#ffffff',true,295);
+text('ONLINE',510,79,56,'#ffca46',true,314);
+text('Digital Services',258,127,29,'#eef5ff');
+x.strokeStyle='#76bafc';x.lineWidth=2;x.beginPath();x.moveTo(520,130);x.lineTo(850,130);x.stroke();
+// Center heading with reference-style framed document and laurel leaves.
+function pageIcon(px,py){x.save();x.strokeStyle='#0873d8';x.lineWidth=5;x.lineJoin='round';x.strokeRect(px+12,py+5,34,45);x.beginPath();x.moveTo(px+20,py+17);x.lineTo(px+39,py+17);x.moveTo(px+20,py+28);x.lineTo(px+39,py+28);x.stroke();x.beginPath();x.arc(px+47,py+47,12,0,Math.PI*2);x.fillStyle='#074baf';x.fill();x.strokeStyle='#fff';x.lineWidth=3;x.beginPath();x.moveTo(px+41,py+47);x.lineTo(px+46,py+52);x.lineTo(px+53,py+41);x.stroke();x.restore();}
+function laurel(cx,cy,flip=1){x.save();x.strokeStyle='#9abce2';x.lineWidth=3;x.beginPath();x.moveTo(cx,cy+57);x.bezierCurveTo(cx+flip*30,cy+28,cx+flip*32,cy-15,cx+flip*19,cy-50);x.stroke();for(let i=0;i<7;i++){const yy=cy+43-i*14,xx=cx+flip*(10+i*3);x.save();x.translate(xx,yy);x.rotate(flip*(-.6+i*.12));x.fillStyle='#9abce2';x.beginPath();x.ellipse(0,0,6,13,0,0,Math.PI*2);x.fill();x.restore();}x.restore();}
+pageIcon(287,203);laurel(205,246,-1);laurel(1033,246,1);
+text('APPLICATION RECEIPT',700,258,46,C.navy,true,790,'center');
+text('Thank you for choosing SOUMIK ONLINE',700,295,21,C.muted,false,680,'center');
+x.strokeStyle='#2154ae';x.lineWidth=2;x.beginPath();x.moveTo(370,307);x.lineTo(500,307);x.moveTo(905,307);x.lineTo(1031,307);x.stroke();
+// Tracking number and genuine black-on-white QR, with no sensitive data encoded.
+box(171,347,722,119,20,'#f2f8ff','#144fa5',3);
+box(306,331,435,43,20,grad(306,331,741,374,[[0,'#09408c'],[1,'#006ae1']]));
+text('APPLICATION NUMBER',523,360,23,'#fff',true,407,'center');
+text(a.id||'Not assigned',533,432,48,C.navy,true,684,'center');
+box(930,328,223,154,17,'#ffffff','#7db3ee',3);
+let qrOk=false;
+try{if(typeof window.soumikReceiptQR==='function'){
+ const qr=window.soumikReceiptQR('SOUMIK ONLINE - Tracking ID: '+String(a.id||''));const m=qr.getModuleCount();const side=130,pad=3,cell=side/(m+2*pad);x.fillStyle='#fff';x.fillRect(976,335,131,131);
+ x.fillStyle='#0b0b0e';for(let ry=0;ry<m;ry++)for(let rx=0;rx<m;rx++)if(qr.isDark(ry,rx))x.fillRect(976+(rx+pad)*cell,335+(ry+pad)*cell,Math.ceil(cell),Math.ceil(cell));qrOk=true;
+}}catch(error){console.warn('Receipt QR:',error);}
+if(!qrOk)text(String(a.id||'—'),1042,412,18,C.ink,true,186,'center');
+// Draw raised section tabs instead of the full-width strips in V53.
+section(494,'APPLICANT DETAILS',C.blue,'user');
+box(51,537,1138,417,17,'#ffffff','#1681e0',2);
+const serviceType=String(a.type||'');let rows;
+if(serviceType==='pancontact')rows=[['Full Name',a.fullName],['Aadhaar Number',masked(a.aadhaarNumber)],['PAN Number',a.oldPan||a.panNumber],['Old Mobile',a.oldMobile],['New Mobile',a.mobile||a.newMobile],['Email Address',a.email||a.newEmail],['Applied For',appName],['Application Date',formatDate(a.date,true)]];
+else if(serviceType==='votermobile')rows=[['Full Name',a.fullName],['Voter / EPIC Number',a.epicNumber],['Old Mobile',a.oldMobile],['New Mobile',a.mobile||a.newMobile],['Email Address',a.email],['Service Type',appName],['Application Date',formatDate(a.date,true)],['Tracking ID',a.id]];
+else rows=[['Full Name',a.fullName],['Father / Husband',a.fatherName||a.husbandName],['Date of Birth',a.dob],['Gender',a.gender],['Mobile Number',a.mobile],['Email Address',a.email],['Applied For',appName],['Application Date',formatDate(a.date,true)]];
+function rowIcon(px,py,i,kind){const k=kind||['user','users','calendar','gender','phone','mail','layers','calendar'][i]||'file';drawIcon(k,px,py-7,27,'#0755b5',2.6);}
+rows.forEach(([label,value],i)=>{const yy=580+i*45;rowIcon(99,yy,i);text(label,132,yy,20,C.ink,true,260);text(':',393,yy,21,C.ink,true);(()=>{const v=String(value??'—');let sz=20;x.font='800 '+sz+'px Arial, sans-serif';while(sz>15&&x.measureText(v).width>435){sz--;x.font='800 '+sz+'px Arial, sans-serif';}text(v,421,yy,sz,C.ink,true,435);})();if(i<7){x.strokeStyle='#d1e5fb';x.lineWidth=1.2;x.beginPath();x.moveTo(87,yy+15);x.lineTo(866,yy+15);x.stroke();}});
+x.strokeStyle='#8db7e8';x.lineWidth=2;x.beginPath();x.moveTo(892,556);x.lineTo(892,928);x.stroke();
+// PHOTO + SIGNATURE: original uploaded bytes (or signed storage URL), no mock portrait.
+box(920,550,238,265,17,'#f0f9ff','#7bb9f4',2);
+if(photo)paintImage(photo,935,562,208,216,true);else{box(935,562,208,216,10,'#e7f0fa');text('PHOTO NOT UPLOADED',1039,679,16,C.muted,true,190,'center');}
+box(935,778,208,33,10,grad(935,778,1143,812,[[0,'#063a80'],[1,'#0756c5']]));text('PHOTOGRAPH',1039,801,19,'#fff',true,202,'center');
+box(920,827,238,106,12,'#fff','#83bbf3',2);
+if(sig)paintImage(sig,936,839,205,59,false);else text('SIGNATURE NOT UPLOADED',1039,880,15,C.muted,true,205,'center');
+box(934,898,210,27,8,C.navy);text('SIGNATURE',1039,918,16,'#fff',true,205,'center');
+// Payment section with a large warm gold alert card and clock ring.
+section(975,'PAYMENT DETAILS',C.blue,'credit');
+box(51,1017,1138,192,15,'#ffffff','#1681e0',2);
+const payRows=[['Payment Method',a.paymentMethod||'Not selected'],['Amount',amount],['Payment Date',a.paymentDate?formatDate(a.paymentDate,true):'Not recorded']];
+payRows.forEach(([label,value],i)=>{const yy=1062+i*50;rowIcon(101,yy,i,i===0?'credit':i===1?'rupee':'calendar');text(label,140,yy,21,C.ink,true,246);text(':',390,yy,21,C.ink,true);text(value,414,yy,22,C.ink,true,270);if(i<2){x.strokeStyle='#d3e6f5';x.beginPath();x.moveTo(94,yy+14);x.lineTo(699,yy+14);x.stroke();}});
+x.strokeStyle='#abc5e3';x.lineWidth=2;x.beginPath();x.moveTo(718,1034);x.lineTo(718,1186);x.stroke();
+box(756,1035,401,157,17,isPaid?'#e0f8e9':isFailed?'#ffe8e7':'#fff0ba',isPaid?'#8fd1a8':isFailed?'#f0a19a':'#ffe08a',2);
+// Clock/status symbol as in Design 1.
+x.save();x.strokeStyle=payColor;x.lineWidth=7;x.beginPath();x.arc(818,1115,35,0,Math.PI*2);x.stroke();x.beginPath();x.moveTo(818,1091);x.lineTo(818,1119);x.lineTo(836,1130);x.stroke();x.restore();
+text('PAYMENT STATUS',1038,1080,22,'#252018',true,235,'center');
+box(870,1094,252,61,19,isPaid?'#07864e':isFailed?'#b93030':'#b8660b');text(paymentDisplay,996,1137,paymentDisplay.length>14?20:paymentDisplay.length>10?23:30,'#fff',true,241,'center');
+// Full address in the reference-style compact card.
+section(1233,'ADDRESS DETAILS',C.blue,'location');
+box(51,1275,1138,136,16,'#ffffff','#1681e0',2);
+drawIcon('home',99,1318,30,'#0755b5',2.6);text('Full Address',137,1325,22,C.ink,true,250);
+const addr=a.fullAddress||[a.house,a.area,a.postOffice,a.policeStation,a.district,a.state,a.pin,a.country].filter(Boolean).join(', ');
+wrap(addr||'Address not provided',359,1326,783,3,28,21,C.ink,true);
+// Tracking status section.
+section(1430,'TRACKING STATUS',C.blue,'layers');
+box(51,1471,1138,167,16,'#ffffff','#1681e0',2);
+const stages=['Submitted','Payment Verified','Under Review','Processing','Completed'];
+const progressIndex=/(completed|dispatched|delivered)/i.test(currentState)?4:/(processing|approved)/i.test(currentState)?3:/under review/i.test(currentState)?2:isPaid?1:0;
+x.strokeStyle='#a1b4c8';x.lineWidth=5;x.beginPath();x.moveTo(168,1537);x.lineTo(1080,1537);x.stroke();
+stages.forEach((label,i)=>{const px=168+i*228;const done=i<=progressIndex; x.beginPath();x.arc(px,1537,25,0,Math.PI*2);x.fillStyle=done?C.green:'#9cacc0';x.fill();text(done?'✓':String(i+1),px,1548,26,'#fff',true,46,'center');box(px-88,1565,176,31,15,done?'#e3f8e8':'#eaf3fb');text(label,px,1587,17,done?'#086c3c':C.ink,true,174,'center');});
+text('Application: '+currentState+'    |    Payment: '+paymentDisplay,620,1626,17,C.navy,true,1140,'center');
+// Footer: matching Design #1: headset, wordmark, WhatsApp icon, email icon, strong white text.
+x.fillStyle=grad(0,1654,1240,H,[[0,'#073374'],[.64,'#0659af'],[1,'#07275e']]);x.fillRect(0,1654,1240,100);
+x.fillStyle=C.gold;x.beginPath();x.moveTo(0,1661);x.bezierCurveTo(267,1620,480,1699,780,1656);x.bezierCurveTo(1015,1627,1113,1644,1240,1653);x.lineTo(1240,1664);x.bezierCurveTo(995,1640,903,1676,754,1679);x.bezierCurveTo(460,1701,266,1645,0,1676);x.closePath();x.fill();
+// Full-width two-line support footer; crisp vector iconography like the reference.
+drawIcon('headset',179,1706,53,'#ffffff',2.9);
+x.fillStyle='#ffffffaa';x.fillRect(231,1676,2,63);
+text('SOUMIK',255,1699,30,'#ffffff',true,225);
+text('ONLINE',393,1699,30,C.gold,true,200);
+x.fillStyle='#ffffffa0';x.fillRect(561,1677,2,29);
+text('Customer Help & Support',588,1699,27,'#ffffff',true,570);
+// Green WhatsApp bubble, mail envelope and vertical divider.
+x.beginPath();x.arc(265,1725,19,0,Math.PI*2);x.fillStyle='#09a84f';x.fill();
+drawIcon('whatsapp',265,1725,30,'#ffffff',2.3);
+text('WhatsApp: +91 9593106177',296,1732,20,'#ffffff',true,400);
+x.fillStyle='#ffffff8c';x.fillRect(678,1713,2,27);
+drawIcon('mail',712,1725,27,'#ffffff',2.5);
+text('Email: tutotisonlines@gmail.com',743,1732,19,'#ffffff',true,463);
+
+return c;
+}
 
 function pdfFromJpeg(canvas){
 const b64=canvas.toDataURL('image/jpeg',.91).split(',')[1];
@@ -3363,6 +4688,7 @@ return new Blob(parts,{
 type:'application/pdf'}
 )}
 
+window.soumikBuildApplicationReceiptImage=buildReceiptImage;
 window.downloadReceiptPDF=async function(id,automatic=false){
 const a=state.applications.find(z=>z.id===id);
 if(!a){
@@ -3371,7 +4697,7 @@ return}
 try{
 const c=await buildReceiptImage(a),blob=pdfFromJpeg(c),url=URL.createObjectURL(blob),link=document.createElement('a');
 link.href=url;
-link.download='SOUMIK_ONLINE_'+String(a.id).replace(/[^A-Za-z0-9_-]/g,'')+'.pdf';
+link.download='SOUMIK_ONLINE_APPLICATION_RECEIPT_'+String(a.id).replace(/[^A-Za-z0-9_-]/g,'')+'.pdf';
 document.body.appendChild(link);
 link.click();
 link.remove();
@@ -4958,7 +6284,7 @@ function checkoutView(a){
  const mobile=String(a.mobile||a.phone||a.newMobile||a.contactNumber||'').trim();
  const email=String(a.email||a.emailId||a.email_id||a.newEmail||'').trim();
  const status=String(a.paymentStatus||'PENDING').toUpperCase();
- root.innerHTML=`<main class="soumik-checkout soumik-checkout-v2"><div class="soumik-pay-eyebrow">SOUMIK ONLINE <span class="soumik-checkout-dot">•</span> SECURE CHECKOUT</div><div class="soumik-checkout-heading"><div><h2>Complete Your Payment</h2><p class="soumik-pay-lead">Your application has been submitted. Choose a payment method to continue securely.</p></div><span class="soumik-checkout-lock">🔒 Secure</span></div><section class="soumik-pay-meta soumik-meta-v2" aria-label="Application details"><div><small>Tracking ID</small><b>${safe(a.id)}</b></div><div><small>Applicant</small><b>${safe(a.fullName||a.name||'—')}</b></div><div><small>Mobile Number</small><b>${safe(mobile||'Not provided')}</b></div><div><small>Email Address</small><b>${safe(email||'Not provided')}</b></div><div class="soumik-meta-service"><small>Service</small><b>${safe(SERVICES[a.type]?.name||a.type||'—')}</b></div><div class="soumik-meta-total"><small>Amount to Pay</small><strong>₹${payFee(a).toFixed(2)}</strong></div></section><h3 class="soumik-method-heading">Choose a Payment Method</h3><p class="soumik-method-subtitle">Select online payment or request cash payment verification.</p><div class="soumik-checkout-grid"><button type="button" class="soumik-pay-option" ${window.SOUMIK_RAZORPAY_LIVE_READY ? `onclick="soumikRazorpayStart('${safe(a.id)}')" title="Pay securely using Razorpay"` : 'disabled aria-disabled="true" title="Online payment is temporarily unavailable"'}><span class="soumik-pay-symbol">💳</span><b>Online Payment</b><span>Pay using UPI, debit or credit card, netbanking and other Razorpay-supported methods.</span><span class="soumik-pay-features">✓ Secure checkout &nbsp; ✓ Instant payment status &nbsp; ✓ Receipt after verification</span><em>${window.SOUMIK_RAZORPAY_LIVE_READY ? 'Continue to secure payment →' : 'Temporarily unavailable — use Cash Payment'}</em></button><button type="button" class="soumik-pay-option" onclick="soumikSelectCash('${safe(a.id)}')"><span class="soumik-pay-symbol">💵</span><b>Cash Payment Request</b><span>Submit a cash payment request to the service owner. Your application remains pending until the owner verifies and approves payment.</span><span class="soumik-pay-features">✓ Owner verification &nbsp; ✓ Request tracking &nbsp; ✓ Status updates</span><em>${status==='CASH_REJECTED'?'↻ Request again':status==='CASH_PENDING'?'Request pending':'Request cash verification →'}</em></button></div><div id="soumikCheckoutStatus" class="soumik-pay-status" role="status" aria-live="polite">Payment status: ${safe(status)}</div><div class="soumik-download-actions"><button class="btn outline" onclick="soumikApplicationPdf('${safe(a.id)}')">Application PDF</button><button class="btn outline" onclick="soumikReceiptPdf('${safe(a.id)}')">Download Paid Receipt</button><button class="btn outline" onclick="openReceipt('${safe(a.id)}')">View Application</button></div><p class="soumik-payment-disclaimer">Cash requests are confirmed only after the owner verifies payment.</p><div class="soumik-checkout-help"><strong>Need assistance with payment?</strong><span>WhatsApp: <a href="https://wa.me/919593106177" target="_blank" rel="noopener">+91 9593106177</a></span><span>Email: <a href="mailto:tutotisonlines@gmail.com">tutotisonlines@gmail.com</a></span></div></main>`;
+ root.innerHTML=`<main class="soumik-checkout soumik-checkout-v2"><div class="soumik-pay-eyebrow">SOUMIK ONLINE <span class="soumik-checkout-dot">•</span> SECURE CHECKOUT</div><div class="soumik-checkout-heading"><div><h2>Complete Your Payment</h2><p class="soumik-pay-lead">Your application has been submitted. Choose a payment method to continue securely.</p></div><span class="soumik-checkout-lock">🔒 Secure</span></div><section class="soumik-pay-meta soumik-meta-v2" aria-label="Application details"><div><small>Tracking ID</small><b>${safe(a.id)}</b></div><div><small>Applicant</small><b>${safe(a.fullName||a.name||'—')}</b></div><div><small>Mobile Number</small><b>${safe(mobile||'Not provided')}</b></div><div><small>Email Address</small><b>${safe(email||'Not provided')}</b></div><div class="soumik-meta-service"><small>Service</small><b>${safe(SERVICES[a.type]?.name||a.type||'—')}</b></div><div class="soumik-meta-total"><small>Amount to Pay</small><strong>₹${payFee(a).toFixed(2)}</strong></div></section><h3 class="soumik-method-heading">Choose a Payment Method</h3><p class="soumik-method-subtitle">Select online payment or request cash payment verification.</p><div class="soumik-checkout-grid"><button type="button" class="soumik-pay-option" ${window.SOUMIK_RAZORPAY_LIVE_READY ? `onclick="soumikRazorpayStart('${safe(a.id)}')" title="Pay securely using Razorpay"` : 'disabled aria-disabled="true" title="Online payment is temporarily unavailable"'}><span class="soumik-pay-symbol">💳</span><b>Online Payment</b><span>Pay using UPI, debit or credit card, netbanking and other Razorpay-supported methods.</span><span class="soumik-pay-features">✓ Secure checkout &nbsp; ✓ Instant payment status &nbsp; ✓ Receipt after verification</span><em>${window.SOUMIK_RAZORPAY_LIVE_READY ? 'Continue to secure payment →' : location.protocol==='file:' ? 'Open published HTTPS website to pay' : 'Temporarily unavailable — use Cash Payment'}</em></button><button type="button" class="soumik-pay-option" onclick="soumikSelectCash('${safe(a.id)}')"><span class="soumik-pay-symbol">💵</span><b>Cash Payment Request</b><span>Submit a cash payment request to the service owner. Your application remains pending until the owner verifies and approves payment.</span><span class="soumik-pay-features">✓ Owner verification &nbsp; ✓ Request tracking &nbsp; ✓ Status updates</span><em>${status==='CASH_REJECTED'?'↻ Request again':status==='CASH_PENDING'?'Request pending':'Request cash verification →'}</em></button></div><div id="soumikCheckoutStatus" class="soumik-pay-status" role="status" aria-live="polite">Payment status: ${safe(status)}</div><div class="soumik-download-actions"><button class="btn outline" onclick="soumikApplicationPdf('${safe(a.id)}')">Application PDF</button><button class="btn outline" onclick="soumikReceiptPdf('${safe(a.id)}')">Download Paid Receipt</button><button class="btn outline" onclick="openReceipt('${safe(a.id)}')">View Application</button></div><p class="soumik-payment-disclaimer">Cash requests are confirmed only after the owner verifies payment.</p><div class="soumik-checkout-help"><strong>Need assistance with payment?</strong><span>WhatsApp: <a href="https://wa.me/919593106177" target="_blank" rel="noopener">+91 9593106177</a></span><span>Email: <a href="mailto:tutotisonlines@gmail.com">tutotisonlines@gmail.com</a></span></div></main>`;
  window.scrollTo(0,0);
 }
 function setStatus(s){const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent=s;}
@@ -4982,7 +6308,8 @@ window.soumikSelectCash=async function(id){
   if(error){
     let message=error.message||'Edge Function request failed';
     try{const details=await error.context?.clone?.().json();message=details?.error||details?.message||message;}catch(_){}
-    if(/Failed to send a request to the Edge Function|fetch failed|network/i.test(message))message='Connection failed. Please try again later.';
+    if(/Failed to send a request to the Edge Function|fetch failed|network/i.test(message))message='Cannot reach create-cash-request. Check that this Supabase Edge Function is deployed, handles CORS/OPTIONS and is allowed by its auth settings.';
+    else if(Number(error.context?.status)===404)message='create-cash-request function not found (404). Deploy it in the Supabase project used by this website.';
     throw Error(message);
   }
   if(data?.error)throw Error(data.error);
@@ -5706,7 +7033,10 @@ document.addEventListener('change',e=>{if(e.target?.id==='lang')localizeButtons(
 <script id="soumik-razorpay-integration-staged">
 /* Live checkout: only accept live key IDs from the trusted order Edge Function.
    Complete an end-to-end low-value payment and refund test before public rollout. */
-window.SOUMIK_RAZORPAY_LIVE_READY = true;
+// Never open a live payment gateway from a downloaded file:// copy.
+// HTTPS only enables the *attempt*; the order and signature still require
+// successfully deployed, authenticated Supabase Edge Functions.
+window.SOUMIK_RAZORPAY_LIVE_READY = location.protocol === 'https:';
 window.SOUMIK_RAZORPAY_TEST_ONLY = false;
 (function(){
   let busy=false;
@@ -5717,12 +7047,37 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
     script.onload=()=>resolve();script.onerror=()=>reject(Error('Razorpay checkout could not load'));
     document.head.appendChild(script);
   });}
-  function client(){return window.soumikSupabase;}
+  function client(){
+    // The SDK is loaded from CDN. Retry client initialization if it was not
+    // available at initial script parse time.
+    try{window.soumikSupabaseReady?.();}catch(_e){}
+    return window.soumikSupabase;
+  }
+  async function explainEdgeError(name,error){
+    const status=Number(error?.context?.status||0);
+    const code=String(error?.context?.headers?.get?.('sb-error-code')||'').trim();
+    let detail='';
+    try{const d=await error.context?.clone?.().json();detail=String(d?.error||d?.message||'').trim();}catch(_e){}
+    if(status===404||/NOT_FOUND|FUNCTION_NOT_FOUND/i.test(code))
+      return `Supabase Edge Function "${name}" was not found (404). Deploy it in the same Supabase project used by this website.`;
+    if(status===401||status===403)
+      return `Supabase Edge Function "${name}" refused authorization (${status}). Check JWT/API key and function auth settings.`;
+    if(status>=500)
+      return `Supabase Edge Function "${name}" failed on the server (${status}). Open Edge Functions > ${name} > Logs in Supabase.`;
+    if(error?.name==='FunctionsFetchError'||/Failed to send a request to the Edge Function|Failed to fetch|network/i.test(error?.message||''))
+      return `Cannot connect to Supabase Edge Function "${name}". Check that it is deployed under this exact name, that OPTIONS/CORS works, and the project URL and network are correct. Open Supabase Edge Functions logs.`;
+    return `Payment server "${name}" returned an error${status?' ('+status+')':''}: ${detail||error?.message||'Unknown error'}`;
+  }
   async function invoke(name,body){
-    const sb=client();if(!sb)throw Error('Supabase is not connected');
+    if(location.protocol==='file:')
+      throw Error('Online payment cannot be tested from a downloaded HTML file. Open the published HTTPS website after deploying the Supabase payment functions.');
+    if(location.protocol!=='https:')
+      throw Error('Open the published HTTPS website to continue to secure payment.');
+    const sb=client();if(!sb)throw Error('Supabase did not initialize. Check your internet connection and Supabase project settings.');
     const {data,error}=await sb.functions.invoke(name,{body});
-    if(error){let msg=error.message||'Server error';try{const d=await error.context?.clone?.().json();msg=d?.error||msg;}catch(_){}throw Error(msg);}
-    if(data?.error)throw Error(data.error);return data;
+    if(error)throw Error(await explainEdgeError(name,error));
+    if(data?.error)throw Error(`Payment server "${name}": ${String(data.error).slice(0,220)}`);
+    return data;
   }
   window.soumikRazorpayStart=async function(trackingId){
     if(!window.SOUMIK_RAZORPAY_LIVE_READY){status('Online payment is not enabled yet. Please use Cash Payment until the final security checks are complete.');return;}
@@ -5736,9 +7091,10 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
     if(!/^[6-9]\d{9}$/.test(phone)){status('A valid application mobile number is required');return;}
     busy=true;
     try{
-      status('Preparing secure Razorpay checkout…');
-      await loadCheckout();
+      status('Connecting to Supabase payment server…');
       const order=await invoke('razorpay-create-order',{tracking_id:trackingId,customer_phone:phone});
+      status('Opening secure Razorpay checkout…');
+      await loadCheckout();
       if(!order?.success||!/^order_[A-Za-z0-9]+$/.test(order.razorpay_order_id)||!/^rzp_(live|test)_[A-Za-z0-9]+$/.test(order.key_id)||!Number.isSafeInteger(order.amount)||order.amount<100)throw Error('Invalid payment order');
       if(!/^rzp_live_[A-Za-z0-9]+$/.test(order.key_id))throw Error('Live payment is not configured: Supabase returned a non-live Razorpay key. No checkout was opened.');
       window.__soumikVerifiedCheckoutOrder=window.__soumikVerifiedCheckoutOrder||Object.create(null);
@@ -8805,7 +10161,7 @@ function show(img){modalClose();window.__so47OldOverflow=document.body.style.ove
 @media(prefers-reduced-motion:reduce){#soumik-recovery-root .sr-v50 *{scroll-behavior:auto!important;transition:none!important}}
 </style>
 
-<!-- V51: release the first paint only after the final scripts/styles initialize. -->
+<!-- V51/V54: release the first paint only after the final scripts/styles initialize. -->
 <script id="so51-ready-navigation">
 (function(){
   'use strict';
@@ -8839,6 +10195,42 @@ function show(img){modalClose();window.__so47OldOverflow=document.body.style.ove
   };
   // Safety fallback if an optional script fails after this listener was installed.
   setTimeout(release,6000);
+})();
+</script>
+
+<style id="so53-receipt-live-preview-style">
+.so53-receipt-screen{max-width:1020px;margin:20px auto 70px;padding:12px;}
+.so53-receipt-actions{position:sticky;top:78px;z-index:19;display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 15px;padding:12px;border-radius:15px;background:#f1f6ffed;border:1px solid #cfe0f9;box-shadow:0 8px 26px #071c5022;backdrop-filter:blur(8px)}
+.so53-receipt-actions strong{margin-right:auto;color:#082963;font-size:15px}
+.so53-receipt-paper{width:min(100%,760px);margin:auto;border:1px solid #bfd7fa;box-shadow:0 14px 55px #122b6029;background:white;border-radius:12px;overflow:hidden;min-height:320px}
+.so53-receipt-paper img{width:100%;height:auto;display:block}
+.so53-loading{display:grid;min-height:320px;place-items:center;padding:24px;text-align:center;font-weight:700;color:#2e5394}
+@media(max-width:650px){.so53-receipt-screen{padding:6px;margin:9px auto 40px}.so53-receipt-actions{position:static;padding:9px;gap:6px}.so53-receipt-actions strong{flex-basis:100%;}.so53-receipt-actions button{min-height:43px;flex:1}.so53-receipt-paper{border-radius:7px}}
+</style>
+<script id="so53-receipt-live-preview-script">
+(function(){
+ 'use strict';
+ const prev=window.receiptPage;
+ if(typeof prev!=='function')return;
+ window.receiptPage=function(){
+  const item=state.applications.find(v=>String(v.id)===String(trackQuery));
+  if(!item)return prev.apply(this,arguments);
+  const id=String(item.id);
+  // Render the same canvas for both the page preview and the downloadable PDF.
+  setTimeout(async()=>{
+    const host=document.getElementById('so53-receipt-image');
+    if(!host||host.dataset.id!==id)return;
+    try{
+      const canvas=await window.soumikBuildApplicationReceiptImage(item);
+      if(!host.isConnected||host.dataset.id!==id)return;
+      const image=document.createElement('img');image.src=canvas.toDataURL('image/jpeg',.93);
+      image.alt='SOUMIK ONLINE application receipt preview for tracking ID '+id;
+      host.replaceChildren(image);
+    }catch(e){console.error('Receipt preview:',e);host.textContent='Preview unavailable. Use Download PDF to get your receipt.';}
+  },0);
+  const safeId=id.replace(/[&<>"']/g,t=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[t]));
+  return `<div class="so53-receipt-screen"><div class="so53-receipt-actions"><strong>📄 Application Receipt · ${safeId}</strong><button type="button" class="btn outline" onclick="go('tracking')">← Tracking</button><button type="button" class="btn" onclick="downloadReceiptPDF(trackQuery,false)">⬇ Download A4 PDF</button><button type="button" class="btn outline" onclick="soumikShowPayment(trackQuery)">💳 Payment</button></div><div id="so53-receipt-image" data-id="${safeId}" class="so53-receipt-paper so53-loading" role="status" aria-live="polite">Preparing the application receipt…</div></div>`;
+ };
 })();
 </script>
 </html>
