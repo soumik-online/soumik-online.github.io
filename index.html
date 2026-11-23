@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
  <head>
+<!-- V51: render guard is installed before any legacy layout is painted. -->
+<script id="so51-startup-class">document.documentElement.classList.add('so51-booting');</script>
+<style id="so51-startup-visibility">
+html.so51-booting body > :not(#so51-boot-screen){visibility:hidden!important;pointer-events:none!important}
+#so51-boot-screen{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;min-height:100dvh;padding:18px;background:radial-gradient(ellipse at 45% 22%,#193f8d 0%,#08194e 57%,#061137 100%);color:#fff;font:600 15px/1.5 system-ui,'Segoe UI',sans-serif;text-align:center}
+#so51-boot-screen .so51-brand{display:block;font-size:clamp(25px,5vw,34px);font-weight:900;letter-spacing:.03em}
+#so51-boot-screen .so51-brand strong{color:#ff862a}
+#so51-boot-screen .so51-sub{display:block;color:#b9ddff;margin-top:7px;font-size:12px;letter-spacing:.07em}
+#so51-boot-screen .so51-spin{width:36px;height:36px;display:block;margin:22px auto 0;border:3px solid #ffffff40;border-top-color:#39b6ff;border-radius:50%;animation:so51-spin .8s linear infinite}
+@keyframes so51-spin{to{transform:rotate(360deg)}}
+html:not(.so51-booting) #so51-boot-screen{display:none!important}
+/* During an owner-login navigation, wait for the final branded layout instead of flashing an older form. */
+html.so51-auth-enter #app .soumik-auth-v2,html.so51-auth-enter #app > .auth{visibility:hidden!important}
+/* Shape-animation transforms must never briefly reveal an older-looking login. */
+.soumik-auth-v2 .soumik-shape,.soumik-auth-v2 .soumik-secondary{transition:none!important}
+.soumik-auth-v2.so-login-v10,.soumik-auth-v2 .soumik-auth-form{animation-duration:0s!important;transition-duration:0s!important}
+@media(prefers-reduced-motion:reduce){#so51-boot-screen .so51-spin{animation:none}}
+</style>
+
 <meta charset="utf-8"/>
   <meta content="width=device-width,initial-scale=1" name="viewport"/>
   <meta content="#081c5b" name="theme-color"/>
@@ -1861,38 +1880,30 @@ body.so44-home-active #so44-utility{min-height:36px!important}
 @media(max-width:560px){body.so44-home-active .so45-hero-copy{padding:25px 18px 22px!important}body.so44-home-active .so45-hero h1{font-size:clamp(29px,9vw,43px)!important}body.so44-home-active .so45-hero p{font-size:13px!important}body.so44-home-active .so45-track{flex-direction:column}body.so44-home-active .so45-track button{width:100%}body.so44-home-active .so45-hero-art{min-height:190px}body.so44-home-active .so45-services{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}body.so44-home-active .so45-service{min-height:144px;padding:12px}body.so44-home-active .so45-service b{font-size:13px}body.so44-home-active .so45-service small{font-size:10px}body.so44-home-active .so45-section{padding:22px 13px 12px}body.so44-home-active .so45-title-row{align-items:flex-start}body.so44-home-active .so45-all{padding:7px 9px;font-size:10px}body.so44-home-active .so45-title-row h2{font-size:20px!important}body.so44-home-active .so45-title-row p{font-size:10px}body.so44-home-active .so45-why{padding:12px;gap:7px;margin:9px 13px 20px}body.so44-home-active .so45-why-title h3{font-size:17px}body.so44-home-active .so45-benefit b{font-size:11px}}
 @media(prefers-reduced-motion:reduce){body.so44-home-active .so45-service,body.so44-home-active .so45-track button{transition:none}}
 </style>
-<style id="so49-topbar-owner-youtube-design">
-/* V49 - screenshot-matched contact strip/nav across public views */
-#so44-utility,body.so44-home-active #so44-utility{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:39px!important;padding:7px max(20px,calc((100% - 1380px)/2))!important;background:linear-gradient(96deg,#073eaa,#0854c7 55%,#0739a0)!important;color:white!important;position:relative;z-index:70;box-sizing:border-box}
-body>.so38-contactbar{display:none!important}
-header.top,body.so44-home-active header.top{background:#fff!important;border:0!important;box-shadow:0 5px 18px rgba(11,66,142,.13)!important;position:relative!important;z-index:60}
-header.top .topinner,body.so44-home-active header.top .topinner{max-width:1440px!important;min-height:74px!important;padding:9px 18px!important;gap:16px!important}
-header.top .brand{border-right:1px solid #d0dcf3;padding-right:18px}
-header.top .brand strong{color:#092c75!important;font-weight:900!important}
-header.top .brand strong em{color:#f25119!important}
-header.top #soumikMainNav{gap:5px!important;align-items:center}
-header.top #soumikMainNav>button:not(#ownerTop),body.so44-home-active header.top #soumikMainNav>button:not(#ownerTop){display:inline-flex;align-items:center;justify-content:center;border:1px solid #dce8ff!important;background:linear-gradient(180deg,#fff,#eef5ff)!important;color:#123476!important;border-radius:11px!important;padding:11px 10px!important;font-size:12px!important;font-weight:800!important;min-height:42px;white-space:nowrap;box-shadow:0 3px 8px #1559b30a}
-header.top #soumikMainNav>button:first-child:not(#ownerTop),body.so44-home-active header.top #soumikMainNav>button:first-child:not(#ownerTop){background:linear-gradient(120deg,#087aff,#0640d8)!important;color:#fff!important;box-shadow:0 4px 13px #0766d044!important}
-header.top #soumikMainNav>button:nth-of-type(4),body.so44-home-active header.top #soumikMainNav>button:nth-of-type(4){display:inline-flex!important}
-header.top #ownerTop,body.so44-home-active header.top #ownerTop{background:linear-gradient(115deg,#722afa,#ac19e9)!important;color:#fff!important;padding:11px 14px!important;border-radius:11px!important;font-size:12px!important;font-weight:850!important;min-height:42px;box-shadow:0 4px 14px #853ce134!important}
-header.top .soumik-language-control{display:flex!important;align-items:center!important;border:1px solid #d5e4ff!important;background:linear-gradient(180deg,#fff,#edf3ff)!important;border-radius:11px!important;padding:0 7px!important;min-height:41px!important}
-header.top .soumik-language-control select{min-width:66px;max-width:86px;height:40px;font-size:12px!important;color:#123476!important;font-weight:800!important;background:transparent!important;border:0!important}
-header.top #soumikMainNav>button:not(#ownerTop):hover{border-color:#86b4fa!important;transform:translateY(-1px)}
-header.top .nav button:focus-visible,#so44-utility a:focus-visible{outline:3px solid #3e8dff!important;outline-offset:3px}
-#so44-utility .so44-contact,#so44-utility .so44-social{display:flex;align-items:center;gap:14px;min-width:0}
-#so44-utility .so44-contact>a{white-space:nowrap}
-#so44-utility .so44-social a{min-width:27px;min-height:27px}
-#so44-utility .so44-social a.so49-unconfigured{opacity:.62}
-#soumikOwnerSettingsForm .soumik-settings-grid>label:first-child{grid-column:1/-1;border:2px solid #b0d2ff!important;background:#eaf4ff!important;padding:14px!important;border-radius:14px!important}
-.so49-yt-hint{margin:16px 0 12px;border-radius:12px;border:1px solid #c6dcff;background:#f0f6ff;padding:12px 14px;color:#23436f;font-size:13px;line-height:1.6}
-#soumikOwnerSettingsForm #soumikSettingsStatus{font-weight:700;white-space:pre-wrap;line-height:1.45;padding:6px 0}
-@media(max-width:1220px) and (min-width:951px){header.top .topinner,body.so44-home-active header.top .topinner{padding:8px 10px!important;gap:7px!important}header.top .brand{padding-right:7px}header.top #soumikMainNav{gap:3px!important}header.top #soumikMainNav>button:not(#ownerTop),body.so44-home-active header.top #soumikMainNav>button:not(#ownerTop){padding:9px 7px!important;font-size:11px!important}header.top #ownerTop{padding:10px 8px!important;font-size:11px!important}}
-@media(max-width:950px){header.top .brand{border:0}header.top #soumikMainNav,body.so44-home-active header.top #soumikMainNav{align-items:stretch!important}header.top #soumikMainNav>button:not(#ownerTop),body.so44-home-active header.top #soumikMainNav>button:not(#ownerTop){width:100%!important;justify-content:flex-start!important}#so44-utility,body.so44-home-active #so44-utility{padding:6px 15px!important;gap:8px;flex-wrap:wrap}#so44-utility .so44-contact{gap:8px;flex-wrap:wrap}#so44-utility .so44-social{gap:10px}}
-@media(max-width:560px){#so44-utility,body.so44-home-active #so44-utility{font-size:10px!important;min-height:35px!important}#so44-utility svg{width:15px;height:15px}#so44-utility .so44-contact{gap:6px}#so44-utility .so44-separator{display:none}#so44-utility .so44-social a{width:22px;min-width:22px;height:22px;min-height:22px}header.top .topinner,body.so44-home-active header.top .topinner{min-height:59px!important;padding:8px 12px!important}#soumikOwnerSettingsOverlay .soumik-settings-card{max-height:90dvh!important}}
-@media print{#so44-utility{display:none!important}}
+<style id="soumik-v49-recovery-design">
+.sr-overlay{z-index:10000010!important;overscroll-behavior:contain}
+.sr-card.sr-v49{width:min(100%,480px)!important;max-height:90dvh!important;overflow:auto!important;padding:24px 25px 23px!important;border:1px solid #d8e7fe!important;background:#fff!important;border-radius:24px!important;color:#172c55!important;box-shadow:0 24px 90px #09194a88!important}
+.sr-v49 .sr-v49-emblem{display:grid;place-items:center;width:52px;height:52px;background:linear-gradient(120deg,#e4f1ff,#dce6ff);border:1px solid #bad4ff;border-radius:16px;font-size:28px;margin:12px 0 9px}
+.sr-v49 h2{font-size:26px!important;margin:6px 0 7px!important}.sr-v49 .sr-intro{font-size:13px!important;color:#5c708b!important;line-height:1.6!important;margin:0 0 10px!important}
+.sr-v49 .sr-steps{margin:15px 0!important}.sr-v49 label{margin:12px 0 6px!important;font-size:13px!important;font-weight:750!important;color:#16336e!important}
+.sr-v49 input{width:100%!important;min-height:46px!important;border:1px solid #c4d7f3!important;border-radius:11px!important;background:#f9fbff!important;padding:10px 12px!important;font-size:15px!important;color:#102756!important}
+.sr-v49 input:focus{border-color:#1569e7!important;outline:3px solid #1768ef25!important;background:#fff!important}
+.sr-v49 #sr-otp,.sr-v49 #sr-auth-code{font-size:25px!important;font-weight:750!important;text-align:center!important;letter-spacing:.35em!important;font-variant-numeric:tabular-nums!important}
+.sr-v49 #sr-otp-help{display:block;margin:8px 0 3px;line-height:1.5;color:#526683;font-size:11px}
+.sr-v49 .sr-primary{min-height:46px!important;margin-top:16px!important;border-radius:11px!important;font-size:14px!important;font-weight:750!important;background:linear-gradient(112deg,#146af8,#1244d0)!important;box-shadow:0 6px 17px #1767df30!important;color:#fff!important}
+.sr-v49 button:disabled{opacity:.55!important;cursor:not-allowed!important}.sr-v49 .sr-v49-secondary{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}.sr-v49 .sr-link{width:auto!important;padding:7px 10px!important;color:#145fd5!important;text-decoration:underline;font-size:12px}
+.sr-v49 .sr-v49-countdown{text-align:right;margin:3px 0!important;color:#536a8c;font-size:12px}.sr-v49 .sr-address{font-size:13px;font-weight:750;color:#144caa;overflow-wrap:anywhere;padding:11px 12px;border:1px solid #d7e4fc;background:#f2f7ff;border-radius:11px}
+.sr-v49 .sr-status{margin-top:12px!important;padding:11px 12px!important;font-size:13px!important;line-height:1.5!important;white-space:pre-wrap!important}
+.sr-v49 .sr-v49-footer{margin-top:15px;text-align:center;color:#6b7d97;font-size:11px}
+.sr-v49 .sr-eye{position:relative;display:flex;align-items:center}.sr-v49 .sr-eye input{padding-right:82px!important}.sr-v49 .sr-eye button{position:absolute;right:6px;min-height:34px;padding:0 11px!important;border:0;background:#e7efff;border-radius:9px;color:#1a54a6;font-weight:750}
+@media(max-width:480px){.sr-overlay{padding:10px!important}.sr-card.sr-v49{width:100%!important;padding:17px 16px!important;border-radius:19px!important}.sr-v49 h2{font-size:23px!important}.sr-v49 #sr-otp,.sr-v49 #sr-auth-code{font-size:21px!important;letter-spacing:.22em!important}}
 </style>
 </head>
  <body>
+<div id="so51-boot-screen" role="status" aria-live="polite" aria-label="Loading SOUMIK ONLINE">
+  <div><span class="so51-brand">SOUMIK <strong>ONLINE</strong></span><span class="so51-sub">DIGITAL SERVICES PLATFORM</span><span class="so51-spin" aria-hidden="true"></span></div>
+</div>
+
   <header class="top noprint">
    <div class="topinner">
     <div class="brand" onclick="go('home')">
@@ -2313,7 +2324,7 @@ function appTable(arr,adm){
 if(adm)return `<div class="soumik-owner-application-list">${arr.length?arr.map(a=>{
 const id=encodeURIComponent(a.id),status=String(a.status||'Submitted'),payment=String(a.paymentStatus||'PENDING');
 const paid=payment==='PAID'||payment==='CASH_CONFIRMED';
-return `<article class="soumik-owner-app-card"><div class="soumik-owner-app-info"><div class="soumik-owner-app-fields"><div><small>TRACKING ID</small><strong class="soumik-owner-track">${esc(a.id)}</strong><button class="btn mini outline" type="button" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))">📋 Copy ID</button></div><div><small>SERVICE</small><b>${esc(SERVICES[a.type]?.name||a.type||'—')}</b></div><div><small>APPLICANT</small><b>${esc(a.fullName||'—')}</b></div><div><small>DATE</small><b>${esc(String(a.date||'').slice(0,10)||'—')}</b></div><div><small>STATUS</small><span class="pill ${esc(status.replace(/ /g,'-'))}">${esc(status)}</span></div></div><p class="soumik-owner-payline">${payment.startsWith('CASH')?'💵 Cash Payment':'💳 Online Payment'} — ${esc(payment)}</p><div class="soumik-owner-receiptbox"><b>PAYMENT RECEIPT</b><div class="soumik-owner-action-grid"><button class="btn green mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 Receipt / PDF</button><button class="btn mini" onclick="soumikOwnerPaymentShare('${id}','email')">✉️ Email Receipt Details</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${id}','whatsapp')">🟢 WhatsApp Receipt Details</button><button class="btn outline mini" onclick="openReceipt(decodeURIComponent('${id}'))">📤 View / Share PDF</button></div></div></div><div class="soumik-owner-app-actions"><button class="btn mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 View / PDF</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')">🟢 WhatsApp Status</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'email')">✉️ Email Status</button><label class="soumik-owner-status-label">⚙ Update status<select id="status_${esc(a.id)}" onchange="soumikInstantStatus(this,decodeURIComponent('${id}'))" aria-label="Update application status for ${esc(a.id)}">${ADMIN_STATUSES.map(st=>`<option value="${esc(st)}" ${status===st?'selected':''}>${statusIcon(st)} ${esc(st)}</option>`).join('')}</select></label><span class="soumik-status-save-hint">✓ Selecting a status saves automatically</span><button class="btn mini outline" onclick="soumikShowHistory(decodeURIComponent('${id}'))">🕒 Timeline</button><button class="btn mini outline" onclick="soumikOwnerEditApplication(decodeURIComponent('${id}'))">✏️ Edit</button><button class="btn mini" onclick="soumikOpenReferenceEditor(decodeURIComponent('${id}'))">📨 Reference / Message</button><details class="soumik-owner-more"><summary>📂 More Actions</summary><button class="btn mini outline" onclick="adminPdfSlots(decodeURIComponent('${id}'))">📄 3 PDFs</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 View Payment</button><button class="btn mini outline" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))">📋 Copy Tracking ID</button><button class="btn mini outline" onclick="window.print()">🖨 Print / Save PDF</button></details></div></article>`;
+return `<article class="soumik-owner-app-card"><div class="soumik-owner-app-info"><div class="soumik-owner-app-fields"><div><small>TRACKING ID</small><strong class="soumik-owner-track">${esc(a.id)}</strong><button class="btn mini outline" type="button" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))">📋 Copy ID</button></div><div><small>SERVICE</small><b>${esc(SERVICES[a.type]?.name||a.type||'—')}</b></div><div><small>APPLICANT</small><b>${esc(a.fullName||'—')}</b></div><div><small>DATE</small><b>${esc(String(a.date||'').slice(0,10)||'—')}</b></div><div><small>STATUS</small><span class="pill ${esc(status.replace(/ /g,'-'))}">${esc(status)}</span></div></div><p class="soumik-owner-payline">${payment.startsWith('CASH')?'💵 Cash Payment':'💳 Online Payment'} — ${esc(payment)}</p><div class="soumik-owner-receiptbox"><b>PAYMENT RECEIPT</b><div class="soumik-owner-action-grid"><button class="btn green mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 Receipt / PDF</button><button class="btn mini" onclick="soumikOwnerPaymentShare('${id}','email')">✉️ Email Receipt Details</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${id}','whatsapp')">🟢 WhatsApp Receipt Details</button><button class="btn outline mini" onclick="openReceipt(decodeURIComponent('${id}'))">📤 View / Share PDF</button></div></div></div><div class="soumik-owner-app-actions"><button class="btn mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 View / PDF</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')">🟢 WhatsApp Status</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'email')">✉️ Email Status</button><label class="soumik-owner-status-label">⚙ Update status<select id="status_${esc(a.id)}" onchange="soumikInstantStatus(this,decodeURIComponent('${id}'))" aria-label="Update application status for ${esc(a.id)}">${ADMIN_STATUSES.map(st=>`<option value="${esc(st)}" ${status===st?'selected':''}>${statusIcon(st)} ${esc(st)}</option>`).join('')}</select></label><span class="soumik-status-save-hint">✓ Selecting a status saves automatically</span><button class="btn mini outline" onclick="soumikShowHistory(decodeURIComponent('${id}'))">🕒 Timeline</button><button class="btn mini outline" onclick="soumikOwnerEditApplication(decodeURIComponent('${id}'))">✏️ Edit</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 Payment</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${id}'))">🗑 Delete</button><button class="btn mini" onclick="soumikOpenReferenceEditor(decodeURIComponent('${id}'))">📨 Reference / Message</button><details class="soumik-owner-more"><summary>📂 More Actions</summary><button class="btn mini outline" onclick="adminPdfSlots(decodeURIComponent('${id}'))">📄 3 PDFs</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 View Payment</button><button class="btn mini outline" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))">📋 Copy Tracking ID</button><button class="btn mini outline" onclick="window.print()">🖨 Print / Save PDF</button></details></div></article>`;
 }).join(''):'<div class="panel">No applications found for the selected filter.</div>'}</div>`;
 return (function originalCustomerTable(){
 return `<div class="tablewrap soumik-app-cards"><table><thead><tr><th>Tracking ID</th><th>Service</th><th>Name</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>${arr.length?arr.map(a=>`<tr><td><div class="soumik-tracking-id-cell"><b>${esc(a.id)}</b><button type="button" class="soumik-copy-tracking" data-copy-tracking="${esc(a.id)}" aria-label="Copy tracking ID ${esc(a.id)}" title="Copy tracking ID">📋 Copy ID</button><span class="soumik-payment-status-chip" aria-label="Payment status">${esc((a.paymentMethod==='Cash'||String(a.paymentStatus||'').startsWith('CASH_'))?'💵 Cash Payment':(a.paymentMethod==='Online'||a.paymentStatus==='PAID')?'💳 Online Payment':'Payment')} — ${esc(a.paymentStatus||'PENDING')}</span></div></td><td>${esc(SERVICES[a.type]?.name||a.type)}
@@ -2363,7 +2374,7 @@ ${field('PIN Code','pin',true)}
 </b></div></div>`).join('')}
 </div><div class="toolbar">${['photo','signature'].map(k=>draft[k]?.startsWith('data:image')?`<img class="previewimg" alt="${k}" src="${draft[k]}">`:'').join('')}
 </div><p class="notice">Review all details before payment and submission.</p>`:paymentBody(s)}
-<div class="toolbar" style="justify-content:space-between;margin-top:22px"><button class="btn outline" onclick="backStep()">← Previous</button>${step<4?`<button class="btn" onclick="nextStep()">Next Step →</button>`:`<button class="btn green" onclick="submitApplication()">Submit Application & Get Receipt</button>`}
+<div class="so52-application-help"><span>Already submitted? Payment page closed? Duplicate Aadhaar/PAN warning?</span><button class="btn outline mini" type="button" onclick="so52ApplicationHelp()">Get help / Recover payment →</button></div><div class="toolbar" style="justify-content:space-between;margin-top:22px"><button class="btn outline" onclick="backStep()">← Previous</button>${step<4?`<button class="btn" onclick="nextStep()">Next Step →</button>`:`<button class="btn green" onclick="submitApplication()">Submit Application & Get Receipt</button>`}
 </div></div></div></div>`}
 
 function field(label,id,required=false,type='text'){
@@ -2721,7 +2732,7 @@ async function ownerSubmit(e){
    if(String(f.ownerCode||'').trim()!==SOUMIK_OWNER_SETUP_CODE)throw Error('ভুল Owner Registration Code।');
    if(!name||!/^[0-9]{10}$/.test(mobile))throw Error('সঠিক নাম ও ১০ সংখ্যার মোবাইল নম্বর দিন।');
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('সঠিক Email ID লিখুন।');
-   if(String(f.password||'').length<8)throw Error('Password কমপক্ষে ৮ অক্ষরের হতে হবে।');
+   if(String(f.password||'').length<4)throw Error('Password কমপক্ষে ৪ অক্ষরের হতে হবে। নিরাপত্তার জন্য ৮ বা তার বেশি ভালো।');
    if(f.password!==f.confirm)throw Error('দুটি Password মিলছে না।');
    const owner={id:'OWNER',name,mobile,email};
    const hash=await soumikPasswordHash(String(f.password));
@@ -2746,7 +2757,7 @@ function adminLogin(){
 return `<div class="auth" style="max-width:940px"><div class="authleft"><h2>🛡️ SOUMIK ONLINE</h2><p>Owner Account</p><p>✔ Application management</p><p>✔ PAN / Voter / PVC orders</p><p>✔ Payment reference review</p><p>✔ Approve / Reject / Objection</p></div><div class="authright"><div class="toolbar"><button class="tab ${ownerMode==='login'?'on':''}" type="button" onclick="ownerMode='login';go('adminlogin')">Owner Login</button></div><h2>${ownerMode==='register'?'Create Owner Account':'Owner Login'}
 </h2><div id="ownerNewId"></div><div id="ownerLoginNotice" class="owner-account-notice" role="alert" aria-live="polite" hidden></div><div id="ownerAccountNotice" class="owner-account-notice" role="status" aria-live="polite" hidden></div><form id="ownerAuthForm" autocomplete="off" onsubmit="ownerSubmit(event)"><div class="formgrid">${ownerMode==='register'?`<label class="field span2">Owner Registration Code<input name="ownerCode" required maxlength="20" autocomplete="off" placeholder="Enter Owner Code"></label><label class="field span2">Owner Full Name<input name="name" autocomplete="name" required></label><label class="field span2">Mobile Number<input name="mobile" autocomplete="tel" inputmode="numeric" required pattern="[0-9]{10}" maxlength="10"></label>`:''}
 ${ownerMode==='register'?`<label class="field span2">Email ID<input name="email" type="email" autocomplete="email" placeholder="Enter your email ID" required></label>`:`<label class="field span2">Email ID<input id="ownerLoginIdentifier" name="identifier" type="email" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Enter your email ID" required></label>`}
-<label class="field span2">Password<div class="passbox"><input id="ownerPass" name="password" type="password" autocomplete="new-password" minlength="6" required><button type="button" aria-label="Show or hide password" onclick="togglePass('ownerPass',this)">🙈</button></div></label>${ownerMode==='register'?`<label class="field span2">Confirm Password<div class="passbox"><input id="ownerConfirm" name="confirm" type="password" autocomplete="new-password" minlength="6" required><button type="button" aria-label="Show or hide password" onclick="togglePass('ownerConfirm',this)">🙈</button></div></label>`:''}
+<label class="field span2">Password<div class="passbox"><input id="ownerPass" name="password" type="password" autocomplete="new-password" minlength="4" required><button type="button" aria-label="Show or hide password" onclick="togglePass('ownerPass',this)">🙈</button></div></label>${ownerMode==='register'?`<label class="field span2">Confirm Password<div class="passbox"><input id="ownerConfirm" name="confirm" type="password" autocomplete="new-password" minlength="4" required><button type="button" aria-label="Show or hide password" onclick="togglePass('ownerConfirm',this)">🙈</button></div></label>`:''}
 ${ownerMode==='login'?`<div class="span2" style="text-align:right"><button class="soumik-forgot" type="button" onclick="soumikForgotOwnerPassword()">Forgot password?</button></div>`:''}
 <button class="btn span2" type="submit">${ownerMode==='register'?'Register Owner':'Sign in securely'}
 </button></div></form></div></div>`}
@@ -2767,19 +2778,18 @@ window.soumikOpenProfile=function(){
 
 function adminPage(){
  if(!admin)return adminLogin();
- const all=state.applications.filter(a=>a.paymentStatus==='PAID'||a.paymentStatus==='CASH_CONFIRMED');
- const paymentQueue=state.applications.filter(a=>!all.includes(a));
+ const all=state.applications.slice();  const paymentQueue=all.filter(a=>!['PAID','CASH_CONFIRMED'].includes(String(a.paymentStatus||'PENDING').toUpperCase()));
  const filtered=all.filter(a=>(adminCategory==='all'||a.type===adminCategory)&&(adminFilter==='all'||a.status===adminFilter));
  const count=(status)=>all.filter(a=>a.status===status).length;
- const cashCount=all.filter(a=>a.paymentStatus==='CASH_CONFIRMED').length;
- const onlineCount=all.filter(a=>a.paymentStatus==='PAID').length;
+ const cashCount=all.filter(a=>String(a.paymentStatus||'').toUpperCase()==='CASH_CONFIRMED').length;
+ const onlineCount=all.filter(a=>String(a.paymentStatus||'').toUpperCase()==='PAID').length;
  const waIcon='<svg class="so28-whatsapp-icon" viewBox="0 0 24 24" role="img" aria-label="WhatsApp" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M20.5 3.5A11.85 11.85 0 0 0 12.03 0C5.39 0 .01 5.38 0 12.02c0 2.13.56 4.2 1.61 6.03L0 24l6.12-1.6A12 12 0 0 0 12.02 24h.01C18.66 24 24 18.61 24 12a11.9 11.9 0 0 0-3.5-8.5ZM12.03 21.97c-1.81 0-3.58-.49-5.12-1.41l-.37-.22-3.63.95.97-3.54-.24-.37a9.88 9.88 0 0 1-1.52-5.29C2.12 6.63 6.57 2.18 12.03 2.18A9.8 9.8 0 0 1 19 5.07a9.8 9.8 0 0 1 2.88 6.95c0 5.48-4.41 9.95-9.85 9.95Zm5.45-7.42c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15s-.77.97-.95 1.17c-.18.2-.35.23-.65.08-.3-.15-1.27-.47-2.42-1.49-.89-.79-1.49-1.77-1.66-2.07-.18-.3-.02-.46.13-.61.14-.13.3-.35.45-.53.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.66-1.6-.91-2.19-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37s-1.04 1.02-1.04 2.48 1.07 2.88 1.22 3.07c.15.2 2.11 3.22 5.11 4.51.71.31 1.27.5 1.71.64.72.23 1.38.2 1.9.12.58-.08 1.76-.72 2-1.41.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35Z"/></svg>';
  const recentRows=filtered.slice(0,8).map((a,i)=>{
     const id=encodeURIComponent(String(a.id||''));
     const status=String(a.status||'Submitted');
     const statusClass=/approved|completed|delivered/i.test(status)?'ok':/cancelled|rejected/i.test(status)?'bad':/hold|pending|objection/i.test(status)?'warn':'info';
     const dated=String(a.date||a.created_at||'').slice(0,10)||'—';
-    return `<tr class="so28-recent-row"><td data-label="#"><span class="so28-rownum">${i+1}</span></td><td data-label="Tracking ID"><button type="button" class="so28-tracking" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))" title="Copy tracking ID">${esc(a.id||'—')}</button></td><td data-label="Service">${esc(SERVICES[a.type]?.name||a.service||a.type||'—')}</td><td data-label="Applicant"><b>${esc(a.fullName||'—')}</b>${a.mobile?`<small>${esc(a.mobile)}</small>`:''}</td><td data-label="Date">${esc(dated)}</td><td data-label="Status"><span class="so28-status ${statusClass}">${esc(status)}</span></td><td data-label="Actions"><div class="so28-row-actions"><button class="so28-action view" type="button" onclick="openReceipt(decodeURIComponent('${id}'))" title="View / PDF">◉ <span>View / PDF</span></button><button class="so28-action whatsapp" type="button" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')" title="WhatsApp">${waIcon}<span>WhatsApp</span></button><button class="so28-action more" type="button" onclick="so28OpenDetails(decodeURIComponent('${id}'))" title="Show application actions">•••</button></div></td></tr>`;
+    return `<tr class="so28-recent-row"><td data-label="#"><span class="so28-rownum">${i+1}</span></td><td data-label="Tracking ID"><button type="button" class="so28-tracking" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))" title="Copy tracking ID">${esc(a.id||'—')}</button></td><td data-label="Service">${esc(SERVICES[a.type]?.name||a.service||a.type||'—')}</td><td data-label="Applicant"><b>${esc(a.fullName||'—')}</b>${a.mobile?`<small>${esc(a.mobile)}</small>`:''}</td><td data-label="Date">${esc(dated)}</td><td data-label="Status"><span class="so28-status ${statusClass}">${esc(status)}</span></td><td data-label="Actions"><div class="so28-row-actions"><button class="so28-action view" type="button" onclick="openReceipt(decodeURIComponent('${id}'))" title="View / PDF">◉ <span>View / PDF</span></button><button class="so28-action whatsapp" type="button" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')" title="WhatsApp">${waIcon}<span>WhatsApp</span></button><button class="so28-action so52-delete-action" type="button" onclick="so52DeleteConfirm(decodeURIComponent('${id}'))" title="Delete application">🗑 Delete</button><button class="so28-action more" type="button" onclick="so28OpenDetails(decodeURIComponent('${id}'))" title="Show application actions">•••</button></div></td></tr>`;
  }).join('');
  const sidebar=`<aside class="so28-sidebar" aria-label="Owner dashboard navigation">
    <div class="so28-sidebar-brand"><div class="so28-owner-avatar"><img src="${ASSETS.logo}" alt="SOUMIK ONLINE"/></div><div><strong>Owner Dashboard</strong><small>SOUMIK ONLINE • Control Center</small></div></div>
@@ -2803,8 +2813,9 @@ function adminPage(){
  <header class="so28-welcome"><div class="so28-welcome-copy"><span class="so28-kicker">OWNER CONTROL DASHBOARD</span><h1>Welcome to <em>SOUMIK ONLINE</em></h1><p>Monitor applications, payments, services and your website from one place.</p></div><div class="so28-welcome-device" aria-hidden="true">💻</div><div class="so28-hero-meta"><div><span>📅 &nbsp; Today</span><strong id="v19-today">22 Nov 2026</strong></div><div><span>◷ &nbsp; Time</span><strong id="v19-clock">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</strong></div></div></header>
  <section class="so28-metrics" aria-label="Live application statistics">${[
  ['📋','মোট আবেদন','All Applications',all.length,'blue','all'],['✅','অনুমোদিত','Approved',count('Approved'),'green','Approved'],['🕒','অপেক্ষমান','On Hold',count('On Hold'),'orange','On Hold'],['❌','বাতিল','Cancelled',count('Cancelled'),'pink','Cancelled'],['🏁','সম্পন্ন','Completed',count('Completed'),'purple','Completed'],['💵','পেমেন্ট নিশ্চিত','Cash Confirmed',cashCount,'aqua','cash']
- ].map(([icon,bn,name,n,color,filter])=>`<button type="button" class="so28-metric ${color}" onclick="${filter==='cash'?"so28ShowPayments()":`adminCategory='all';adminFilter='${filter==='all'?'all':filter}';go('admin')`}" aria-label="${name}: ${n}"><span class="so28-metric-symbol">${icon}</span><span class="so28-metric-text"><small>${bn}</small><span class="so28-metric-caption">${name}</span><strong>${n}</strong></span></button>`).join('')}</section>
- <section class="so28-flow so28-panel"><div class="so28-panel-heading"><h2>▣ &nbsp; আবেদন প্রক্রিয়ার অবস্থা <small>(Application Status Flow)</small></h2></div><div class="so28-steps">${[
+ ].map(([icon,bn,name,n,color,filter])=>`<button type="button" class="so28-metric ${color}" onclick="${filter==='cash'?"so28ShowPayments('confirmed')":`adminCategory='all';adminFilter='${filter==='all'?'all':filter}';go('admin')`}" aria-label="${name}: ${n}"><span class="so28-metric-symbol">${icon}</span><span class="so28-metric-text"><small>${bn}</small><span class="so28-metric-caption">${name}</span><strong>${n}</strong></span></button>`).join('')}</section>
+ <section class="so52-alert" aria-label="Pending payments needing action"><div><span class="so52-alert-icon">💳</span><div><small>PAYMENT FOLLOW-UP / CASH REQUEST</small><strong>${paymentQueue.length} pending or failed application${paymentQueue.length===1?'':'s'}</strong><p>Submitted applications are visible in All Applications, even before payment.</p></div></div><button type="button" onclick="so28ShowPayments()">Open Payment Queue →</button></section>
+  <section class="so28-flow so28-panel"><div class="so28-panel-heading"><h2>▣ &nbsp; আবেদন প্রক্রিয়ার অবস্থা <small>(Application Status Flow)</small></h2></div><div class="so28-steps">${[
  ['📩','নতুন আবেদন','Submitted','Submitted'],['🔍','যাচাই চলছে','Under Review','Under Review'],['✅','অনুমোদিত','Approved','Approved'],['💳','পেমেন্ট নিশ্চিত','Payment Confirmed','cash'],['⚙️','প্রক্রিয়াধীন','Processing','Processing'],['🏁','সম্পন্ন','Completed','Completed']
  ].map(([icon,bn,en,target],i)=>`${i?'<span class="so28-step-arrow" aria-hidden="true">→</span>':''}<button type="button" class="so28-step" onclick="${target==='cash'?'so28ShowPayments()':`adminCategory='all';adminFilter='${target}';go('admin')`}"><span class="so28-step-symbol">${icon}</span><span><b>${bn}</b><small>${en}</small></span></button>`).join('')}</div></section>
  <div class="so28-work-grid">
@@ -2814,18 +2825,29 @@ function adminPage(){
   <section class="so28-panel so28-daily"><div class="so28-panel-heading"><h2>▦ &nbsp; Daily Application Report</h2></div><p>Select a date to see submitted applications and their statuses.</p><label class="so28-report-label" for="soumikOwnerReportDate">Report Date</label><input id="soumikOwnerReportDate" type="date" value="${new Date().toISOString().slice(0,10)}" onchange="soumikOwnerDailyReport(this.value)"/><button type="button" class="so28-primary" onclick="soumikOwnerDailyReport(document.getElementById('soumikOwnerReportDate').value)">▥ &nbsp; View Report</button><div class="so28-report-counts"><div><span>📋 Total Applications</span><strong>${all.length}</strong></div><div><span>✅ Approved</span><strong>${count('Approved')}</strong></div><div><span>🕒 On Hold</span><strong>${count('On Hold')}</strong></div><div><span>❌ Cancelled</span><strong>${count('Cancelled')}</strong></div><div><span>🏁 Completed</span><strong>${count('Completed')}</strong></div></div><div id="soumikOwnerReportResults" class="so28-daily-results" aria-live="polite">Select a date to load the report.</div></section>
  </div>
  <div class="so28-bottom-grid">
-  <section class="so28-panel so28-payment-summary"><div class="so28-panel-heading"><h2>▣ &nbsp; পেমেন্ট ব্যবস্থাপনা <small>(Payment Management)</small></h2></div><div class="so28-pay-cards"><div class="so28-paybox green"><b>✅ Payment Confirmed</b><strong>${cashCount+onlineCount}</strong></div><div class="so28-paybox orange"><b>⌛ Pending Payment</b><strong>${paymentQueue.filter(a=>a.paymentStatus==='CASH_PENDING').length}</strong></div><div class="so28-paybox pink"><b>⚠ Pending / Failed</b><strong>${paymentQueue.filter(a=>a.paymentStatus!=='CASH_PENDING').length}</strong></div><button type="button" class="so28-primary" onclick="so28ShowPayments()">▥ &nbsp; Payment Report ↗</button></div></section>
+  <section class="so28-panel so28-payment-summary"><div class="so28-panel-heading"><h2>▣ &nbsp; পেমেন্ট ব্যবস্থাপনা <small>(Payment Management)</small></h2></div><div class="so28-pay-cards"><div class="so28-paybox green"><b>✅ Payment Confirmed</b><strong>${cashCount+onlineCount}</strong></div><div class="so28-paybox orange"><b>⌛ Pending Payment</b><strong>${paymentQueue.filter(a=>String(a.paymentStatus||'').toUpperCase()==='CASH_PENDING').length}</strong></div><div class="so28-paybox pink"><b>⚠ Pending / Failed</b><strong>${paymentQueue.filter(a=>a.paymentStatus!=='CASH_PENDING').length}</strong></div><button type="button" class="so28-primary" onclick="so28ShowPayments()">▥ &nbsp; Payment Report ↗</button></div></section>
   <section class="so28-panel so28-service-summary"><div class="so28-panel-heading"><h2>▰ &nbsp; সেবা ব্যবস্থাপনা <small>(Service Management)</small></h2></div><div class="so28-service-buttons"><button type="button" onclick="so28OpenDetails()">▦<b>সেবা তালিকা</b><small>All Services</small></button><button type="button" onclick="go('serviceprices')">🏷️<b>মূল্য পরিবর্তন</b><small>Edit Prices</small></button><button type="button" onclick="soumikOpenMaintenance()">🌐<b>সেবা ON / OFF</b><small>Website Control</small></button><button type="button" onclick="soumikOwnerStudio()">🎨<b>ফর্ম ডিজাইন</b><small>Design & Forms</small></button></div></section>
  </div>
  ${window.soumikCashSyncError?`<div class="notice">Cash request sync failed: ${esc(window.soumikCashSyncError)}. Verify backend permissions.</div>`:''}${window.soumikPaymentSyncError?`<div class="notice">Payment records could not be loaded: ${esc(window.soumikPaymentSyncError)}</div>`:''}
- <details class="so28-detail-panel" id="so28payments"><summary><span>💳 &nbsp; Payment Follow-ups & Cash Requests</span><span>View ${paymentQueue.length} pending record(s) ↘</span></summary><div class="so28-inner" id="soumikPaymentQueue"><p id="soumikRecheckFeedback" class="muted tiny" role="status"></p><div class="tablewrap"><table><thead><tr><th>Tracking ID</th><th>Applicant</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${paymentQueue.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.fullName||'')}</td><td>${esc(a.paymentStatus||'NOT PAID')}</td><td><div class="actions"><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','whatsapp')">WhatsApp</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','email')">Email</button>${['PAID','CASH_CONFIRMED','CASH_PENDING'].includes(a.paymentStatus)?'':`<button class="btn outline mini" onclick="soumikShowPayment('${encodeURIComponent(a.id)}')">View Payment</button>`}${a.paymentStatus==='CASH_PENDING'?`<button class="btn green mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','confirm')">✓ Confirm Cash Received</button><button class="btn red mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','reject')">✕ Reject</button>`:''}<button class="btn outline mini" onclick="soumikOwnerEditApplication(decodeURIComponent('${encodeURIComponent(a.id)}'))">✏️ Edit</button></div></td></tr>`).join('')||'<tr><td colspan="4">No pending payment records</td></tr>'}</tbody></table></div></div></details>
+ <details class="so28-detail-panel so52-payment-panel" id="so28payments" open><summary><span>💳 &nbsp; Payment Follow-ups & Cash Requests</span><span class="so52-queue-count">${paymentQueue.length} PAYMENT ACTION REQUIRED</span></summary><div class="so28-inner" id="soumikPaymentQueue"><p id="soumikRecheckFeedback" class="muted tiny" role="status"></p><div class="tablewrap"><table><thead><tr><th>Tracking ID</th><th>Applicant</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${paymentQueue.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.fullName||'')}</td><td>${esc(a.paymentStatus||'NOT PAID')}</td><td><div class="actions"><button class="btn mini" type="button" onclick="so52CopyPaymentLink('${encodeURIComponent(a.id)}')">🔗 Copy Link</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','whatsapp')">WhatsApp</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','email')">Email</button>${['PAID','CASH_CONFIRMED','CASH_PENDING'].includes(a.paymentStatus)?'':`<button class="btn outline mini" onclick="soumikShowPayment('${encodeURIComponent(a.id)}')">View Payment</button>`}${a.paymentStatus==='CASH_PENDING'?`<button class="btn green mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','confirm')">✓ Confirm Cash Received</button><button class="btn red mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','reject')">✕ Reject</button>`:''}<button class="btn outline mini" onclick="soumikOwnerEditApplication(decodeURIComponent('${encodeURIComponent(a.id)}'))">✏️ Edit</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${encodeURIComponent(a.id)}'))">🗑 Delete</button></div></td></tr>`).join('')||'<tr><td colspan="4">No pending payment records</td></tr>'}</tbody></table></div></div></details>
  <details class="so28-detail-panel" id="so28advanced" open><summary><span>📋 &nbsp; Detailed Application Management</span><span>Receipt · WhatsApp · Status · Timeline · Edit ↘</span></summary><div class="so28-inner"><div class="so28-detail-toolbar"><label class="field">Service<select onchange="adminCategory=this.value;go('admin')">${ADMIN_GROUPS.map(([type,name])=>`<option value="${type}" ${type===adminCategory?'selected':''}>${esc(name)}</option>`).join('')}</select></label><label class="field">Filter by Status<select onchange="adminFilter=this.value;go('admin')"><option value="all">All Statuses</option>${ADMIN_STATUSES.map(st=>`<option value="${st}" ${adminFilter===st?'selected':''}>${statusIcon(st)} ${esc(st)}</option>`).join('')}</select></label></div>${appTable(filtered,true)}</div></details>
  <section class="so28-panel so28-services-breakdown"><div class="so28-panel-heading"><h2>▤ &nbsp; Services Overview</h2><p>Click any service to filter its applications.</p></div><div class="so28-services-grid">${ADMIN_GROUPS.slice(1).map(([type,name],i)=>`<button type="button" onclick="adminCategory='${type}';adminFilter='all';go('admin')"><span>${['🪪','✏️','📱','🗳️','📲','📝','💳','📥','⬇️'][i]}</span><b>${esc(name)}</b><strong>${all.filter(a=>a.type===type).length}</strong></button>`).join('')}</div></section>
  </main></div>`;
 }
 window.so28FilterRecent=function(q){const v=String(q||'').toLowerCase().trim();let seen=0;document.querySelectorAll('.so28-recent-row').forEach(r=>{const show=r.textContent.toLowerCase().includes(v);r.hidden=!show;if(show)seen++;});const hint=document.getElementById('so28NoSearch');if(hint)hint.hidden=!!seen||!v;};
 window.so28OpenDetails=function(id){const panel=document.getElementById('so28advanced');if(panel){panel.open=true;panel.scrollIntoView({behavior:'smooth',block:'start'});}if(id){setTimeout(()=>{const card=[...document.querySelectorAll('.soumik-owner-app-card')].find(x=>x.textContent.includes(id));if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.classList.add('so28-focus');setTimeout(()=>card.classList.remove('so28-focus'),1800);}},80);}};
-window.so28ShowPayments=function(){const panel=document.getElementById('so28payments');if(panel){panel.open=true;panel.scrollIntoView({behavior:'smooth',block:'start'});}};
+window.so28ShowPayments=function(mode='pending'){
+ const panel=document.getElementById('so28payments');if(!panel)return;
+ panel.open=true;let old=document.getElementById('so52-confirmed-view');old?.remove();
+ const isPaid=x=>['PAID','CASH_CONFIRMED'].includes(String(x.paymentStatus||'').toUpperCase());
+ if(mode==='confirmed'){
+   const records=state.applications.filter(isPaid);const block=document.createElement('section');block.id='so52-confirmed-view';block.className='so52-confirmed-view';
+   const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   block.innerHTML='<h3>✅ Confirmed Payments — '+records.length+'</h3>'+(records.length?records.map(a=>{const id=encodeURIComponent(String(a.id));return '<div class="so52-paid-line"><strong>'+safe(a.id)+'</strong><span>'+safe(a.fullName||'')+'</span><b>'+safe(a.paymentStatus)+'</b><button type="button" data-id="'+safe(a.id)+'" onclick="openReceipt(this.dataset.id)">Receipt</button></div>'}).join(''):'<p>No confirmed payments yet.</p>');
+   panel.querySelector('#soumikPaymentQueue')?.prepend(block);
+ } else {panel.querySelector('#soumikPaymentQueue')?.scrollIntoView({block:'nearest'});}
+ panel.scrollIntoView({behavior:'smooth',block:'start'});
+};
 
 async function adminSet(id,status){
  const __record=state.applications.find(x=>String(x.id)===String(id));if(__record&&String(__record.status).toLowerCase()==='cancelled'){alert('Cancelled application is locked.');return;}
@@ -3089,7 +3111,7 @@ el.value=el.value.replace(/\D/g,'').slice(0,12).replace(/(\d{4})(?=\d)/g,'$1 ')}
 );
   </script>
   <script>
-   /* V51 Clean Blue receipt: generates actual one-page A4 PDF with each applicant’s current data. */
+   /* Offline receipt generator: produces an actual one-page A4 PDF, no external library. */
 (function(){
 
 const oldSubmit=submitApplication;
@@ -3111,7 +3133,7 @@ return out.replace('onclick="window.print()"','onclick="downloadReceiptPDF(track
 ;
 
 const css=document.createElement('style');
-css.textContent=`.premium-receipt{border:3px solid #d5e3f4!important;box-shadow:0 12px 30px #10224d20}.premium-receipt .receiptHead{background:linear-gradient(115deg,#0d2253 0%,#173c85 100%)}.premium-receipt .receiptSec{background:#fff}.premium-receipt .receiptSec h3{letter-spacing:.5px}.premium-receipt .timeline{padding-top:15px}.premium-receipt .previewimg{max-width:135px;max-height:160px}`;
+css.textContent=`.premium-receipt{border:5px solid #d7ad4f!important;box-shadow:0 12px 30px #10224d24}.premium-receipt .receiptHead{background:linear-gradient(115deg,#071b4d 0%,#0a3c91 65%,#c89535 100%)}.premium-receipt .receiptSec{background:#fff}.premium-receipt .receiptSec h3{letter-spacing:.5px}.premium-receipt .timeline{padding-top:15px}.premium-receipt .previewimg{max-width:135px;max-height:160px}`;
 document.head.appendChild(css);
 
 function drawRounded(ctx,x,y,w,h,r,color,stroke){
@@ -3166,138 +3188,137 @@ ctx.drawImage(img,x+(w-ww)/2,y+(h-hh)/2,ww,hh);
 ctx.restore()}
 
 async function buildReceiptImage(a){
-  const c=document.createElement('canvas');
-  c.width=1240;c.height=1754;
-  const g=c.getContext('2d');
-  const navy='#0d2253', blue='#0b61e8', muted='#5d7091', pale='#f3f7ff', edge='#d8e4f4';
-  g.fillStyle=pale;g.fillRect(0,0,1240,1754);
-  function rect(x,y,w,h,r,fill,stroke){
-    g.beginPath();g.roundRect(x,y,w,h,r);g.fillStyle=fill;g.fill();
-    if(stroke){g.lineWidth=2;g.strokeStyle=stroke;g.stroke()}
-  }
-  function text(s,x,y,size=19,color=navy,weight='normal',maxWidth){
-    g.font=weight+' '+size+'px Arial, sans-serif';g.fillStyle=color;
-    const value=String(s===undefined||s===null||s===''?'—':s);
-    if(!maxWidth||g.measureText(value).width<=maxWidth)g.fillText(value,x,y);
-    else {let t=value;while(t.length>2&&g.measureText(t+'…').width>maxWidth)t=t.slice(0,-1);g.fillText(t+'…',x,y)}
-  }
-  function wrap(s,x,y,width,lineHeight=29,maxLines=3,size=19,color=navy,weight='normal'){
-    g.font=weight+' '+size+'px Arial, sans-serif';
-    const words=String(s||'Not provided').split(/\s+/).filter(Boolean);let curr='',lines=[];
-    for(let word of words){let test=curr?curr+' '+word:word;
-      if(g.measureText(test).width>width && curr){lines.push(curr);curr=word;} else curr=test;
-    }
-    if(curr)lines.push(curr);
-    lines.slice(0,maxLines).forEach((part,i)=>text(part,x,y+i*lineHeight,size,color,weight,width));
-  }
-  function section(y,h,num,title){
-    rect(65,y,1110,h,24,'#fff',edge);
-    rect(94,y+28,50,44,13,blue);
-    text(num,106,y+58,22,'#fff','bold');
-    text(title,168,y+59,26,navy,'bold');
-    g.strokeStyle='#d9e4f3';g.lineWidth=2;g.beginPath();g.moveTo(94,y+93);g.lineTo(1143,y+93);g.stroke();
-  }
-  async function source(value,fallback){
-    if(typeof value==='string'&&value.startsWith('data:image/'))return value;
-    if(typeof value==='string'&&value.startsWith('storage:')){
-      try{const db=typeof getClient==='function'?getClient():null;
-        if(db){const {data,error}=await db.storage.from('documents').createSignedUrl(value.slice(8),120);
-          if(!error&&data?.signedUrl)return data.signedUrl;
-        }
-      }catch(e){console.warn('Receipt image unavailable',e)}
-    }
-    if(typeof value==='string'&&/^https:\/\//.test(value))return value;
-    return typeof fallback==='string'&&fallback.startsWith('data:image/')?fallback:'';
-  }
-  const same=String(trackQuery||'')===String(a.id||'');
-  const photosrc=await source(a.photo||a.passportPhoto||a.photoData,same&&typeof draft!=='undefined'?draft.photo:'');
-  const sigsrc=await source(a.signature||a.signatureData||a.sign,same&&typeof draft!=='undefined'?draft.signature:'');
-  const [logo,photo,sig]=await Promise.all([imageLoad(ASSETS.logo),imageLoad(photosrc),imageLoad(sigsrc)]);
-  // Brand masthead: follows the selected Clean Blue receipt design.
-  g.fillStyle=navy;g.fillRect(0,0,1240,278);
-  g.fillStyle='#0fc4e5';g.fillRect(0,269,1240,9);
-  if(logo)paintImg(g,logo,76,35,108,108);
-  text('SOUMIK',200,100,48,'#fff','bold');text('ONLINE',435,100,48,'#47dafa','bold');
-  text('Digital Services',201,144,23,'#d9e7ff');
-  text('APPLICATION RECEIPT',75,237,46,'#fff','bold');
-  const service=(typeof SERVICES!=='undefined'&&SERVICES[a.type]?.name)||a.type||'Digital Service';
-  text(String(service).toUpperCase(),840,239,21,'#d7e7ff','bold',320);
-  // Large reference number and accurate payment-status chip.
-  rect(66,260,1108,145,26,'#fff',edge);
-  text('APPLICATION NUMBER',104,310,19,muted,'bold');
-  text(String(a.id||'—'),104,371,40,navy,'bold',700);
-  const payState=String(a.paymentStatus||'Pending');
-  const paid=/^(verified|paid|completed|success|successful|cash_confirmed)$/i.test(payState);
-  const pillbg=paid?'#e0f7ed':/failed|cancel/i.test(payState)?'#ffe8ed':'#fff2d9';
-  const pillcolor=paid?'#08774b':/failed|cancel/i.test(payState)?'#a51936':'#98620a';
-  rect(820,309,306,54,27,pillbg);
-  text('PAYMENT '+payState.toUpperCase(),844,343,20,pillcolor,'bold',264);
-  // Applicant details: preserve the original record fields and user images.
-  section(432,516,'01','Applicant information');
-  const appRows=a.type==='pancontact' ? [
-    ['FULL NAME',a.fullName],['AADHAAR NUMBER',a.aadhaarNumber],['PAN NUMBER',a.oldPan],
-    ['OLD MOBILE',a.oldMobile],['NEW MOBILE NUMBER',a.mobile],['NEW EMAIL ID',a.email],
-    ['SERVICE',service],['APPLICATION DATE',a.date?new Date(a.date).toLocaleString('en-IN'):'Not recorded']
-  ] : a.type==='votermobile' ? [
-    ['FULL NAME',a.fullName],['VOTER / EPIC NUMBER',a.epicNumber],['MOBILE NUMBER',a.mobile],
-    ['EMAIL ADDRESS',a.email],['SERVICE',service],['APPLICATION DATE',a.date?new Date(a.date).toLocaleString('en-IN'):'Not recorded'],
-    ['PAYMENT METHOD',a.paymentMethod||'Not recorded'],['PAYMENT STATUS',payState]
-  ] : [
-    ['FULL NAME',a.fullName],['FATHER / HUSBAND',a.fatherName],['DATE OF BIRTH',a.dob],
-    ['GENDER',a.gender],['MOBILE NUMBER',a.mobile],['EMAIL ADDRESS',a.email],
-    ['SERVICE',service],['APPLICATION DATE',a.date?new Date(a.date).toLocaleString('en-IN'):'Not recorded']
-  ];
-  const rowTop=560;
-  appRows.slice(0,8).forEach(([label,value],i)=>{
-    const yy=rowTop+i*45;
-    text(label,108,yy,16,muted,'bold',205);
-    text(value,320,yy,18,navy,'bold',360);
-    if(i<7){g.strokeStyle='#e9eff9';g.lineWidth=1;g.beginPath();g.moveTo(106,yy+14);g.lineTo(698,yy+14);g.stroke();}
-  });
-  g.strokeStyle='#d9e4f3';g.lineWidth=2;g.beginPath();g.moveTo(719,544);g.lineTo(719,913);g.stroke();
-  function photoBox(img,x,y,w,h,label){
-    rect(x,y,w,h,14,'#f5f9ff','#d3e2f5');
-    if(img)paintImg(g,img,x+12,y+12,w-24,h-55);
-    else text('Not uploaded',x+21,y+100,15,muted);
-    text(label,x+14,y+h-17,15,muted,'bold');
-  }
-  photoBox(photo,745,557,176,210,'PHOTO');photoBox(sig,938,557,194,210,'SIGNATURE');
-  text('SERVICE APPLIED FOR',750,806,16,muted,'bold');
-  wrap(service,750,846,362,31,2,23,navy,'bold');
-  // Payment summary: do not imply a pending payment was paid.
-  section(966,170,'02','Payment details');
-  const amount=Number.parseFloat(String(a.fee??'').replace(/[^\d.]/g,''));
-  const amountText=Number.isFinite(amount)?'Rs. '+amount.toFixed(2):'Not recorded';
-  const payDate=a.paymentDate?new Date(a.paymentDate).toLocaleString('en-IN'):'Not recorded';
-  const payInfo=[['AMOUNT',amountText],['METHOD',a.paymentMethod||'Not recorded'],['STATUS',payState.toUpperCase()],['PAYMENT DATE',payDate]];
-  payInfo.forEach(([label,val],i)=>{
-    const xx=107+i*262;
-    text(label,xx,1085,16,muted,'bold');
-    text(val,xx,1118,19,i===2?pillcolor:navy,'bold',239);
-    if(i<3){g.strokeStyle=edge;g.beginPath();g.moveTo(xx+244,1064);g.lineTo(xx+244,1121);g.stroke();}
-  });
-  // Address and tracking.
-  section(1153,188,'03','Address');
-  const fullAddress=(a.fullAddress||[a.house,a.area,a.postOffice,a.policeStation,a.district,a.state,a.pin,a.country].filter(Boolean).join(', '));
-  wrap(fullAddress,106,1281,1005,34,3,20,navy);
-  section(1358,255,'04','Application progress');
-  const appStatus=String(a.status||'Submitted');
-  const has=(...x)=>x.includes(appStatus);
-  const progress=[['Submitted',true],['Payment Verified',paid],['Under Review',has('Under Review','Processing','Approved','Completed','Dispatched','Delivered')],['Processing',has('Processing','Approved','Completed','Dispatched','Delivered')],['Completed',has('Completed','Dispatched','Delivered')]];
-  g.strokeStyle='#d4e0f0';g.lineWidth=7;g.beginPath();g.moveTo(154,1499);g.lineTo(1074,1499);g.stroke();
-  progress.forEach(([label,done],i)=>{
-    const xx=154+i*230;
-    g.beginPath();g.arc(xx,1499,18,0,Math.PI*2);g.fillStyle=done?'#009e70':'#d9e3f1';g.fill();
-    text(done?'✓':String(i+1),xx-7,1507,21,done?'#fff':muted,'bold');
-    text(label,xx-85,1548,16,done?'#008c65':muted,'bold',170);
-  });
-  // Receipt footer, including explicitly distinct application/payment states.
-  g.fillStyle=navy;g.fillRect(0,1644,1240,110);
-  text('Application: '+appStatus.toUpperCase()+'   |   Payment: '+payState.toUpperCase(),300,1692,21,'#fff','bold',820);
-  text('SOUMIK ONLINE  •  WhatsApp: +91 9593106177  •  tutotisonlines@gmail.com',240,1728,18,'#d4e4ff','normal',980);
-  return c;
-}
+const c=document.createElement('canvas');
+c.width=1240;
+c.height=1754;
+const x=c.getContext('2d');
+x.fillStyle='#fff';
+x.fillRect(0,0,1240,1754);
 
+// Keep edited images from the just-submitted application when cloud mapping omits them.
+const sameCurrentApplication=String(trackQuery||'')===String(a.id||'');
+// Storage uploads replace data URLs with storage:path. Resolve private documents
+// to temporary signed URLs before drawing them on the application PDF.
+async function receiptImageSource(value,fallback){
+  if(typeof value==='string'&&value.startsWith('data:image/'))return value;
+  if(typeof value==='string'&&value.startsWith('storage:')){
+    try{
+      const db=typeof getClient==='function'?getClient():null;
+      if(db){
+        const {data,error}=await db.storage.from('documents').createSignedUrl(value.slice(8),120);
+        if(!error&&data?.signedUrl)return data.signedUrl;
+        console.warn('Application image signed URL unavailable',error);
+      }
+    }catch(e){console.warn('Application image lookup failed',e);}
+  }
+  if(typeof value==='string'&&/^https:\/\//.test(value))return value;
+  return typeof fallback==='string'&&fallback.startsWith('data:image/')?fallback:'';
+}
+const photoSource=await receiptImageSource(a.photo||a.passportPhoto||a.photoData,sameCurrentApplication&&typeof draft!=='undefined'?draft.photo:'');
+const signatureSource=await receiptImageSource(a.signature||a.signatureData||a.sign,sameCurrentApplication&&typeof draft!=='undefined'?draft.signature:'');
+const [logo,photo,sig]=await Promise.all([imageLoad(ASSETS.logo),imageLoad(photoSource),imageLoad(signatureSource)]);
+
+x.fillStyle='#071c50';
+x.fillRect(0,0,1240,205);
+x.fillStyle='#d9ad53';
+x.fillRect(0,190,1240,12);
+paintImg(x,logo,75,30,115,115);
+txt(x,'SOUMIK',210,94,57,'#fff','bold');
+txt(x,'ONLINE',455,94,57,'#e9b75b','bold');
+txt(x,'Digital Services',213,137,25,'#e2eafa');
+txt(x,'APPLICATION RECEIPT',380,252,39,'#071c50','bold');
+txt(x,'Thank you for choosing Soumik Online',418,287,19,'#6b7791');
+
+drawRounded(x,260,313,720,96,14,'#fff4f9','#e02c77');
+drawRounded(x,437,299,366,37,15,'#d70a62');
+txt(x,'APPLICATION NUMBER',483,326,19,'#fff','bold');
+x.font='bold 35px Arial, sans-serif';
+const receiptId=String(a.id||'');
+const idWidth=x.measureText(receiptId).width;
+txt(x,receiptId,620-idWidth/2,379,35,'#071c50','bold',660);
+
+function bar(y,title,color){
+drawRounded(x,70,y,1100,45,8,color);
+txt(x,title,91,y+31,24,'#fff','bold')}
+
+bar(440,'APPLICANT DETAILS','#0867b9');
+drawRounded(x,70,491,1100,390,10,'#fbfdff','#d6e4f3');
+const applicantRows=a.type==='pancontact'?[
+ ['Full Name',a.fullName],
+ ['Aadhaar Number',a.aadhaarNumber],
+ ['PAN Number',a.oldPan],
+ ['Old Mobile (Optional)',a.oldMobile],
+ ['New Mobile Number',a.mobile],
+ ['New Email ID',a.email],
+ ['Applied For',SERVICES[a.type]?.name||a.type],
+ ['Application Date',new Date(a.date).toLocaleString()]
+]:a.type==='votermobile'?[
+ ['Full Name',a.fullName],
+ ['Voter / EPIC Number',a.epicNumber],
+ ['New Mobile Number',a.mobile],
+ ['Email Address',a.email],
+ ['Applied For',SERVICES[a.type]?.name||a.type],
+ ['Application Date',new Date(a.date).toLocaleString()],
+ ['Payment Method',a.paymentMethod],
+ ['Payment Status',a.paymentStatus]
+]:[
+ ['Full Name',a.fullName],
+ ["Father / Husband",a.fatherName],
+ ['Date of Birth',a.dob],
+ ['Gender',a.gender],
+ ['Mobile Number',a.mobile],
+ ['Email Address',a.email],
+ ['Applied For',SERVICES[a.type]?.name||a.type],
+ ['Application Date',new Date(a.date).toLocaleString()]
+];
+applicantRows.forEach(([label,value],i)=>line(x,label,value,527+i*43));
+
+// Only display uploaded images; never print empty Photo/Signature placeholders.
+if(photo){drawRounded(x,902,515,111,145,7,'#eef4fc','#cad7e8');paintImg(x,photo,908,521,99,133);txt(x,'PHOTO',921,681,14,'#1c4575','bold');}
+if(sig){drawRounded(x,1022,515,127,145,7,'#fff','#cad7e8');paintImg(x,sig,1028,546,115,73);txt(x,'SIGNATURE',1030,681,14,'#1c4575','bold');}
+
+bar(904,'PAYMENT DETAILS','#128a55');
+drawRounded(x,70,956,1100,223,10,'#fbfffd','#d4e8dc');
+line(x,'Payment Method',a.paymentMethod,993);
+line(x,'Payment Status',a.paymentStatus||'Pending',1038);
+line(x,'Amount','₹'+a.fee+'.00',1083);
+line(x,'Payment Date',a.paymentDate?new Date(a.paymentDate).toLocaleString():'Not recorded',1128);
+
+
+bar(1202,'ADDRESS DETAILS','#b5680c');
+drawRounded(x,70,1254,1100,210,10,'#fffdfa','#eedecb');
+let addr=[a.house,a.area,a.postOffice,a.policeStation,a.district,a.state,a.pin,a.country].filter(Boolean).join(', ');
+txt(x,'Full Address',95,1301,23,'#8a4a08','bold');
+const words=addr.split(/\s+/);
+let lines=[],cur='';
+for(const w of words){
+if(x.measureText(cur+' '+w).width>985){
+lines.push(cur);
+cur=w}
+else cur+=(cur?' ':'')+w}
+if(cur)lines.push(cur);
+lines.slice(0,4).forEach((l,i)=>txt(x,l,95,1345+i*30,22,'#263e5e'));
+
+bar(1486,'TRACKING STATUS','#503099');
+drawRounded(x,70,1539,1100,113,10,'#f9f8ff','#e2d9f2');
+const payState=String(a.paymentStatus||'Pending');
+const verified=/^(verified|paid|completed|success|successful)$/i.test(payState);
+const currentState=String(a.status||'Submitted');
+const steps=[['Submitted',true],['Payment Verified',verified],['Under Review',['Under Review','Processing','Approved','Completed','Dispatched','Delivered'].includes(currentState)],['Processing',['Processing','Approved','Completed','Dispatched','Delivered'].includes(currentState)],['Completed',['Completed','Dispatched','Delivered'].includes(currentState)]];
+steps.forEach(([label,done],i)=>{
+ const xx=165+i*218;
+ x.beginPath();x.arc(xx,1576,16,0,Math.PI*2);x.fillStyle=done?'#0a9e60':'#aebed3';x.fill();
+ txt(x,done?'✓':String(i+1),xx-7,1583,18,'#fff','bold');
+ txt(x,label,xx-76,1618,15,done?'#087748':'#506079','bold',150);
+});
+txt(x,'Application: '+currentState+'    |    Payment: '+payState,95,1647,19,'#203a66','bold',1000);
+x.fillStyle='#071c50';
+x.fillRect(0,1676,1240,78);
+x.fillStyle='#d7ad53';
+x.fillRect(0,1676,1240,8);
+txt(x,'SOUMIK ONLINE  |  Customer Help & Support',340,1705,23,'#fff','bold');
+txt(x,'WhatsApp: +91 9593106177   |   Email: tutotisonlines@gmail.com',270,1737,21,'#fff','normal');
+return c}
 
 function pdfFromJpeg(canvas){
 const b64=canvas.toDataURL('image/jpeg',.91).split(',')[1];
@@ -4166,19 +4187,8 @@ observer.observe(document.getElementById('app'),{childList:true,subtree:false});
 @media(max-width:650px){.soumik-settings-grid{grid-template-columns:1fr}.soumik-settings-card{padding:15px}}
 </style>
 <script id="soumik-cloud-owner-settings-script">
-(function(){'use strict';const fields=[['youtube_channel_url','YouTube Channel Link (HTTPS)','url'],['business_name','Shop / Business Name','text'],['whatsapp','WhatsApp Number','tel'],['contact_phone','Support Contact Number','tel'],['support_email','Support Email','email'],['website_url','Payment Receipt Website Link (HTTPS URL)','url'],['support_hours','Help Support Hours','text'],['bank_name','Bank Name','text'],['account_holder','Account Holder Name','text'],['account_number','Bank Account Number','text'],['ifsc','IFSC Code','text'],['upi_id','UPI ID','text'],['qr_image_url','Payment QR Image HTTPS URL','url']];
-window.soumikOpenOwnerSettings=function(){if(!admin)return alert('শুধু Owner এই সেটিংস পরিবর্তন করতে পারবেন।');document.getElementById('soumikOwnerSettingsOverlay')?.remove();const root=document.createElement('div');root.id='soumikOwnerSettingsOverlay';root.innerHTML=`<div class="soumik-settings-card" role="dialog" aria-modal="true"><div class="toolbar" style="justify-content:space-between"><h2>⚙️ Payment & Website Settings</h2><button type="button" class="btn outline" id="soumikSettingsClose">✕ Close</button></div><form id="soumikOwnerSettingsForm"><div class="soumik-settings-grid">${fields.map(([key,label,type])=>`<label>${label}<input name="${key}" type="${type}" maxlength="600" autocomplete="off"></label>`).join('')}</div><p class="so49-yt-hint">▶ Set the URL of your own YouTube channel (example: https://www.youtube.com/@YourChannel). The red YouTube icon above will open this link. For changes on all devices, saving to the website server must succeed.</p><p id="soumikSettingsStatus" role="status" aria-live="polite"></p><button class="btn" type="submit">Save Settings</button></form></div>`;document.body.appendChild(root);root.querySelector('#soumikSettingsClose').onclick=()=>root.remove();const form=root.querySelector('form'),status=root.querySelector('#soumikSettingsStatus');let data={};try{data=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}')}catch{}for(const [key] of fields)form.elements[key].value=data[key]||'';
-window.soumikYoutubePrefillOwnerSettings?.(form);
-form.onsubmit=async e=>{e.preventDefault();const values={};for(const [key] of fields)values[key]=String(form.elements[key].value||'').trim();
- const link=values.youtube_channel_url;
- if(link&&!window.soumikValidYoutubeChannel?.(link)){status.textContent='Please enter a valid YouTube channel URL, such as https://www.youtube.com/@YourChannel, or leave it empty to disable the link.';return;}
- const submit=form.querySelector('button[type=submit]');submit.disabled=true;status.textContent='Saving website settings…';
- try{localStorage.setItem('soumik_owner_settings',JSON.stringify(values))}catch(err){status.textContent='Could not save in this browser: '+(err?.message||err);submit.disabled=false;return}
- window.dispatchEvent(new CustomEvent('soumik-youtube-updated',{detail:{url:link}}));
- try{await window.soumikYoutubePublishToCloud(link);status.textContent=link?'✓ Settings saved locally. YouTube channel published to website server for visitors.':'✓ YouTube channel link cleared on website server.';}
- catch(err){status.textContent='⚠ Settings saved in this browser only. Public update NOT confirmed: '+String(err?.message||err).slice(0,220);}
- finally{submit.disabled=false;}
-};};})();
+(function(){'use strict';const fields=[['business_name','Shop / Business Name','text'],['whatsapp','WhatsApp Number','tel'],['contact_phone','Support Contact Number','tel'],['support_email','Support Email','email'],['website_url','Payment Receipt Website Link (HTTPS URL)','url'],['support_hours','Help Support Hours','text'],['bank_name','Bank Name','text'],['account_holder','Account Holder Name','text'],['account_number','Bank Account Number','text'],['ifsc','IFSC Code','text'],['upi_id','UPI ID','text'],['qr_image_url','Payment QR Image HTTPS URL','url']];
+window.soumikOpenOwnerSettings=function(){if(!admin)return alert('শুধু Owner এই সেটিংস পরিবর্তন করতে পারবেন।');document.getElementById('soumikOwnerSettingsOverlay')?.remove();const root=document.createElement('div');root.id='soumikOwnerSettingsOverlay';root.innerHTML=`<div class="soumik-settings-card" role="dialog" aria-modal="true"><div class="toolbar" style="justify-content:space-between"><h2>⚙️ Payment & Website Settings</h2><button type="button" class="btn outline" id="soumikSettingsClose">✕ Close</button></div><form id="soumikOwnerSettingsForm"><div class="soumik-settings-grid">${fields.map(([key,label,type])=>`<label>${label}<input name="${key}" type="${type}" maxlength="600" autocomplete="off"></label>`).join('')}</div><p id="soumikSettingsStatus" role="status"></p><button class="btn" type="submit">Save Settings</button></form></div>`;document.body.appendChild(root);root.querySelector('#soumikSettingsClose').onclick=()=>root.remove();const form=root.querySelector('form'),status=root.querySelector('#soumikSettingsStatus');let data={};try{data=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}')}catch{}for(const [key] of fields)form.elements[key].value=data[key]||'';form.onsubmit=e=>{e.preventDefault();const values={};for(const [key] of fields)values[key]=String(form.elements[key].value||'').trim();localStorage.setItem('soumik_owner_settings',JSON.stringify(values));status.textContent='✓ Settings saved successfully.';root.remove();};};})();
 </script>
 
 
@@ -5023,7 +5033,7 @@ window.submitApplication=async function(){
   // Some mobile browsers block automatic downloads; the manual download remains available.
   Promise.resolve(window.downloadReceiptPDF?.(a.id,true)).catch(err=>console.error('PDF download:',err));
   notify('Application submitted: '+a.id);
- }catch(e){console.error('Application submit:',e);alert('আবেদন Submit হয়নি: '+(e.message||String(e)))}finally{busy.delete('submit')}
+ }catch(e){console.error('Application submit:',e);window.so52ApplicationHelp?.('আবেদন Submit হয়নি: '+(e.message||String(e)))}finally{busy.delete('submit')}
 };
 // Remove the old pre-submit UPI/Bank form; preserve the rest of the original form.
 if(typeof window.paymentBody==='function')window.paymentBody=function(s){return `<section class="soumik-payment"><div class="soumik-pay-head"><span>📄 Submit Application</span><strong>₹${Number(s.fee).toFixed(2)}</strong></div><p>Submit your application to receive your tracking ID and continue to secure payment.</p></section>`};
@@ -5084,28 +5094,37 @@ window.soumikOwnerEditApplication=function(id){
 })();
 </script>
 <script id="soumik-owner-payment-queue-actions">
-window.soumikOwnerPaymentShare=function(encodedId,channel){
- const id=decodeURIComponent(encodedId);
- const a=state.applications.find(x=>String(x.id)===id);
- if(!a)return alert('Application not found');
- const link='https://soumikonline.github.io/?resume_payment='+encodeURIComponent(id);
- const message='*SOUMIK ONLINE | Payment Reminder*\n\nপ্রিয় গ্রাহক,\nআপনার আবেদনের পেমেন্ট এখনও সম্পূর্ণ হয়নি।\n\n*Tracking ID:* '+id+'\n*পেমেন্ট লিংক:* '+link+'\n\nলিংকটি খুলে আবেদনে দেওয়া মোবাইল নম্বর লিখুন। আপনার আবেদন/রেজিস্ট্রেশনে ব্যবহার করা ইমেইল ঠিকানায় যাচাইকরণের OTP পাঠানো হবে। সঠিক OTP যাচাই করার পরই পেমেন্ট পেজ খুলবে (OTP সেবা সক্রিয় থাকলে)।\n\n*নিরাপত্তা:* OTP কাউকে জানাবেন না।\n\nধন্যবাদ,\nSOUMIK ONLINE Support\nReview: https://soumikonline.github.io/#reviews';
- if(channel==='whatsapp'){
-   let mobile=String(a.mobile||'').replace(/\D/g,'');
-   if(mobile.length===10)mobile='91'+mobile;
-   if(!/^\d{11,15}$/.test(mobile))return alert('Valid applicant mobile number not found');
-   window.open('https://wa.me/'+mobile+'?text='+encodeURIComponent(message),'_blank','noopener,noreferrer');
- }else if(channel==='email'){
-   const email=String(a.email||'').trim();
-   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return alert('Applicant email address is missing or invalid');
-   const subject='SOUMIK ONLINE | Payment Reminder | '+id;
-   const emailBody=message.replace(/\*/g,'');
-   const url='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(email)+'&su='+encodeURIComponent(subject)+'&body='+encodeURIComponent(emailBody);
-   const anchor=document.createElement('a');anchor.href=url;anchor.style.display='none';document.body.appendChild(anchor);anchor.click();anchor.remove();
-   window.soumikNotify?.('Gmail compose opened. Sign in if needed, then press Send.','info');
+(function(){
+ 'use strict';
+ function paymentLink(id){
+   if(location.protocol!=='https:')throw Error('Payment link তৈরি করতে HTTPS-এ published website খুলুন। Local HTML থেকে লিংক পাঠানো যাবে না।');
+   const url=new URL(location.origin+location.pathname);url.searchParams.set('resume_payment',id);return url.href;
  }
-
-};
+ window.so52PaymentLink=paymentLink;
+ window.so52CopyPaymentLink=function(encoded){
+   if(!admin)return alert('Owner login required');
+   const id=decodeURIComponent(encoded),a=state.applications.find(x=>String(x.id)===id);if(!a)return alert('Application not found');
+   if(!a._cloudSaved)return alert('এই আবেদন Supabase Cloud-এ সেভ নেই। লিংক কাজ করবে না।');
+   try{const link=paymentLink(id);navigator.clipboard?.writeText(link).then(()=>window.soumikNotify?.('Payment link copied','success')).catch(()=>prompt('Copy payment link',link))||prompt('Copy payment link',link)}catch(e){alert(e.message)}
+ };
+ window.soumikOwnerPaymentShare=function(encodedId,channel){
+  if(!admin)return alert('Owner login required');
+  const id=decodeURIComponent(encodedId),a=state.applications.find(x=>String(x.id)===id);
+  if(!a)return alert('Application not found');
+  if(!a._cloudSaved)return alert('Supabase-এ আবেদন সেভ নেই। Payment link পাঠানো নিরাপদ নয়।');
+  let link;try{link=paymentLink(id)}catch(e){alert(e.message);return}
+  const message='SOUMIK ONLINE — Payment Follow-up\n\nTracking ID: '+id+'\nPayment / Cash Request page: '+link+'\n\nলিংকটি খুলে আবেদনের মোবাইল নম্বর দিয়ে যাচাই করুন। যদি আগের আবেদন বা পেমেন্টে সমস্যা হয় SOUMIK ONLINE Support-এ যোগাযোগ করুন।\n\nনিরাপত্তা: OTP বা পাসওয়ার্ড কাউকে জানাবেন না। Online payment কেবল payment gateway চালু থাকলে পাওয়া যাবে।';
+  if(channel==='whatsapp'){
+   let mobile=String(a.mobile||'').replace(/\D/g,'');if(mobile.length===10)mobile='91'+mobile;
+   if(!/^91[6-9][0-9]{9}$/.test(mobile))return alert('Valid 10-digit applicant mobile number not found');
+   window.open('https://wa.me/'+mobile+'?text='+encodeURIComponent(message),'_blank','noopener,noreferrer');
+  }else if(channel==='email'){
+   const email=String(a.email||'').trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return alert('Applicant email address missing/invalid');
+   const url='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('SOUMIK ONLINE | Payment Reminder | '+id)+'&body='+encodeURIComponent(message);
+   window.open(url,'_self');window.soumikNotify?.('Email compose opened — press Send to deliver.','info');
+  }
+ };
+})();
 </script>
 <style id="soumik-payment-owner-cards">
 .soumik-payment-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
@@ -5186,27 +5205,110 @@ window.soumikConfirmCashRequest=function(application){
 };
 </script>
 <script id="soumik-recovery-flow-2026">
+/* V49: Supabase email recovery: email -> OTP -> (enrolled MFA) -> password. No client-only OTP bypass. */
 (()=>{'use strict';
-let stage=1,email='',expires=0,timer=null,busy=false,recoverySession=null,totpFactor=null,challengeId=null,otpValidated=false;
-const $=id=>document.getElementById(id), sb=()=>{window.soumikSupabaseReady?.();return window.soumikSupabase};
-function message(msg,err=false){const e=$('sr-status');if(e){e.hidden=!msg;e.textContent=msg;e.className='sr-status'+(err?' error':'')}}
-function stop(){clearInterval(timer);timer=null}
-function clock(){if(stage!==2)return;const n=Math.max(0,Math.ceil((expires-Date.now())/1000));if($('sr-clock'))$('sr-clock').textContent=`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;if($('sr-resend'))$('sr-resend').hidden=n>0;if(!n){stop();document.querySelectorAll('.sr-otp-box').forEach(x=>x.disabled=true);if($('sr-expired'))$('sr-expired').hidden=false}}
-function code(){return [...document.querySelectorAll('.sr-otp-box')].map(x=>x.value).join('')}
-function setCode(raw){const digits=String(raw).replace(/\D/g,'').slice(0,6),boxes=[...document.querySelectorAll('.sr-otp-box')];boxes.forEach((x,i)=>x.value=digits[i]||'');if(digits.length===6)verifyEmail();else boxes[digits.length]?.focus()}
-function setupBoxes(){const boxes=[...document.querySelectorAll('.sr-otp-box')];boxes.forEach((b,i)=>{b.addEventListener('input',()=>{const v=b.value.replace(/\D/g,'');if(v.length>1){setCode(boxes.slice(0,i).map(x=>x.value).join('')+v);return}b.value=v.slice(-1);if(v&&i<5)boxes[i+1].focus();if(code().length===6)verifyEmail()});b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&i>0){boxes[i-1].value='';boxes[i-1].focus()}if(e.key==='ArrowLeft'&&i>0)boxes[i-1].focus();if(e.key==='ArrowRight'&&i<5)boxes[i+1].focus()});b.addEventListener('paste',e=>{e.preventDefault();setCode(e.clipboardData.getData('text'))})});boxes[0]?.focus()}
-function render(){const root=$('soumik-recovery-root');if(!root)return;const names=['','Reset your password','Verify your email','Authenticator verification','Create new password'];root.innerHTML=`<section class="sr-card" role="dialog" aria-modal="true" aria-labelledby="sr-title"><div class="sr-top"><strong>🔐 SOUMIK ONLINE · OWNER SECURITY</strong><button class="sr-close" type="button" id="sr-close" aria-label="Close">×</button></div><h2 id="sr-title">${names[stage]}</h2><div class="sr-steps">${[1,2,3,4].map(i=>`<span class="${i<=stage?'active':''}"></span>`).join('')}</div><form id="sr-form">${stage===1?`<label for="sr-email">Registered owner email</label><input id="sr-email" type="email" autocomplete="email" required><button class="sr-primary" type="submit">Send email OTP</button>`:stage===2?`<strong id="sr-address"></strong><label id="sr-code-label">Email OTP</label><div class="sr-otp-grid" role="group" aria-labelledby="sr-code-label">${Array.from({length:6},(_,i)=>`<input class="sr-otp-box" aria-label="OTP digit ${i+1}" inputmode="numeric" type="text" maxlength="6" autocomplete="${i===0?'one-time-code':'off'}">`).join('')}</div><p class="sr-countdown">Time remaining: <span class="sr-timer" id="sr-clock">02:00</span></p><p id="sr-expired" class="sr-expired" hidden>OTP-এর সময় শেষ। নতুন OTP পাঠান।</p><button class="sr-link" id="sr-resend" type="button" hidden>↻ Resend OTP</button>`:stage===3?`<label id="sr-totp-label">Authenticator OTP</label><div class="sr-otp-grid" role="group" aria-labelledby="sr-totp-label">${Array.from({length:6},(_,i)=>`<input class="sr-totp-box" aria-label="Authenticator digit ${i+1}" inputmode="numeric" type="text" maxlength="6" autocomplete="${i===0?'one-time-code':'off'}">`).join('')}</div><p class="sr-countdown">Verification starts automatically after 6 digits.</p>`:`<label for="sr-password">New password</label><div class="sr-eye"><input id="sr-password" type="password" minlength="4" autocomplete="new-password" required><button type="button" data-toggle="sr-password">Show</button></div><label for="sr-confirm">Confirm new password</label><div class="sr-eye"><input id="sr-confirm" type="password" minlength="4" autocomplete="new-password" required><button type="button" data-toggle="sr-confirm">Show</button></div><button class="sr-primary" id="sr-change" type="submit">Change password securely</button>`}</form><div id="sr-status" class="sr-status" role="status" aria-live="polite" hidden></div></section>`;
-$('sr-close').onclick=window.soumikRecoveryClose;$('sr-form').addEventListener('submit',submit);root.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{const e=$(b.dataset.toggle);e.type=e.type==='password'?'text':'password';b.textContent=e.type==='password'?'Show':'Hide'});if(stage===1){$('sr-email').value=email;$('sr-email').focus()}if(stage===2){$('sr-address').textContent=email;$('sr-resend').onclick=()=>sendEmail(true);setupBoxes();stop();clock();if(Date.now()<expires)timer=setInterval(clock,1000)}if(stage===3)setupTotpBoxes();if(stage===4)$('sr-password').focus()}
-async function sendEmail(resend=false){if(busy)return;const c=sb();if(!c?.auth)return message('Supabase connection unavailable',true);busy=true;const b=resend?$('sr-resend'):$('sr-form button[type=submit]');if(b)b.disabled=true;try{const {error}=await c.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;recoverySession=null;otpValidated=false;stage=2;expires=Date.now()+120000;render()}catch(e){message('OTP পাঠানো যায়নি: '+e.message,true)}finally{busy=false;if(b?.isConnected)b.disabled=false}}
-async function verifyEmail(){if(busy||stage!==2||Date.now()>=expires)return;const token=code();if(!/^\d{6}$/.test(token))return;const c=sb();if(!c?.auth)return message('Supabase connection unavailable',true);busy=true;document.querySelectorAll('.sr-otp-box').forEach(x=>x.disabled=true);message('Email OTP যাচাই হচ্ছে…');try{const {data,error}=await c.auth.verifyOtp({email,token,type:'recovery'});if(error)throw error;const session=data?.session||(await c.auth.getSession()).data?.session;if(!session?.access_token||!session?.refresh_token)throw Error('Recovery session unavailable');if(session.user?.email?.toLowerCase()!==email)throw Error('Verified account does not match email');recoverySession=session;stop();const {data:factors,error:factorError}=await c.auth.mfa.listFactors();if(factorError)throw factorError;totpFactor=(factors?.totp||[]).find(f=>f.status==='verified');if(!totpFactor)throw Error('এই অ্যাকাউন্টে verified Authenticator নেই। নিরাপদ reset-এর জন্য প্রশাসকের সহায়তা নিন।');stage=3;render()}catch(e){message('Email OTP যাচাই ব্যর্থ: '+e.message,true);document.querySelectorAll('.sr-otp-box').forEach(x=>x.disabled=false);document.querySelector('.sr-otp-box')?.focus()}finally{busy=false}}
-function totpCode(){return [...document.querySelectorAll('.sr-totp-box')].map(x=>x.value).join('')}
-function fillTotp(raw){const digits=String(raw).replace(/\D/g,'').slice(0,6),boxes=[...document.querySelectorAll('.sr-totp-box')];boxes.forEach((x,i)=>x.value=digits[i]||'');if(digits.length===6)verifyAuthenticator();else boxes[digits.length]?.focus()}
-function setupTotpBoxes(){const boxes=[...document.querySelectorAll('.sr-totp-box')];boxes.forEach((b,i)=>{b.addEventListener('input',()=>{const v=b.value.replace(/\D/g,'');if(v.length>1){fillTotp(boxes.slice(0,i).map(x=>x.value).join('')+v);return}b.value=v.slice(-1);if(v&&i<5)boxes[i+1].focus();if(totpCode().length===6)verifyAuthenticator()});b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&i>0){boxes[i-1].value='';boxes[i-1].focus()}if(e.key==='ArrowLeft'&&i>0)boxes[i-1].focus();if(e.key==='ArrowRight'&&i<5)boxes[i+1].focus()});b.addEventListener('paste',e=>{e.preventDefault();fillTotp(e.clipboardData.getData('text'))})});boxes[0]?.focus()}
-async function verifyAuthenticator(){if(busy||stage!==3)return;const c=sb();const token=totpCode();if(!/^\d{6}$/.test(token))return;busy=true;const boxes=[...document.querySelectorAll('.sr-totp-box')];boxes.forEach(x=>x.disabled=true);message('Verifying authenticator…');try{if(!totpFactor?.id)throw Error('Verified authenticator factor not found');const {data:ch,error:ce}=await c.auth.mfa.challenge({factorId:totpFactor.id});if(ce)throw ce;challengeId=ch.id;const {error:ve}=await c.auth.mfa.verify({factorId:totpFactor.id,challengeId,code:token});if(ve)throw ve;const {data:level,error:le}=await c.auth.mfa.getAuthenticatorAssuranceLevel();if(le)throw le;if(level.currentLevel!=='aal2')throw Error('AAL2 verification incomplete');otpValidated=true;stage=4;render()}catch(e){message('Authenticator verification failed: '+e.message,true);boxes.forEach(x=>{x.disabled=false;x.value=''});boxes[0]?.focus()}finally{busy=false}}
-async function changePassword(){const c=sb(),pass=$('sr-password').value,confirm=$('sr-confirm').value;if(pass.length<4)return message('কমপক্ষে ৪ অক্ষরের পাসওয়ার্ড লিখুন।',true);if(pass!==confirm)return message('দুটি পাসওয়ার্ড একই হতে হবে।',true);if(!otpValidated||!recoverySession)return message('Email এবং Authenticator যাচাই সম্পূর্ণ করুন।',true);busy=true;const b=$('sr-change');b.disabled=true;b.textContent='Saving password…';try{const {data:level,error:le}=await c.auth.mfa.getAuthenticatorAssuranceLevel();if(le)throw le;if(level.currentLevel!=='aal2')throw Error('AAL2 session required');const {error}=await c.auth.updateUser({password:pass});if(error)throw error;otpValidated=false;recoverySession=null;stop();await c.auth.signOut({scope:'local'});document.getElementById('soumikOtpVerifyModal')?.remove();stage=1;render();message('✓ Password updated successfully. Sign in with your new password.');setTimeout(()=>{window.soumikRecoveryClose();document.getElementById('soumikOtpVerifyModal')?.remove();},1800)}catch(e){message('পাসওয়ার্ড পরিবর্তন ব্যর্থ: '+e.message,true);b.disabled=false;b.textContent='Change password securely'}finally{busy=false}}
-async function submit(e){e.preventDefault();if(busy)return;if(stage===1){email=$('sr-email').value.trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return message('সঠিক ইমেইল লিখুন।',true);return sendEmail()}if(stage===2)return verifyEmail();if(stage===3)return verifyAuthenticator();if(stage===4)return changePassword()}
-window.soumikRecoveryOpen=()=>{if($('soumik-recovery-root'))return;stage=1;email=$('ownerLoginIdentifier')?.value?.trim()||'';recoverySession=null;otpValidated=false;const root=document.createElement('div');root.id='soumik-recovery-root';root.className='sr-overlay';document.body.appendChild(root);render()};
-window.soumikRecoveryClose=()=>{stop();otpValidated=false;recoverySession=null;$('soumik-recovery-root')?.remove()};
+let stage='email',email='',busy=false,cooldownUntil=0,ticker=null,verifiedEmail=false,verifiedMfa=false,factorId='',recoverySession=null,returnFocus=null,previousOverflow='';
+const $=id=>document.getElementById(id);
+const sb=()=>{try{window.soumikSupabaseReady?.()}catch{}return window.soumikSupabase||null};
+const language=()=>{let v='';try{v=sessionStorage.getItem('soumik_lang')||''}catch{}if(!v)v=document.getElementById('lang')?.value||'en';return ['en','bn','hi'].includes(v)?v:'en'};
+const L={
+ en:{title:'Forgot your password?',lead:'Enter your registered email address. We will send a verification code.',email:'Registered email address',send:'Send verification code',verifyTitle:'Verify your email',verifyLead:'Enter the 6-digit code from your email.',otp:'Email verification code',verify:'Verify OTP',resend:'Resend code',wait:'Resend available in',changeTitle:'Set a new password',changeLead:'Your email has been verified. Choose a strong new password.',password:'New password',confirm:'Confirm new password',change:'Update password',mfaTitle:'Authenticator verification',mfaLead:'This account has an extra security factor. Enter the current code from your authenticator app.',mfa:'Authenticator code',back:'Change email',show:'Show',hide:'Hide',close:'Close',success:'Password updated. Return to Owner Login and sign in with the new password.',sent:'If this address is registered, an email has been sent. Check your inbox and spam folder.',invalid:'Enter a valid email address.',short:'Minimum 4 characters. For better security, use 8 or more. Your Supabase policy may require a longer password.',different:'The two passwords do not match.',code:'Enter the 6-digit verification code.',connected:'Supabase email authentication is not available. Configure Auth and check the network connection.',verifyError:'Code could not be verified: ',sendError:'Could not send the verification email: ',passwordError:'Password update failed: ',busy:'Please wait…',security:'Secure account recovery',resetInfo:'If your email contains a link rather than a numeric code, configure the Supabase Reset Password email template to include {{ .Token }}.',server:'The verification happens on Supabase, not in this browser.',login:'Back to Owner Login'},
+ bn:{title:'পাসওয়ার্ড ভুলে গেছেন?',lead:'রেজিস্টার করা ইমেইল দিন। যাচাইয়ের জন্য OTP পাঠানো হবে।',email:'রেজিস্টার করা ইমেইল',send:'OTP পাঠান',verifyTitle:'ইমেইল যাচাই',verifyLead:'ইমেইলে পাওয়া ৬ সংখ্যার OTP লিখুন।',otp:'ইমেইল OTP',verify:'OTP যাচাই করুন',resend:'আবার OTP পাঠান',wait:'আবার পাঠানো যাবে',changeTitle:'নতুন পাসওয়ার্ড দিন',changeLead:'ইমেইল যাচাই হয়েছে। নতুন শক্তিশালী পাসওয়ার্ড দিন।',password:'নতুন পাসওয়ার্ড',confirm:'পাসওয়ার্ড আবার লিখুন',change:'পাসওয়ার্ড পরিবর্তন করুন',mfaTitle:'Authenticator যাচাই',mfaLead:'এই অ্যাকাউন্টে অতিরিক্ত নিরাপত্তা আছে। Authenticator অ্যাপের কোড লিখুন।',mfa:'Authenticator OTP',back:'ইমেইল বদলান',show:'দেখান',hide:'লুকান',close:'বন্ধ করুন',success:'পাসওয়ার্ড পরিবর্তন হয়েছে। নতুন পাসওয়ার্ড দিয়ে Owner Login করুন।',sent:'ইমেইলটি রেজিস্টার করা থাকলে OTP পাঠানো হয়েছে। Inbox ও Spam দেখুন।',invalid:'সঠিক ইমেইল লিখুন।',short:'কমপক্ষে ৪ অক্ষর দিন। নিরাপত্তার জন্য ৮ বা তার বেশি ভালো। Supabase সেটিং আরও বড় পাসওয়ার্ড চাইতে পারে।',different:'দুটি পাসওয়ার্ড মিলছে না।',code:'৬ সংখ্যার OTP লিখুন।',connected:'Supabase Email Auth চালু নেই। Auth সেটআপ ও ইন্টারনেট পরীক্ষা করুন।',verifyError:'OTP যাচাই ব্যর্থ: ',sendError:'ইমেইলে OTP পাঠানো যায়নি: ',passwordError:'পাসওয়ার্ড বদলানো যায়নি: ',busy:'অপেক্ষা করুন…',security:'নিরাপদ অ্যাকাউন্ট রিকভারি',resetInfo:'ইমেইলে OTP-এর বদলে লিংক এলে Supabase Reset Password template-এ {{ .Token }} বসাতে হবে।',server:'OTP সার্ভারে যাচাই হবে; ব্রাউজারে ভুয়া যাচাই নয়।',login:'Owner Login-এ ফিরুন'},
+ hi:{title:'पासवर्ड भूल गए?',lead:'अपना पंजीकृत ईमेल दर्ज करें। सत्यापन के लिए OTP भेजा जाएगा।',email:'पंजीकृत ईमेल',send:'OTP भेजें',verifyTitle:'ईमेल सत्यापित करें',verifyLead:'ईमेल में आया 6 अंकों का OTP दर्ज करें।',otp:'ईमेल OTP',verify:'OTP सत्यापित करें',resend:'OTP फिर भेजें',wait:'फिर भेज सकेंगे',changeTitle:'नया पासवर्ड सेट करें',changeLead:'ईमेल सत्यापित हो गया है। नया मजबूत पासवर्ड दर्ज करें।',password:'नया पासवर्ड',confirm:'पासवर्ड दोबारा लिखें',change:'पासवर्ड बदलें',mfaTitle:'Authenticator सत्यापन',mfaLead:'इस खाते में अतिरिक्त सुरक्षा है। Authenticator ऐप का कोड डालें।',mfa:'Authenticator OTP',back:'ईमेल बदलें',show:'दिखाएँ',hide:'छिपाएँ',close:'बंद करें',success:'पासवर्ड बदल गया। नए पासवर्ड से Owner Login करें।',sent:'ईमेल पंजीकृत है तो OTP भेजा गया है। Inbox और Spam देखें।',invalid:'सही ईमेल पता लिखें।',short:'कम से कम 4 अक्षर दर्ज करें। सुरक्षा के लिए 8 या अधिक बेहतर हैं। Supabase अधिक लंबाई मांग सकता है।',different:'दोनों पासवर्ड समान नहीं हैं।',code:'6 अंकों का OTP डालें।',connected:'Supabase Email Auth उपलब्ध नहीं है। Auth और नेटवर्क जाँचें।',verifyError:'OTP सत्यापन विफल: ',sendError:'OTP ईमेल नहीं भेजा जा सका: ',passwordError:'पासवर्ड बदला नहीं जा सका: ',busy:'कृपया प्रतीक्षा करें…',security:'सुरक्षित खाता रिकवरी',resetInfo:'ईमेल में OTP के बदले लिंक आए तो Supabase Reset Password template में {{ .Token }} जोड़ें।',server:'OTP का सत्यापन Supabase सर्वर पर होगा।',login:'Owner Login पर वापस जाएँ'}};
+const t=k=>(L[language()]||L.en)[k];
+const escapeHTML=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function feedback(msg,error=false){const n=$('sr-status');if(!n)return;n.hidden=!msg;n.textContent=msg||'';n.className='sr-status'+(error?' error':'')}
+function stopTimer(){if(ticker){clearInterval(ticker);ticker=null}}
+function updateTimer(){const n=$('sr-wait'),b=$('sr-resend');if(!n||!b)return;const seconds=Math.max(0,Math.ceil((cooldownUntil-Date.now())/1000));n.textContent=seconds?`${t('wait')}: ${seconds}s`:'';b.disabled=busy||seconds>0}
+function scheduleTimer(){stopTimer();updateTimer();if(Date.now()<cooldownUntil)ticker=setInterval(()=>{updateTimer();if(Date.now()>=cooldownUntil)stopTimer()},1000)}
+function markBusy(value){busy=!!value;const form=$('sr-form');form?.querySelectorAll('button[type="submit"]').forEach(x=>x.disabled=busy);updateTimer()}
+function srGraphic(stageName){
+  const shape=stageName==='email'?'mail':stageName==='otp'?'mail':stageName==='mfa'?'shield':'key';
+  if(shape==='mail')return `<svg viewBox="0 0 64 64" width="47" height="47" fill="none" aria-hidden="true"><rect x="7" y="16" width="50" height="33" rx="7" fill="#fff"/><path d="M9 21L32 38 55 21" stroke="#1376ef" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="7" y="16" width="50" height="33" rx="7" stroke="#fff" stroke-width="3"/></svg>`;
+  if(shape==='shield')return `<svg viewBox="0 0 64 64" width="47" height="47" fill="none" aria-hidden="true"><path d="M32 5L54 13V29C54 45 43 54 32 59 21 54 10 45 10 29V13L32 5Z" fill="#fff"/><path d="M22 32L29 39 43 24" stroke="#1167d4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg viewBox="0 0 64 64" width="47" height="47" fill="none" aria-hidden="true"><circle cx="42" cy="20" r="13" stroke="#fff" stroke-width="8"/><path d="M32 30L13 49V56H25V49H32L40 41" stroke="#fff" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+function srCodeField(id,maxLength,labelKey){
+  return `<div class="sr-v50-code-shell" data-code-shell style="--sr-digit-count:${maxLength}"><input id="${id}" type="text" class="sr-v50-code-input" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{${maxLength}}" minlength="${maxLength}" maxlength="${maxLength}" required aria-label="${escapeHTML(t(labelKey))}" aria-describedby="${id==='sr-otp'?'sr-otp-help':'sr-mfa-help'}"/><div class="sr-v50-code-slots" aria-hidden="true">${Array.from({length:maxLength},(_,i)=>`<span class="sr-v50-code-slot" data-code-slot="${i}"></span>`).join('')}</div></div>`;
+}
+function srBindCodeField(){
+  const field=$('sr-otp')||$('sr-auth-code');if(!field)return;
+  const shell=field.closest('[data-code-shell]');
+  const boxes=Array.from(shell.querySelectorAll('[data-code-slot]'));
+  const render=()=>{
+    const clean=field.value.replace(/\D/g,'').slice(0,Number(field.maxLength));
+    if(clean!==field.value)field.value=clean;
+    const focused=document.activeElement===field;
+    boxes.forEach((box,i)=>{box.textContent=i<clean.length?'●':'';box.classList.toggle('is-filled',i<clean.length);box.classList.toggle('is-current',focused&&i===Math.min(clean.length,boxes.length-1))});
+  };
+  field.addEventListener('input',render);field.addEventListener('focus',()=>{shell.classList.add('is-focus');render()});field.addEventListener('blur',()=>{shell.classList.remove('is-focus');render()});
+  render();
+}
+function view(){
+  const root=$('soumik-recovery-root');if(!root)return;
+  stopTimer();
+  const title=stage==='email'?t('title'):stage==='otp'?t('verifyTitle'):stage==='mfa'?t('mfaTitle'):t('changeTitle');
+  const intro=stage==='email'?t('lead'):stage==='otp'?t('verifyLead'):stage==='mfa'?t('mfaLead'):t('changeLead');
+  const step=stage==='email'?1:(stage==='otp'||stage==='mfa')?2:3;
+  const stepNames=language()==='bn'?['ইমেইল','OTP','নতুন পাসওয়ার্ড']:language()==='hi'?['ईमेल','OTP','नया पासवर्ड']:['Email','OTP','New Password'];
+  const stepMarkup=stepNames.map((name,i)=>`<div class="sr-v50-step ${i+1===step?'is-active':''} ${i+1<step?'is-complete':''}"><span class="sr-v50-step-number">${i+1<step?'✓':i+1}</span><span class="sr-v50-step-label">${escapeHTML(name)}</span></div>`).join('');
+  const fields=stage==='email'?`
+    <label for="sr-email">✉ ${escapeHTML(t('email'))}</label>
+    <div class="sr-v50-input-wrap"><input type="email" id="sr-email" autocomplete="email" required placeholder="name@example.com" value="${escapeHTML(email)}"></div>
+    <button class="sr-primary" type="submit"><span aria-hidden="true">✉</span> ${escapeHTML(t('send'))} <span aria-hidden="true">→</span></button>`
+  :stage==='otp'?`
+    <div class="sr-address"><span aria-hidden="true">✉</span><span id="sr-address">${escapeHTML(email)}</span></div>
+    <label for="sr-otp">✉ ${escapeHTML(t('otp'))}</label>
+    ${srCodeField('sr-otp',6,'otp')}
+    <small id="sr-otp-help">${escapeHTML(t('resetInfo'))}</small>
+    <button type="submit" class="sr-primary"><span aria-hidden="true">✓</span> ${escapeHTML(t('verify'))} <span aria-hidden="true">→</span></button>
+    <div class="sr-v49-secondary"><button type="button" class="sr-link" id="sr-back">← ${escapeHTML(t('back'))}</button><button type="button" class="sr-link" id="sr-resend">↻ ${escapeHTML(t('resend'))}</button></div>
+    <p id="sr-wait" class="sr-v49-countdown" aria-live="polite"></p>`
+  :stage==='mfa'?`
+    <label for="sr-auth-code">◈ ${escapeHTML(t('mfa'))}</label>
+    ${srCodeField('sr-auth-code',6,'mfa')}
+    <small id="sr-mfa-help">${escapeHTML(t('mfaLead'))}</small>
+    <button type="submit" class="sr-primary"><span aria-hidden="true">✓</span> ${escapeHTML(t('verify'))} <span aria-hidden="true">→</span></button>`
+  :`
+    <label for="sr-password">🔒 ${escapeHTML(t('password'))}</label>
+    <div class="sr-eye"><input id="sr-password" type="password" minlength="4" autocomplete="new-password" required placeholder="••••••••"><button type="button" data-toggle="sr-password" aria-label="${escapeHTML(t('show'))}">${escapeHTML(t('show'))}</button></div>
+    <label for="sr-confirm">🔒 ${escapeHTML(t('confirm'))}</label>
+    <div class="sr-eye"><input id="sr-confirm" type="password" minlength="4" autocomplete="new-password" required placeholder="••••••••"><button type="button" data-toggle="sr-confirm" aria-label="${escapeHTML(t('show'))}">${escapeHTML(t('show'))}</button></div>
+    <button type="submit" class="sr-primary" id="sr-change"><span aria-hidden="true">🔒</span> ${escapeHTML(t('change'))} <span aria-hidden="true">→</span></button>`;
+  root.innerHTML=`<section class="sr-card sr-v49 sr-v50" role="dialog" aria-modal="true" aria-labelledby="sr-title" aria-describedby="sr-description">
+    <div class="sr-top"><strong><span class="sr-v50-brand">SOUMIK <em>ONLINE</em></span><small>· ${escapeHTML(t('security'))}</small></strong><button class="sr-close" id="sr-close" type="button" aria-label="${escapeHTML(t('close'))}">×</button></div>
+    <div class="sr-v50-emblem-wrap"><div class="sr-v50-emblem">${srGraphic(stage)}</div></div>
+    <h2 id="sr-title">${escapeHTML(title)}</h2><p class="sr-intro" id="sr-description">${escapeHTML(intro)}</p>
+    <div class="sr-v50-progress" aria-label="${escapeHTML(stepNames[step-1])}">${stepMarkup}</div>
+    <form id="sr-form">${fields}</form>
+    <div id="sr-status" class="sr-status" aria-live="polite" role="status" hidden></div>
+    <div class="sr-v49-footer"><span aria-hidden="true">🔒</span> ${escapeHTML(t('server'))}</div>
+  </section>`;
+  $('sr-close').onclick=close;
+  $('sr-form').onsubmit=submit;
+  root.querySelectorAll('[data-toggle]').forEach(button=>button.onclick=()=>{const input=$(button.dataset.toggle);input.type=input.type==='password'?'text':'password';button.textContent=t(input.type==='password'?'show':'hide');button.setAttribute('aria-label',button.textContent)});
+  if(stage==='otp'){$('sr-back').onclick=()=>{stage='email';view()};$('sr-resend').onclick=()=>send(true);scheduleTimer()}
+  srBindCodeField();
+  (root.querySelector('input')||$('sr-close'))?.focus();
+}
+async function send(resend=false){if(busy)return;const c=sb();if(!c?.auth?.resetPasswordForEmail)return feedback(t('connected'),true);markBusy(true);try{const options={};if(location.protocol==='https:'||location.protocol==='http:'){options.redirectTo=location.origin+location.pathname}const {error}=await c.auth.resetPasswordForEmail(email,options);if(error)throw error;verifiedEmail=false;verifiedMfa=false;factorId='';recoverySession=null;cooldownUntil=Date.now()+60000;stage='otp';view();feedback(t('sent'))}catch(e){feedback(t('sendError')+(e?.message||'Network or email configuration error'),true)}finally{markBusy(false)}}
+async function verifyEmail(){if(busy)return;const otp=$('sr-otp')?.value.trim().replace(/\s/g,'')||'';if(!/^\d{6}$/.test(otp))return feedback(t('code'),true);const c=sb();if(!c?.auth?.verifyOtp)return feedback(t('connected'),true);markBusy(true);feedback(t('busy'));try{const {data,error}=await c.auth.verifyOtp({email,token:otp,type:'recovery'});if(error)throw error;const session=data?.session||(await c.auth.getSession()).data?.session;const user=data?.user||session?.user;if(!session?.access_token||!user?.email||user.email.toLowerCase()!==email)throw Error('Verified session or email mismatch');recoverySession=session;verifiedEmail=true;let hasMfa=false;const response=await c.auth.mfa.listFactors();if(response.error)throw response.error;const factor=(response.data?.totp||[]).find(f=>f.status==='verified');if(factor){factorId=factor.id;hasMfa=true}else factorId='';stage=hasMfa?'mfa':'password';view()}catch(e){verifiedEmail=false;recoverySession=null;feedback(t('verifyError')+(e?.message||'Invalid code'),true);const input=$('sr-otp');if(input){input.focus();input.select()}}finally{markBusy(false)}}
+async function verifyMfa(){const token=$('sr-auth-code')?.value.trim()||'';if(!/^\d{6}$/.test(token))return feedback(t('code'),true);const c=sb();if(!factorId||!c?.auth?.mfa)return feedback(t('connected'),true);markBusy(true);feedback(t('busy'));try{const challenge=await c.auth.mfa.challenge({factorId});if(challenge.error)throw challenge.error;const result=await c.auth.mfa.verify({factorId,challengeId:challenge.data.id,code:token});if(result.error)throw result.error;const level=await c.auth.mfa.getAuthenticatorAssuranceLevel();if(level.error||level.data?.currentLevel!=='aal2')throw Error('Authenticator verification incomplete');verifiedMfa=true;stage='password';view()}catch(e){feedback(t('verifyError')+(e?.message||'Invalid authenticator code'),true)}finally{markBusy(false)}}
+async function changePassword(){if(busy)return;const pass=$('sr-password')?.value||'',confirm=$('sr-confirm')?.value||'';if(pass.length<4)return feedback(t('short'),true);if(pass!==confirm)return feedback(t('different'),true);const c=sb();if(!verifiedEmail||!recoverySession||!c?.auth)return feedback(t('verifyError')+'Recovery verification is required',true);markBusy(true);feedback(t('busy'));try{const userResponse=await c.auth.getUser();if(userResponse.error||userResponse.data?.user?.email?.toLowerCase()!==email)throw Error('Verified recovery session expired');if(factorId&&!verifiedMfa)throw Error('Authenticator verification required');const {error}=await c.auth.updateUser({password:pass});if(error)throw error;
+// V48 still stores legacy owner credentials locally. Update only on THIS device after server-verifiable email ownership.
+try{const profile=JSON.parse(localStorage.getItem('soumik_owner_profile')||'null');if(profile?.email?.toLowerCase()===email&&typeof soumikPasswordHash==='function'){localStorage.setItem('soumik_owner_password_hash',await soumikPasswordHash(pass));}}catch(e){console.warn('Legacy local owner password sync unavailable',e)}
+try{localStorage.removeItem('soumik_owner_signed_in')}catch{}
+verifiedEmail=false;verifiedMfa=false;recoverySession=null;await c.auth.signOut({scope:'local'});stage='email';view();feedback(t('success'));const b=$('sr-form button[type=submit]');if(b)b.hidden=true;const link=document.createElement('button');link.type='button';link.className='sr-primary';link.textContent=t('login');link.onclick=close;$('sr-form').appendChild(link);
+}catch(e){feedback(t('passwordError')+(e?.message||'Unable to save password'),true)}finally{markBusy(false)}}
+async function submit(event){event.preventDefault();if(busy)return;if(stage==='email'){email=$('sr-email')?.value.trim().toLowerCase()||'';if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return feedback(t('invalid'),true);return send()}if(stage==='otp')return verifyEmail();if(stage==='mfa')return verifyMfa();if(stage==='password')return changePassword()}
+function close(){stopTimer();verifiedEmail=false;verifiedMfa=false;recoverySession=null;document.body.style.overflow=previousOverflow;$('soumik-recovery-root')?.remove();document.removeEventListener('keydown',onEscape);returnFocus?.focus?.()}
+function onEscape(e){if(e.key==='Escape')close()}
+window.soumikRecoveryOpen=function(options={}){if($('soumik-recovery-root'))return;returnFocus=document.activeElement;email=options.email||$('ownerLoginIdentifier')?.value?.trim().toLowerCase()||'';verifiedEmail=!!options.fromLink;verifiedMfa=false;recoverySession=options.session||null;factorId='';stage=options.fromLink?'password':'email';const root=document.createElement('div');root.id='soumik-recovery-root';root.className='sr-overlay';previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';document.body.appendChild(root);document.addEventListener('keydown',onEscape);view()};
+window.soumikRecoveryClose=close;
+window.soumikForgotOwnerPassword=()=>window.soumikRecoveryOpen();
+// Support Supabase's default recovery link in addition to the OTP email template.
+function listenForLink(){const c=sb();if(!c?.auth?.onAuthStateChange)return;c.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'&&session?.user?.email&&!$('soumik-recovery-root'))window.soumikRecoveryOpen({fromLink:true,session,email:session.user.email.toLowerCase()})})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',listenForLink,{once:true});else listenForLink();
 })();
 </script><style id="soumik-dashboard-2026-polish">
 .soumik-admin-layout{align-items:start!important;gap:22px!important}
@@ -6382,7 +6484,7 @@ window.soumikOpenMaintenance=function(){
 const escapeV=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const line=(label,name,type='text',extra='')=>`<label class="soumik-line">${label}<input name="${name}" type="${type}" ${type==='password'?'data-revealable="true"':''} ${extra}>${type==='password'?`<button class="soumik-eye" type="button" aria-label="Show password" onclick="this.previousElementSibling.type=this.previousElementSibling.type==='password'?'text':'password';this.textContent=this.previousElementSibling.type==='password'?'👁':'🙈'">👁</button>`:''}</label>`;
 // Keep the existing ownerSubmit handler and validation, changing only the auth presentation.
-adminLogin=function(){const reg=ownerMode==='register';return `<div class="soumik-auth-v2 ${reg?'register':'signin'}"><div class="soumik-shape"></div><div class="soumik-secondary"></div><div class="soumik-auth-form"><h2>${reg?'Register':'Login'}</h2><div id="ownerNewId"></div><div id="ownerLoginNotice" class="owner-account-notice" role="alert" hidden></div><div id="ownerAccountNotice" class="owner-account-notice" role="status" hidden></div><form id="ownerAuthForm" onsubmit="ownerSubmit(event)" autocomplete="off">${reg?line('Full Name','name','text','autocomplete="name" required')+line('Mobile Number','mobile','tel','inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required')+line('Email','email','email','required autocomplete="email"'):line('Email','identifier','email','id="ownerLoginIdentifier" required autocomplete="username"')}${line('Password','password','password','id="ownerPass" minlength="6" required')}${reg?line('Confirm Password','confirm','password','id="ownerConfirm" minlength="6" required oninput="soumikMatchPassword()"')+'<small id="soumikPasswordMatch" class="soumik-pass-match"></small>'+line('Official Owner ID','ownerCode','password','required autocomplete="off" inputmode="numeric"'):''}<button class="soumik-submit" type="submit">${reg?'Request Registration':'Login'}</button><div class="soumik-switch">${reg?'Already have an account?':'Don\'t have an account?'} <button type="button" onclick="ownerMode='${reg?'login':'register'}';go('adminlogin')">${reg?'Sign In':'Sign Up'}</button></div>${!reg?'<div class="soumik-switch"><button type="button" onclick="if(typeof soumikOwnerForgotPassword===\'function\')soumikOwnerForgotPassword();else alert(\'Contact the Main Owner to reset your password.\')">Forgot password?</button></div>':''}</form></div><div class="soumik-auth-welcome"><h2>${reg?'WELCOME!':'WELCOME BACK!'}</h2></div></div>`};
+adminLogin=function(){const reg=ownerMode==='register';return `<div class="soumik-auth-v2 ${reg?'register':'signin'}"><div class="soumik-shape"></div><div class="soumik-secondary"></div><div class="soumik-auth-form"><h2>${reg?'Register':'Login'}</h2><div id="ownerNewId"></div><div id="ownerLoginNotice" class="owner-account-notice" role="alert" hidden></div><div id="ownerAccountNotice" class="owner-account-notice" role="status" hidden></div><form id="ownerAuthForm" onsubmit="ownerSubmit(event)" autocomplete="off">${reg?line('Full Name','name','text','autocomplete="name" required')+line('Mobile Number','mobile','tel','inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required')+line('Email','email','email','required autocomplete="email"'):line('Email','identifier','email','id="ownerLoginIdentifier" required autocomplete="username"')}${line('Password','password','password','id="ownerPass" minlength="6" required')}${reg?line('Confirm Password','confirm','password','id="ownerConfirm" minlength="6" required oninput="soumikMatchPassword()"')+'<small id="soumikPasswordMatch" class="soumik-pass-match"></small>'+line('Official Owner ID','ownerCode','password','required autocomplete="off" inputmode="numeric"'):''}<button class="soumik-submit" type="submit">${reg?'Request Registration':'Login'}</button><div class="soumik-switch">${reg?'Already have an account?':'Don\'t have an account?'} <button type="button" onclick="ownerMode='${reg?'login':'register'}';go('adminlogin')">${reg?'Sign In':'Sign Up'}</button></div>${!reg?'<div class="soumik-switch"><button type="button" onclick="window.soumikRecoveryOpen()">Forgot password?</button></div>':''}</form></div><div class="soumik-auth-welcome"><h2>${reg?'WELCOME!':'WELCOME BACK!'}</h2></div></div>`};
 window.soumikMatchPassword=function(){const a=document.getElementById('ownerPass')?.value||'',b=document.getElementById('ownerConfirm')?.value||'',el=document.getElementById('soumikPasswordMatch');if(el){el.textContent=b?(a===b?'✓ Passwords match':'✕ Passwords do not match'):'';el.classList.toggle('bad',a!==b)}};
 const serviceNames=['PAN Card Application','PAN Card Correction & Update','PAN Linked Mobile / Email Update','Voter Card Application','Voter Card Correction','Voter Mobile Update','Aadhaar PVC','PAN Card Download','Voter Card Download','PVC & Downloads'];
 const baseFields=['Applicant Full Name','Father Name','Date of Birth','Gender','Mobile Number','Email','Address','PIN Code','Passport Size Photo','Signature','Identity Document'];
@@ -6424,7 +6526,7 @@ window.soChangeRegistrationId=()=>{if(!admin)return;const e=dialog('Change Owner
 const escapeV=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const line=(label,name,type='text',extra='')=>`<label class="soumik-line">${label}<input name="${name}" type="${type}" ${type==='password'?'data-revealable="true"':''} ${extra}>${type==='password'?`<button class="soumik-eye" type="button" aria-label="Show password" onclick="this.previousElementSibling.type=this.previousElementSibling.type==='password'?'text':'password';this.textContent=this.previousElementSibling.type==='password'?'👁':'🙈'">👁</button>`:''}</label>`;
 // Keep the existing ownerSubmit handler and validation, changing only the auth presentation.
-adminLogin=function(){const reg=ownerMode==='register';return `<div class="soumik-auth-v2 ${reg?'register':'signin'}"><div class="soumik-shape"></div><div class="soumik-secondary"></div><div class="soumik-auth-form"><h2>${reg?'Register':'Login'}</h2><div id="ownerNewId"></div><div id="ownerLoginNotice" class="owner-account-notice" role="alert" hidden></div><div id="ownerAccountNotice" class="owner-account-notice" role="status" hidden></div><form id="ownerAuthForm" onsubmit="ownerSubmit(event)" autocomplete="off">${reg?line('Full Name','name','text','autocomplete="name" required')+line('Mobile Number','mobile','tel','inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required')+line('Email','email','email','required autocomplete="email"'):line('Email','identifier','email','id="ownerLoginIdentifier" required autocomplete="username"')}${line('Password','password','password','id="ownerPass" minlength="6" required')}${reg?line('Confirm Password','confirm','password','id="ownerConfirm" minlength="6" required oninput="soumikMatchPassword()"')+'<small id="soumikPasswordMatch" class="soumik-pass-match"></small>'+line('Official Owner ID','ownerCode','password','required autocomplete="off" inputmode="numeric"'):''}<button class="soumik-submit" type="submit">${reg?'Request Registration':'Login'}</button><div class="soumik-switch">${reg?'Already have an account?':'Don\'t have an account?'} <button type="button" onclick="ownerMode='${reg?'login':'register'}';go('adminlogin')">${reg?'Sign In':'Sign Up'}</button></div>${!reg?'<div class="soumik-switch"><button type="button" onclick="if(typeof soumikOwnerForgotPassword===\'function\')soumikOwnerForgotPassword();else alert(\'Contact the Main Owner to reset your password.\')">Forgot password?</button></div>':''}</form></div><div class="soumik-auth-welcome"><h2>${reg?'WELCOME!':'WELCOME BACK!'}</h2></div></div>`};
+adminLogin=function(){const reg=ownerMode==='register';return `<div class="soumik-auth-v2 ${reg?'register':'signin'}"><div class="soumik-shape"></div><div class="soumik-secondary"></div><div class="soumik-auth-form"><h2>${reg?'Register':'Login'}</h2><div id="ownerNewId"></div><div id="ownerLoginNotice" class="owner-account-notice" role="alert" hidden></div><div id="ownerAccountNotice" class="owner-account-notice" role="status" hidden></div><form id="ownerAuthForm" onsubmit="ownerSubmit(event)" autocomplete="off">${reg?line('Full Name','name','text','autocomplete="name" required')+line('Mobile Number','mobile','tel','inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required')+line('Email','email','email','required autocomplete="email"'):line('Email','identifier','email','id="ownerLoginIdentifier" required autocomplete="username"')}${line('Password','password','password','id="ownerPass" minlength="6" required')}${reg?line('Confirm Password','confirm','password','id="ownerConfirm" minlength="6" required oninput="soumikMatchPassword()"')+'<small id="soumikPasswordMatch" class="soumik-pass-match"></small>'+line('Official Owner ID','ownerCode','password','required autocomplete="off" inputmode="numeric"'):''}<button class="soumik-submit" type="submit">${reg?'Request Registration':'Login'}</button><div class="soumik-switch">${reg?'Already have an account?':'Don\'t have an account?'} <button type="button" onclick="ownerMode='${reg?'login':'register'}';go('adminlogin')">${reg?'Sign In':'Sign Up'}</button></div>${!reg?'<div class="soumik-switch"><button type="button" onclick="window.soumikRecoveryOpen()">Forgot password?</button></div>':''}</form></div><div class="soumik-auth-welcome"><h2>${reg?'WELCOME!':'WELCOME BACK!'}</h2></div></div>`};
 window.soumikMatchPassword=function(){const a=document.getElementById('ownerPass')?.value||'',b=document.getElementById('ownerConfirm')?.value||'',el=document.getElementById('soumikPasswordMatch');if(el){el.textContent=b?(a===b?'✓ Passwords match':'✕ Passwords do not match'):'';el.classList.toggle('bad',a!==b)}};
 const serviceNames=['PAN Card Application','PAN Card Correction & Update','PAN Linked Mobile / Email Update','Voter Card Application','Voter Card Correction','Voter Mobile Update','Aadhaar PVC','PAN Card Download','Voter Card Download','PVC & Downloads'];
 const baseFields=['Applicant Full Name','Father Name','Date of Birth','Gender','Mobile Number','Email','Address','PIN Code','Passport Size Photo','Signature','Identity Document'];
@@ -6846,70 +6948,71 @@ decorateAll();
 })();
 </script>
 
-<script id="so49-owner-youtube-link-publisher">
+
+<style id="so52-fixes-style">
+.so52-alert{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border:1px solid #bed2ff;border-radius:18px;padding:18px 22px;background:linear-gradient(120deg,#eef6ff,#f6efff);box-shadow:0 12px 22px #123f8922;margin:12px 0 20px}.so52-alert>div{display:flex;align-items:center;gap:16px}.so52-alert-icon{font-size:36px}.so52-alert small{display:block;color:#3057a0;letter-spacing:.07em;font-weight:900}.so52-alert strong{display:block;color:#0b3279;font-size:clamp(19px,2vw,26px)}.so52-alert p{color:#406396;font-size:13px;margin:5px 0}.so52-alert button{border:0;border-radius:12px;background:linear-gradient(100deg,#1263e7,#2242bd);color:#fff;padding:13px 18px;cursor:pointer;font-size:14px;font-weight:800;box-shadow:0 6px 15px #124abd30}
+.so52-payment-panel{display:block!important;margin:18px 0!important;border:2px solid #a6caff!important;border-radius:20px!important;background:#fff!important;box-shadow:0 16px 30px #164a8a18!important}.so52-payment-panel summary{background:linear-gradient(105deg,#103f9e,#1670ed)!important;color:#fff!important;padding:18px!important;border-radius:15px!important;display:flex!important;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:17px!important;font-weight:850!important}.so52-payment-panel summary *{color:#fff!important}.so52-queue-count{background:#fff;color:#12429c!important;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:850}.so52-payment-panel summary .so52-queue-count{color:#123d90!important}.so52-payment-panel[open] .so28-inner{padding:16px!important}.so52-payment-panel table{width:100%;min-width:700px}.so52-payment-panel td{vertical-align:middle}.so52-delete-action{background:#fff1f2!important;color:#b91c1c!important;border:1px solid #fecaca!important;font-size:12px!important;min-height:34px!important}.so52-confirmed-view{border:1px solid #bbedd7;background:#f0fff6;border-radius:12px;padding:15px;margin-bottom:18px}.so52-paid-line{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:10px;border-top:1px solid #ccedda}.so52-paid-line b{color:#078347}.so52-paid-line button{padding:7px 12px;border:1px solid #a8d9c7;border-radius:8px;background:#fff;color:#075a45;cursor:pointer}.so52-application-help{margin:18px 0 6px;padding:12px;border-radius:12px;border:1px solid #cbdafb;background:#f1f7ff;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:13px;font-weight:650;color:#1b4484}.so52-application-help button{width:auto}.so52-overlay{position:fixed;inset:0;z-index:2147483000;background:#091c45b8;display:grid;place-items:center;padding:16px}.so52-modal{width:min(520px,100%);max-height:90dvh;overflow-y:auto;border-radius:23px;padding:clamp(20px,3vw,28px);background:#fff;box-shadow:0 35px 75px #00133f5c;color:#0b2f71}.so52-modal h2{font-size:23px;margin:0 0 8px}.so52-modal p{font-size:14px;line-height:1.6}.so52-modal label{display:block;font-weight:750;font-size:14px;margin:14px 0}.so52-modal input{width:100%;margin:6px 0 0;padding:12px;border:1px solid #b6cffa;border-radius:9px;box-sizing:border-box}.so52-modal .so52-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.so52-modal .so52-actions button,.so52-modal .so52-actions a{flex:1;text-decoration:none;text-align:center;border-radius:10px;padding:12px 10px;background:#075de4;color:#fff;font-weight:850;font-size:13px;border:0;cursor:pointer}.so52-modal .so52-actions .so52-secondary{background:#eef4ff;color:#144aa4}.so52-modal .so52-actions .so52-danger{background:#b42318;color:white}.so52-modal .so52-error{color:#b42318;font-size:13px;font-weight:750;min-height:20px}.so52-modal a{overflow-wrap:anywhere}
+@media(max-width:650px){.so52-payment-panel summary{font-size:14px!important}.so52-alert{padding:13px}.so52-alert button{width:100%}.so52-application-help{display:grid}.so52-overlay{padding:10px}.so52-modal .so52-actions{flex-direction:column}}
+</style>
+<script id="so52-owner-and-recovery-fixes">
 (function(){
  'use strict';
- const KEY='soumik_owner_settings';
- function valid(raw){
-  if(!raw)return true;
-  try{const u=new URL(String(raw).trim());
-    if(u.protocol!=='https:'||u.username||u.password)return false;
-    if(!['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname.toLowerCase()))return false;
-    return /^\/(?:@[^/?#\s]+|channel\/[^/?#\s]+|c\/[^/?#\s]+|user\/[^/?#\s]+)\/?$/.test(u.pathname);
-  }catch{return false;}
- }
- window.soumikValidYoutubeChannel=valid;
- function localValue(){try{const settings=JSON.parse(localStorage.getItem(KEY)||'{}');return String(settings.youtube_channel_url||'').trim()}catch{return ''}}
- function apply(raw){
-  let url=valid(raw)?String(raw||'').trim():'';
-  const link=document.getElementById('so49-youtube-link');
-  if(!link)return;
-  link.href=url||'#';link.classList.toggle('so49-unconfigured',!url);
-  link.title=url?'Visit SOUMIK ONLINE YouTube channel':'YouTube channel link not yet configured by owner';
-  link.setAttribute('aria-label',url?'Visit our YouTube channel':'YouTube channel not configured');
-  link.onclick=function(e){if(!url){e.preventDefault();alert('YouTube channel link has not been configured yet.');}};
- }
- window.soumikYoutubeApply=apply;
- async function readCloud(){
-   const db=window.soumikSupabase;
-   if(!db)throw Error('Website cloud connection unavailable');
-   const result=await db.from('site_control').select('design').eq('id',1).maybeSingle();
-   if(result.error)throw result.error;
-   if(!result.data)throw Error('Site control record not available');
-   const d=result.data.design;
-   return typeof d?.youtube_channel_url==='string'?d.youtube_channel_url:null;
- }
- window.soumikYoutubeReadCloud=readCloud;
- window.soumikYoutubePrefillOwnerSettings=function(form){
-   const field=form?.elements?.youtube_channel_url;if(!field)return;
-   let dirty=false;field.addEventListener('input',()=>{dirty=true},{once:true});
-   readCloud().then(url=>{if(field.isConnected&&!dirty&&typeof url==='string')field.value=url}).catch(()=>{});
+ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const contactPhone='919593106177',contactEmail='tutotisonlines@gmail.com';
+ function modal(html){document.getElementById('so52-modal')?.remove();const el=document.createElement('div');el.id='so52-modal';el.className='so52-overlay';el.innerHTML='<section class="so52-modal" role="dialog" aria-modal="true">'+html+'</section>';el.addEventListener('keydown',e=>{if(e.key==='Escape')el.remove()});el.addEventListener('click',e=>{if(e.target===el)el.remove()});document.body.append(el);el.querySelector('input,button,a')?.focus();return el}
+ window.so52ApplicationHelp=function(problem=''){
+  const message='SOUMIK ONLINE: I need assistance with an interrupted or blocked application/payment. Please help me locate the existing application. (Please do not send Aadhaar numbers or OTPs here.)';
+  const whatsapp='https://wa.me/'+contactPhone+'?text='+encodeURIComponent(message);
+  const mail='mailto:'+contactEmail+'?subject='+encodeURIComponent('Application / Payment Assistance — SOUMIK ONLINE')+'&body='+encodeURIComponent(message);
+  const el=modal('<h2>🛟 Recover an interrupted application</h2><p>'+safe(problem||'If a form was submitted but the payment page closed, do not submit a duplicate application. Contact support with the tracking ID, if available.')+'</p><p><b>Do not share Aadhaar number, OTP or password in messages.</b> If an Aadhaar/PAN duplicate warning appears, ask the owner to locate the existing record securely.</p><label>Tracking ID (optional)<input id="so52-help-id" placeholder="Enter tracking ID if you have one"></label><div class="so52-actions"><button type="button" id="so52-whatsapp">WhatsApp Support</button><button type="button" class="so52-secondary" id="so52-email">Email Support</button><button type="button" class="so52-secondary" id="so52-track">Track Application</button><button type="button" class="so52-secondary" id="so52-close">Close</button></div>');
+  const complete=()=>{const id=el.querySelector('#so52-help-id').value.trim();return message+(id?'\nTracking ID: '+id:'')};
+  el.querySelector('#so52-whatsapp').onclick=()=>window.open('https://wa.me/'+contactPhone+'?text='+encodeURIComponent(complete()),'_blank','noopener,noreferrer');
+  el.querySelector('#so52-email').onclick=()=>{location.href='mailto:'+contactEmail+'?subject='+encodeURIComponent('SOUMIK ONLINE Application Help')+'&body='+encodeURIComponent(complete())};
+  el.querySelector('#so52-track').onclick=()=>{const id=el.querySelector('#so52-help-id').value.trim();el.remove();window.go?.('tracking');if(id){const field=document.getElementById('trackInput');if(field)field.value=id}};
+  el.querySelector('#so52-close').onclick=()=>el.remove();
  };
- window.soumikYoutubePublishToCloud=async function(url){
-   if(!valid(url))throw Error('Enter a valid YouTube channel URL');
-   const db=window.soumikSupabase;
-   if(!db)throw Error('Website cloud connection unavailable');
-   // The site_control row already holds published design settings; update only our own property.
-   const {data,error}=await db.from('site_control').select('design').eq('id',1).single();
-   if(error||!data)throw error||Error('Site settings not available');
-   const design=(data.design&&typeof data.design==='object'&&!Array.isArray(data.design))?data.design:{};
-   const next={...design,youtube_channel_url:url};
-   const result=await db.from('site_control').update({design:next}).eq('id',1).select('design').single();
-   if(result.error||!result.data)throw result.error||Error('Owner does not have permission to publish channel link');
-   apply(url);return true;
+ window.so52DeleteConfirm=async function(id){
+   if(typeof admin==='undefined'||!admin)return alert('Owner login required');
+   const a=state.applications.find(x=>String(x.id)===String(id));if(!a)return alert('Application not found');
+   const el=modal('<h2>🗑 Delete application?</h2><p>Tracking ID: <strong>'+safe(id)+'</strong></p><p>This deletes the database application record. Uploaded document files may still exist in private storage and require separate cleanup. Keep a backup first.</p><label>To confirm, enter the exact Tracking ID<input type="text" id="so52-delete-id" autocomplete="off" spellcheck="false" placeholder="'+safe(id)+'"></label><p class="so52-error" role="alert" id="so52-delete-error"></p><div class="so52-actions"><button class="so52-secondary" id="so52-delete-cancel">Cancel</button><button class="so52-danger" id="so52-delete-do">Permanently Delete</button></div>');
+   el.querySelector('#so52-delete-cancel').onclick=()=>el.remove();
+   el.querySelector('#so52-delete-do').onclick=async()=>{
+     const entry=el.querySelector('#so52-delete-id').value.trim(),error=el.querySelector('#so52-delete-error'),button=el.querySelector('#so52-delete-do');
+     if(entry!==String(id)){error.textContent='Tracking ID does not match.';return}
+     button.disabled=true;button.textContent='Deleting from Supabase...';error.textContent='';
+     try{
+       window.soumikSupabaseReady?.();const c=window.soumikSupabase;
+       if(!c)throw Error('Supabase is not connected');
+       const auth=await c.auth.getUser();if(auth.error||!auth.data?.user)throw Error('Supabase Owner login required; local-only login is not enough');
+       const profile=await c.from('owner_profiles').select('role').eq('user_id',auth.data.user.id).maybeSingle();
+       if(profile.error||profile.data?.role!=='owner')throw Error('Owner permission not verified');
+       const deleted=await c.from('applications').delete().eq('tracking_id',id).select('tracking_id');
+       if(deleted.error)throw deleted.error;
+       if(!Array.isArray(deleted.data)||!deleted.data.some(x=>String(x.tracking_id)===String(id)))throw Error('No record deleted; check RLS DELETE policy, or record already removed');
+       const idx=state.applications.findIndex(x=>String(x.id)===String(id));if(idx>=0)state.applications.splice(idx,1);
+       el.remove();window.soumikNotify?.('Application '+id+' deleted from Supabase','success');await window.soumikLoadData?.();window.go?.('admin');
+     }catch(e){error.textContent='Delete failed: '+(e.message||String(e));button.disabled=false;button.textContent='Permanently Delete';}
+   };
  };
- window.addEventListener('soumik-youtube-updated',function(e){apply(e.detail?.url||'')});
- window.addEventListener('storage',function(e){if(e.key===KEY)load()});
- let generation=0;
- async function load(){
-   const token=++generation;
-   apply(localValue());
-   try{const remote=await readCloud();if(token===generation&&typeof remote==='string')apply(remote)}catch(e){}
- }
- function initialize(){load();if(!window.soumikSupabase){setTimeout(load,1600)}}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});else initialize();
+ // The older dashboard stylesheet opens Payment Follow-ups as a full-screen stage.
+ // Keep it visible inline, and show confirmed records distinctly when requested.
+ window.so28ShowPayments=function(mode='pending'){
+   const panel=document.getElementById('so28payments');if(!panel)return;
+   document.querySelector('.so32-stage-shade')?.click();
+   panel.classList.remove('so32-fullscreen');panel.open=true;
+   document.getElementById('so52-confirmed-view')?.remove();
+   if(mode==='confirmed'){
+     const rows=state.applications.filter(a=>['PAID','CASH_CONFIRMED'].includes(String(a.paymentStatus||'').toUpperCase()));
+     const section=document.createElement('section');section.id='so52-confirmed-view';section.className='so52-confirmed-view';
+     section.innerHTML='<h3>✅ Confirmed Payments ('+rows.length+')</h3>'+(rows.length?rows.map(a=>'<div class="so52-paid-line"><strong>'+safe(a.id)+'</strong><span>'+safe(a.fullName||'')+'</span><b>'+safe(a.paymentStatus)+'</b><button type="button" data-id="'+safe(a.id)+'">View Receipt</button></div>').join(''):'<p>No confirmed payments yet.</p>');
+     section.querySelectorAll('[data-id]').forEach(btn=>btn.onclick=()=>window.openReceipt?.(btn.dataset.id));
+     panel.querySelector('#soumikPaymentQueue')?.prepend(section);
+   }
+   panel.scrollIntoView({behavior:'smooth',block:'start'});
+ };
 })();
 </script>
+
 </body>
 <style id="soumik-v4-fixes">
 body.so-private-page .footer,body.so-private-page footer.soumik-footer-modern{display:none!important}
@@ -8225,7 +8328,7 @@ function makeHome(){
  return root.outerHTML;
 }
 window.home=makeHome;
-function createBar(){if(document.getElementById('so44-utility'))return;const header=document.querySelector('header.top');if(!header)return;const bar=document.createElement('div');bar.id='so44-utility';bar.setAttribute('aria-label','Contact and social links');bar.innerHTML=`<div class="so44-contact"><a href="tel:+919593106177" title="Call SOUMIK ONLINE"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011.1-.23c1.2.4 2.5.63 3.85.63A1.6 1.6 0 0122 17.2V21a1 1 0 01-1 1C10.5 22 2 13.5 2 3a1 1 0 011-1h3.8A1.6 1.6 0 018.4 3.6c0 1.35.22 2.64.63 3.85a1 1 0 01-.24 1.08z"/></svg>+91 9593106177</a><span class="so44-separator"></span><a href="mailto:tutotisonlines@gmail.com" title="Email SOUMIK ONLINE"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg>tutotisonlines@gmail.com</a></div><div class="so44-social"><a href="https://wa.me/919593106177" target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" title="WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#1bd260" d="M16 1a15 15 0 0 0-12.9 22.7L1 31l7.5-2A15 15 0 1 0 16 1"/><path fill="white" d="M16 3.8a12.2 12.2 0 0 1 0 24.4c-2.1 0-4.1-.5-5.9-1.6l-.7-.4-4.3 1.1 1.2-4.2-.5-.8A12.2 12.2 0 0 1 16 3.8zm-6 6.4c-.3-.7-.7-.7-1-.7h-.8c-.3 0-.8.1-1.2.6-.5.5-1.6 1.6-1.6 3.8s1.7 4.4 1.9 4.7c.2.3 3.4 5.4 8.4 7.2 4.1 1.4 5 1.2 5.9 1.1.9-.1 2.8-1.1 3.2-2.2.4-1.1.4-2.1.3-2.2-.1-.2-.4-.3-.9-.5-.5-.2-2.8-1.4-3.3-1.5-.4-.2-.7-.2-1 .3s-1.2 1.5-1.5 1.8c-.3.3-.5.4-1 .1-.5-.2-2.1-.8-3.9-2.4-1.4-1.2-2.4-2.7-2.6-3.2-.3-.5 0-.7.2-.9.2-.2.5-.5.7-.8.2-.3.3-.5.5-.8.1-.3.1-.6-.1-.9z" transform="translate(4 4) scale(.74)"/></svg></a><a href="mailto:tutotisonlines@gmail.com" aria-label="Send Email" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg></a><a id="so49-youtube-link" href="#" target="_blank" rel="noopener noreferrer" title="YouTube channel not configured" aria-label="Open YouTube"><svg viewBox="0 0 28 21" aria-hidden="true"><rect fill="#f20a1b" width="28" height="21" rx="5"/><path fill="#fff" d="m11 5 8 5.5-8 5.5z"/></svg></a></div>`;header.parentNode.insertBefore(bar,header)}
+function createBar(){if(document.getElementById('so44-utility'))return;const header=document.querySelector('header.top');if(!header)return;const bar=document.createElement('div');bar.id='so44-utility';bar.setAttribute('aria-label','Contact and social links');bar.innerHTML=`<div class="so44-contact"><a href="tel:+919593106177" title="Call SOUMIK ONLINE"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011.1-.23c1.2.4 2.5.63 3.85.63A1.6 1.6 0 0122 17.2V21a1 1 0 01-1 1C10.5 22 2 13.5 2 3a1 1 0 011-1h3.8A1.6 1.6 0 018.4 3.6c0 1.35.22 2.64.63 3.85a1 1 0 01-.24 1.08z"/></svg>+91 9593106177</a><span class="so44-separator"></span><a href="mailto:tutotisonlines@gmail.com" title="Email SOUMIK ONLINE"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg>tutotisonlines@gmail.com</a></div><div class="so44-social"><a href="https://wa.me/919593106177" target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" title="WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#1bd260" d="M16 1a15 15 0 0 0-12.9 22.7L1 31l7.5-2A15 15 0 1 0 16 1"/><path fill="white" d="M16 3.8a12.2 12.2 0 0 1 0 24.4c-2.1 0-4.1-.5-5.9-1.6l-.7-.4-4.3 1.1 1.2-4.2-.5-.8A12.2 12.2 0 0 1 16 3.8zm-6 6.4c-.3-.7-.7-.7-1-.7h-.8c-.3 0-.8.1-1.2.6-.5.5-1.6 1.6-1.6 3.8s1.7 4.4 1.9 4.7c.2.3 3.4 5.4 8.4 7.2 4.1 1.4 5 1.2 5.9 1.1.9-.1 2.8-1.1 3.2-2.2.4-1.1.4-2.1.3-2.2-.1-.2-.4-.3-.9-.5-.5-.2-2.8-1.4-3.3-1.5-.4-.2-.7-.2-1 .3s-1.2 1.5-1.5 1.8c-.3.3-.5.4-1 .1-.5-.2-2.1-.8-3.9-2.4-1.4-1.2-2.4-2.7-2.6-3.2-.3-.5 0-.7.2-.9.2-.2.5-.5.7-.8.2-.3.3-.5.5-.8.1-.3.1-.6-.1-.9z" transform="translate(4 4) scale(.74)"/></svg></a><a href="mailto:tutotisonlines@gmail.com" aria-label="Send Email" title="Email"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg></a><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" title="YouTube (general website; channel not yet configured)" aria-label="Open YouTube"><svg viewBox="0 0 28 21" aria-hidden="true"><rect fill="#f20a1b" width="28" height="21" rx="5"/><path fill="#fff" d="m11 5 8 5.5-8 5.5z"/></svg></a></div>`;header.parentNode.insertBefore(bar,header)}
 function sync(){const home=!!document.querySelector('#app > .so44-home');document.body.classList.toggle('so44-home-active',home);if(home){const field=document.getElementById('homeTrack');if(field){field.placeholder=STR[locale()].placeholder;field.setAttribute('aria-label',STR[locale()].placeholder)}}}
 const prevGo=window.go;if(typeof prevGo==='function'){window.go=function(){const result=prevGo.apply(this,arguments);sync();return result}}
 function init(){createBar();const currentHome=!!document.querySelector('#app > .so41-home');if(currentHome&&typeof window.go==='function')window.go('home');sync();const lang=document.getElementById('lang');if(lang)lang.addEventListener('change',()=>{if(document.querySelector('#app > .so44-home'))setTimeout(()=>window.go('home'),0)});}
@@ -8652,229 +8755,90 @@ function show(img){modalClose();window.__so47OldOverflow=document.body.style.ove
   window.so48AskPreset=function(q){const el=document.getElementById('aiQuestion');if(!el)return;el.value=q;const form=el.closest('form');if(form&&form.requestSubmit)form.requestSubmit();else form?.querySelector('[type="submit"]')?.click();};
 })();
 </script>
-<style id="so-v50-aurora-auth-final">
-/* V50: Selected Aurora RGB style, applies only to login/registration and local recovery. */
-body:has(#app > .so-v50-auth){background:#0c1641!important;background-image:radial-gradient(circle at 9% 90%,#7e17b877,transparent 32%),radial-gradient(circle at 90% 85%,#0578dc67,transparent 35%),radial-gradient(circle at 50% 0,#196ac766,transparent 36%)!important;min-height:100dvh!important;}
-body:has(#app > .so-v50-auth) > .top,body:has(#app > .so-v50-auth) > .so49-topbar{display:none!important}
-body:has(#app > .so-v50-auth) > #app{min-height:100dvh!important;min-height:100vh;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px 14px!important;width:100%!important;flex:1!important}
-.so-v50-auth.soumik-auth-v2{box-sizing:border-box!important;position:relative!important;display:grid!important;isolation:isolate!important;overflow:hidden!important;min-height:0!important;height:auto!important;width:min(950px,100%)!important;max-width:950px!important;margin:0 auto!important;padding:0!important;border:1px solid #71a8ff99!important;border-radius:28px!important;background:radial-gradient(circle at 58% 5%,#11c9eb98,transparent 47%),linear-gradient(125deg,#ee31ae 0%,#9922c9 39%,#3044c5 74%,#1575d9 100%)!important;box-shadow:0 25px 60px #05091b8c,0 0 35px #297bf355!important;color:#fff!important;font-family:system-ui,-apple-system,'Noto Sans Bengali',Arial,sans-serif!important;}
-.so-v50-auth .soumik-shape,.so-v50-auth .soumik-secondary,.so-v50-auth .soumik-auth-welcome{display:none!important}
-.so-v50-auth.signin.so-login-v10{grid-template-columns:1fr 1fr!important;gap:0!important;align-items:stretch!important;}
-.so-v50-auth .so-v50-intro{padding:36px 26px 35px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;text-align:center!important;gap:13px!important;min-width:0!important;color:#fff!important}
-.so-v50-auth .so-v50-brand{display:flex;align-items:center;justify-content:center;gap:11px;font-weight:850;font-size:25px;letter-spacing:-.5px;line-height:1.1;color:#fff}
-.so-v50-auth .so-v50-brand-icon{font-size:34px;color:#4ef2ff;filter:drop-shadow(0 0 7px #04f1ff)}
-.so-v50-auth .so-v50-brand span{color:#42ffea}
-.so-v50-auth .so-v50-subbrand{font-size:12px;font-weight:500;opacity:.95;text-align:center;margin:3px 0 0}
-.so-v50-auth .so-v50-intro svg{display:block;width:min(100%,320px);max-height:195px;filter:drop-shadow(0 16px 10px #15124477);margin:8px auto}
-.so-v50-auth .so-v50-intro h2{font-size:31px!important;line-height:1.15!important;margin:4px 0 0!important;color:#fff!important;text-align:center!important;font-weight:850!important}
-.so-v50-auth .so-v50-intro h2 span{color:#20f3df!important}
-.so-v50-auth .so-v50-intro p{font-size:13px;max-width:340px;line-height:1.6;margin:0!important}
-.so-v50-auth .so-v50-perks{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:5px}
-.so-v50-auth .so-v50-perks span{border:1px solid #ffd0ff5c;background:#ffffff18;border-radius:20px;padding:7px 10px;font-size:10px;color:#fff;font-weight:750}
-.so-v50-auth .soumik-auth-form,.so-v50-auth.signin .soumik-auth-form{box-sizing:border-box!important;min-height:0!important;height:auto!important;width:auto!important;max-width:none!important;position:relative!important;margin:14px!important;padding:25px 27px 22px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;background:linear-gradient(145deg,#6d28b3c4 2%,#174cabd9 62%,#3b16adce 100%)!important;border:2px solid #70c5ff9a!important;box-shadow:0 9px 24px #0a197344,inset 0 0 15px #bd6aff44!important;border-radius:24px!important;text-align:left!important;overflow:visible!important}
-.so-v50-auth .so-v50-form-head{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;margin:0 0 14px}
-.so-v50-auth .so-v50-form-head .so-v50-brand{font-size:20px!important}
-.so-v50-auth .so-v50-person{height:42px;width:42px;display:grid;place-items:center;border-radius:13px;border:1px solid #16e8fa;box-shadow:0 0 15px #02eafd66;color:#05edff;font-size:26px}
-.so-v50-auth .so-v50-form-head h2{font-size:26px!important;margin:0!important;line-height:1.18!important;color:white!important;text-align:center!important;font-weight:850!important}
-.so-v50-auth .so-v50-form-head p{font-size:12px!important;color:#e2efff!important;margin:0!important}
-.so-v50-auth #ownerAuthForm{display:grid!important;grid-template-columns:minmax(0,1fr);gap:10px!important;margin:0!important;padding:0!important;min-width:0!important;color:#fff!important}
-.so-v50-auth #ownerAuthForm .soumik-line{display:block!important;position:relative!important;margin:0!important;font-size:12px!important;line-height:1.5!important;font-weight:750!important;color:#fff!important;min-width:0}
-.so-v50-auth #ownerAuthForm .soumik-line input,.so-v50-auth #ownerAuthForm .soumik-line input:not(:placeholder-shown){box-sizing:border-box!important;width:100%!important;display:block!important;height:43px!important;min-height:43px!important;max-height:43px!important;margin-top:4px!important;padding:9px 42px 9px 13px!important;border:1px solid #b8daff!important;outline:none!important;border-radius:10px!important;background:#eff6ff!important;color:#102b69!important;-webkit-text-fill-color:#102b69!important;box-shadow:none!important;font:600 13px system-ui,Arial!important;caret-color:#0957c5!important;letter-spacing:0!important;}
-.so-v50-auth #ownerAuthForm .soumik-line input::placeholder{color:#6c7c98!important;-webkit-text-fill-color:#6c7c98!important;opacity:1!important}
-.so-v50-auth #ownerAuthForm .soumik-line input:focus{border-color:#2ff2fb!important;box-shadow:0 0 0 3px #00d2ff44!important}
-.so-v50-auth #ownerAuthForm .soumik-eye{position:absolute!important;right:6px!important;bottom:4px!important;top:auto!important;transform:none!important;border:0!important;background:transparent!important;color:#174696!important;height:34px!important;width:34px!important;min-width:34px!important;border-radius:8px!important;font-size:17px!important;cursor:pointer!important;padding:0!important}
-.so-v50-auth #ownerAuthForm .soumik-submit{min-height:46px!important;height:46px!important;width:100%!important;border:1px solid #17fbf5!important;border-radius:28px!important;background:linear-gradient(95deg,#0467fd,#00d8ce)!important;color:#fff!important;font-size:15px!important;font-weight:850!important;box-shadow:0 6px 16px #1220a066!important;margin:7px 0 0!important;cursor:pointer}
-.so-v50-auth #ownerAuthForm .soumik-submit:focus-visible,.so-v50-auth button:focus-visible{outline:3px solid white;outline-offset:3px}
-.so-v50-auth #ownerAuthForm .soumik-switch{margin:3px 0!important;text-align:center!important;color:#fff!important;font-size:12px!important;line-height:1.45!important}
-.so-v50-auth #ownerAuthForm .soumik-switch button{font-weight:850!important;color:#16fff0!important;cursor:pointer;border:none;background:none;font-size:inherit!important}
-.so-v50-auth .owner-account-notice{margin:0 0 7px!important;padding:9px 11px!important;color:#0c2358!important;background:#f0f9ff!important;border-radius:10px!important;font-size:12px!important}
-.so-v50-auth.register{width:min(560px,100%)!important;max-width:560px!important;display:block!important;background:radial-gradient(circle at 65% 0%,#05d4dfc2,transparent 46%),radial-gradient(circle at 0 100%,#ff4089c7,transparent 48%),linear-gradient(135deg,#d833b5,#3c2ab6 68%,#134ba9)!important;}
-.so-v50-auth.register .soumik-auth-form{width:100%!important;max-width:100%!important;padding:27px 30px 27px!important;border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;margin:0!important;}
-.so-v50-auth.register .so-v50-form-head{margin-bottom:18px!important}
-.so-v50-auth.register #ownerAuthForm{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px 12px!important}
-.so-v50-auth.register .so-v50-wide{grid-column:1/-1}
-.so-v50-auth .soumik-pass-match{grid-column:1/-1;font-size:11px!important;font-weight:700;color:#d9ffdb!important;min-height:0!important}
-.so-v50-auth .soumik-pass-match.bad{color:#fff0a5!important}
-@media(max-width:760px){
- .so-v50-auth.signin.so-login-v10{grid-template-columns:1fr!important;width:min(470px,100%)!important;}
- .so-v50-auth .so-v50-intro{display:none!important}
- .so-v50-auth .soumik-auth-form{margin:11px!important;padding:23px 19px!important}
- .so-v50-auth.register{width:min(520px,100%)!important}
- .so-v50-auth.register .soumik-auth-form{padding:22px 17px!important}
-}
-@media(max-width:470px){
- body:has(#app > .so-v50-auth)>#app{padding:12px 8px!important}
- .so-v50-auth.soumik-auth-v2{border-radius:19px!important}
- .so-v50-auth.register #ownerAuthForm{grid-template-columns:1fr!important;gap:8px!important}
- .so-v50-auth.register .soumik-auth-form{padding:17px 15px!important}
- .so-v50-auth.register .so-v50-form-head h2{font-size:23px!important}
- .so-v50-auth.register #ownerAuthForm .soumik-line input{height:41px!important;min-height:41px!important}
-}
-/* Hide the legacy auth decoration that older MutationObserver still inserts. */
-.so-v50-auth .so-neon-brand,.so-v50-auth .so-neon-hero{display:none!important}
-body:has(#app > .so-v50-auth) #so44-utility,body:has(#app > .so-v50-auth) #so49-topbar,body:has(#app > .so-v50-auth) .so44-utility{display:none!important}
-/* owner password recovery — honest local-only mode, no fake email OTP */
-.so-v50-recovery{position:fixed;inset:0;z-index:100002;display:grid;place-items:center;padding:14px;background:#071333df;backdrop-filter:blur(8px)}
-.so-v50-recovery[hidden]{display:none!important}
-.so-v50-recovery-card{width:min(460px,100%);max-height:calc(100dvh - 28px);overflow:auto;box-sizing:border-box;padding:23px;border:1px solid #9dd4ff;border-radius:21px;color:#12265d;background:#fafdff;box-shadow:0 22px 80px #050b29ba}
-.so-v50-recovery-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.so-v50-recovery-top strong{font-size:12px;color:#186de2;letter-spacing:1px}
-.so-v50-recovery-close{width:34px;height:34px;border:1px solid #c9dcfa;border-radius:10px;background:#eef6ff;color:#183b86;font-size:20px;cursor:pointer}
-.so-v50-recovery-card h2{font-size:23px!important;line-height:1.2;color:#0b2d73!important;margin:10px 0 8px!important}
-.so-v50-recovery-card p{font-size:12px;color:#576b91;line-height:1.55;margin:0 0 13px}
-.so-v50-recovery-note{background:#ecf6ff;border:1px solid #bbdbff;padding:10px 12px;border-radius:10px;font-size:12px;color:#16467f;margin:12px 0}
-.so-v50-recovery-card form{display:grid;gap:10px}
-.so-v50-recovery-card label{font-size:12px;font-weight:800;color:#17386f;display:grid;gap:5px}
-.so-v50-recovery-card input{box-sizing:border-box;display:block;min-height:43px;width:100%;padding:9px 11px;color:#132d60!important;background:#fff!important;border:1px solid #bed5f2;border-radius:10px;font:600 13px system-ui}
-.so-v50-recovery-card input:focus{outline:3px solid #35bbf74a;border-color:#2389ec}
-.so-v50-recovery-submit{min-height:46px;border:0;border-radius:12px;background:linear-gradient(90deg,#0660ee,#00bfc6);color:white;font-size:14px;font-weight:850;cursor:pointer}
-.so-v50-recovery-error{color:#a11a37;background:#fff1f2;border:1px solid #fecdd3;padding:9px 10px;border-radius:9px;font-size:12px}
-.so-v50-recovery-success{color:#066544;background:#e2fff3;border:1px solid #88e5c4;padding:10px 12px;border-radius:9px;font-size:13px;line-height:1.5}
-</style>
-<style id="so-v51-aurora-password-recovery">
-/* V51: accessible, responsive Aurora password recovery modal; existing Supabase flow retained. */
-.so-v50-recovery{background:radial-gradient(ellipse at 15% 75%,#731ca588,transparent 45%),radial-gradient(ellipse at 90% 20%,#036cc888,transparent 45%),#050e2ded!important;backdrop-filter:blur(12px)!important;padding:16px!important;z-index:100500!important;overflow-y:auto!important}
-.so-v50-recovery-card{position:relative!important;width:min(520px,100%)!important;max-height:min(92dvh,810px)!important;overflow-y:auto!important;padding:0!important;background:#fff!important;border:1px solid #94c9ff!important;border-radius:24px!important;box-shadow:0 32px 100px #020921dd,0 0 0 5px #72c5ff25!important;color:#112d65!important}
-.so-v50-recovery-card .so-v51-hero{position:relative;padding:21px 23px 22px;background:linear-gradient(125deg,#ef32ad 0%,#942be5 34%,#1855dd 70%,#04b7d8 100%);color:#fff;overflow:hidden}
-.so-v50-recovery-card .so-v51-hero:after{content:"";position:absolute;width:220px;height:220px;right:-60px;bottom:-146px;background:#ffffff24;border-radius:50%;pointer-events:none}
-.so-v50-recovery-card .so-v51-hero .so-v50-recovery-top{position:relative;z-index:1;gap:12px}
-.so-v50-recovery-card .so-v51-hero .so-v50-recovery-top strong{color:#fff!important;font-size:11px!important;letter-spacing:1.1px!important;display:flex;align-items:center;gap:8px}
-.so-v50-recovery-card .so-v51-hero .so-v50-recovery-top strong:before{content:"S";display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#ffffff23;border:1px solid #ffffff68;color:#fff;font-weight:900;font-size:17px}
-.so-v50-recovery-card .so-v50-recovery-close{flex:0 0 auto;width:36px!important;height:36px!important;border:1px solid #ffffff88!important;border-radius:11px!important;background:#ffffff23!important;color:#fff!important;font-size:22px!important;line-height:1!important;cursor:pointer!important;display:grid;place-items:center}
-.so-v50-recovery-card .so-v51-lock{width:48px;height:48px;border-radius:15px;border:1px solid #ffffff82;background:#ffffff26;display:grid;place-items:center;box-shadow:0 9px 25px #00155d42;font-size:26px;margin-top:16px}
-.so-v50-recovery-card .so-v51-hero h2{margin:12px 0 6px!important;color:#fff!important;font-size:27px!important;font-weight:850!important;line-height:1.2!important;letter-spacing:-.5px}
-.so-v50-recovery-card .so-v51-hero p{font-size:13px!important;color:#f4f6ff!important;margin:0!important;line-height:1.5!important}
-.so-v50-recovery-card .so-v51-main{padding:22px 25px 24px}
-.so-v50-recovery-card .so-v51-assurance{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:15px;color:#1761bd;font-weight:800;font-size:11px}
-.so-v50-recovery-card .so-v51-assurance span{padding:7px 10px;border-radius:99px;background:#eef6ff;border:1px solid #d4e6fd}
-.so-v50-recovery-card .so-v50-recovery-note{background:#eff7ff!important;color:#28527f!important;border:1px solid #d6e8fb!important;border-left:3px solid #087ded!important;padding:11px 12px!important;margin:0 0 15px!important;border-radius:11px!important;line-height:1.52!important;font-size:11.5px!important}
-.so-v50-recovery-card form{gap:11px!important}
-.so-v50-recovery-card label{font-size:12px!important;letter-spacing:.1px!important;color:#203d79!important;gap:6px!important}
-.so-v50-recovery-card input{background:#f8fbff!important;border:1.5px solid #cbdbf2!important;border-radius:12px!important;height:48px!important;font-size:14px!important;padding:11px 13px!important;font-weight:650!important;color:#11346c!important;box-shadow:inset 0 1px 2px #17396909!important}
-.so-v50-recovery-card input:focus{background:#fff!important;outline:3px solid #29bffd39!important;border-color:#1188f6!important}
-.so-v50-recovery-card .so-v50-recovery-submit{border:0!important;border-radius:13px!important;min-height:48px!important;background:linear-gradient(100deg,#075cf7 0%,#2483ff 52%,#00d3cb 100%)!important;color:#fff!important;box-shadow:0 7px 20px #075bf039!important;font-size:14px!important;font-weight:850!important;letter-spacing:.05px!important;cursor:pointer!important;margin-top:3px}
-.so-v50-recovery-card .so-v50-recovery-submit:not(:disabled):hover{filter:brightness(1.04);transform:translateY(-1px)}
-.so-v50-recovery-card .so-v50-recovery-submit:disabled{opacity:.6!important;cursor:wait!important}
-.so-v50-recovery-card .so-v50-code-details{border:1px solid #dce8fa;background:#f6f9ff;border-radius:12px;padding:12px 14px;margin:15px 0 0!important;color:#174082;font-size:12px!important}
-.so-v50-recovery-card .so-v50-code-details summary{cursor:pointer;line-height:1.45;font-weight:800;list-style:revert}
-.so-v50-recovery-card .so-v51-foot{color:#667b9e;font-size:11px;text-align:center;margin-top:14px;line-height:1.5}
-.so-v50-recovery-card #so-v50-recovery-feedback{line-height:1.45!important;font-size:12px!important}
-.so-v50-recovery-card .so-v50-recovery-success,.so-v50-recovery-card .so-v50-recovery-error{padding:12px!important;border-radius:11px!important}
-@media(max-width:560px){.so-v50-recovery{padding:10px!important;align-items:center!important}.so-v50-recovery-card{border-radius:19px!important;max-height:calc(100dvh - 20px)!important}.so-v50-recovery-card .so-v51-hero{padding:16px 17px!important}.so-v50-recovery-card .so-v51-hero h2{font-size:23px!important}.so-v50-recovery-card .so-v51-main{padding:17px!important}.so-v50-recovery-card .so-v51-lock{width:41px;height:41px;font-size:22px;margin-top:10px}.so-v50-recovery-card .so-v51-hero p{font-size:12px!important}}
+<style id="soumik-v50-recovery-premium-final">
+/* V50 recovery: isolated, graphic-reference-matched UI; existing Supabase verification untouched */
+#soumik-recovery-root.sr-overlay{background:radial-gradient(ellipse at 58% 20%,rgba(42,106,212,.34),transparent 55%),rgba(3,18,60,.86)!important;backdrop-filter:blur(9px)!important;z-index:10000010!important;display:grid!important;place-items:center!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:clamp(10px,3vh,25px)!important}
+#soumik-recovery-root .sr-card.sr-v49.sr-v50{position:relative;isolation:isolate;box-sizing:border-box;width:min(100%,500px)!important;max-height:calc(100dvh - 24px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:22px clamp(18px,4vw,32px) 20px!important;border:1px solid rgba(193,216,255,.92)!important;border-radius:25px!important;background:linear-gradient(180deg,#fff 0%,#fbfdff 71%,#edf6ff 100%)!important;box-shadow:0 30px 95px rgba(0,16,77,.62),0 0 0 1px #fff6 inset!important;color:#0b2866!important;text-align:left!important}
+#soumik-recovery-root .sr-v50:before{content:'';position:absolute;z-index:-1;pointer-events:none;top:72px;left:-12%;right:-12%;height:175px;opacity:.66;background:radial-gradient(ellipse at 30% 35%,#d6ebff 0%,transparent 66%),radial-gradient(ellipse at 78% 65%,#deeeff 0%,transparent 70%)}
+#soumik-recovery-root .sr-v50:after{content:'';position:absolute;z-index:-1;pointer-events:none;left:0;right:0;bottom:0;height:43px;background:linear-gradient(156deg,transparent 22%,#d7ebff 23% 43%,#abd7ff 44% 55%,transparent 56%);opacity:.34}
+#soumik-recovery-root .sr-v50 .sr-top{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-height:36px!important}
+#soumik-recovery-root .sr-v50 .sr-top strong{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:11px!important;letter-spacing:.015em!important;color:#234578!important;line-height:1.4!important}
+#soumik-recovery-root .sr-v50 .sr-v50-brand{font-size:13px;font-weight:900;letter-spacing:.015em;color:#0a3387}#soumik-recovery-root .sr-v50 .sr-v50-brand em{font-style:normal;color:#f77a17}
+#soumik-recovery-root .sr-v50 .sr-close{display:grid!important;place-items:center!important;width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;background:#eaf2ff!important;border:1px solid #d9e9ff!important;border-radius:12px!important;color:#234e98!important;font-size:24px!important;cursor:pointer!important}
+#soumik-recovery-root .sr-v50 .sr-v50-emblem-wrap{position:relative;display:grid;place-items:center;width:90px;height:88px;margin:8px auto 0;background:radial-gradient(circle,#e1efff 0%,#e7f3ff 53%,transparent 70%)}
+#soumik-recovery-root .sr-v50 .sr-v50-emblem-wrap:before,#soumik-recovery-root .sr-v50 .sr-v50-emblem-wrap:after{content:'';position:absolute;border-radius:50%;width:8px;height:8px;background:#89c8ff;left:2px;top:14px}#soumik-recovery-root .sr-v50 .sr-v50-emblem-wrap:after{left:auto;right:4px;top:61px;width:6px;height:6px}
+#soumik-recovery-root .sr-v50 .sr-v50-emblem{display:grid;place-items:center;width:62px;height:62px;background:linear-gradient(150deg,#47b7ff,#0868e8 75%,#0c42be);border-radius:19px;box-shadow:0 13px 23px #1b84e54d,0 0 0 2px #fff8 inset}
+#soumik-recovery-root .sr-v50 h2{font-size:clamp(22px,3.8vw,28px)!important;line-height:1.15!important;margin:4px 0 6px!important;text-align:center!important;font-weight:900!important;letter-spacing:-.025em!important;color:#0a286f!important}
+#soumik-recovery-root .sr-v50 .sr-intro{font-size:13px!important;line-height:1.42!important;margin:0 auto!important;max-width:405px!important;color:#51688a!important;text-align:center!important}
+#soumik-recovery-root .sr-v50 .sr-v50-progress{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:17px 0 16px;align-items:start;text-align:center}
+#soumik-recovery-root .sr-v50 .sr-v50-progress:before{content:'';position:absolute;left:17%;right:17%;top:14px;height:3px;background:#d5e5fa;border-radius:9px}
+#soumik-recovery-root .sr-v50 .sr-v50-step{position:relative;display:grid;justify-items:center;gap:4px;z-index:1;color:#6780a5;font-size:11px;font-weight:750}
+#soumik-recovery-root .sr-v50 .sr-v50-step-number{width:29px;height:29px;display:grid;place-items:center;border:1px solid #c8dcf8;border-radius:50%;background:#e8f2ff;color:#4b6da4;font-size:13px;font-weight:900;box-shadow:0 0 0 4px #fff}
+#soumik-recovery-root .sr-v50 .sr-v50-step.is-active .sr-v50-step-number,#soumik-recovery-root .sr-v50 .sr-v50-step.is-complete .sr-v50-step-number{background:#1469ee;color:#fff;border-color:#1469ee}
+#soumik-recovery-root .sr-v50 .sr-v50-step.is-active{color:#0f51c8}
+#soumik-recovery-root .sr-v50 .sr-v50-step-label{line-height:1.2;overflow-wrap:anywhere}
+#soumik-recovery-root .sr-v50 label{display:block!important;font-size:12px!important;color:#103674!important;margin:12px 0 6px!important;font-weight:800!important}
+#soumik-recovery-root .sr-v50 input:not(.sr-v50-code-input){width:100%!important;min-height:45px!important;padding:10px 12px!important;border:1px solid #bfd5f7!important;border-radius:11px!important;background:#fff!important;color:#0b2f69!important;font-size:14px!important;box-sizing:border-box!important;outline-offset:2px!important}
+#soumik-recovery-root .sr-v50 .sr-address{background:linear-gradient(90deg,#e8f2ff,#f0f7ff)!important;border:1px solid #d2e4ff!important;border-radius:12px!important;color:#124caa!important;font-weight:800!important;font-size:13px!important;padding:10px 13px!important;display:flex!important;align-items:center!important;gap:9px!important;overflow-wrap:anywhere!important}
+#soumik-recovery-root .sr-v50 .sr-v50-code-shell{position:relative;box-sizing:border-box;width:100%;padding:7px;border:1.5px solid #bfd6ff;border-radius:13px;background:#f8fbff;min-height:55px}
+#soumik-recovery-root .sr-v50 .sr-v50-code-shell.is-focus{border-color:#2787fc;box-shadow:0 0 0 3px #1c72ff19}
+#soumik-recovery-root .sr-v50 .sr-v50-code-input{position:absolute!important;inset:0!important;opacity:.01!important;z-index:3!important;width:100%!important;height:100%!important;min-height:0!important;padding:0!important;border:0!important;background:transparent!important;color:transparent!important;cursor:text!important;box-shadow:none!important;outline:none!important;font-size:16px!important}
+#soumik-recovery-root .sr-v50 .sr-v50-code-slots{display:grid;grid-template-columns:repeat(var(--sr-digit-count),minmax(0,1fr));gap:clamp(3px,1.1vw,7px);pointer-events:none}
+#soumik-recovery-root .sr-v50 .sr-v50-code-slot{height:42px;min-width:0;display:grid;place-items:center;border:1px solid #d0e1fb;border-radius:9px;background:#fff;color:#0f3d9f;font-size:22px;font-weight:900;line-height:1}
+#soumik-recovery-root .sr-v50 .sr-v50-code-slot.is-current{border-color:#2e8dff;box-shadow:0 0 0 2px #58a2fc29 inset}
+#soumik-recovery-root .sr-v50 .sr-v50-code-slot.is-filled{background:#edf5ff;border-color:#8fc1fc}
+#soumik-recovery-root .sr-v50 small{display:block!important;color:#5f7392!important;margin:8px 0!important;line-height:1.45!important;font-size:10px!important}
+#soumik-recovery-root .sr-v50 .sr-primary{width:100%!important;min-height:48px!important;margin:17px 0 0!important;border:0!important;border-radius:12px!important;background:linear-gradient(105deg,#17a0ff 0%,#1165fa 65%,#1042d8 100%)!important;box-shadow:0 10px 21px #0968f133!important;color:white!important;font-size:15px!important;font-weight:900!important;cursor:pointer!important}
+#soumik-recovery-root .sr-v50 .sr-primary:hover:not(:disabled){filter:brightness(1.05)}
+#soumik-recovery-root .sr-v50 .sr-v49-secondary{display:flex!important;justify-content:space-between!important;gap:9px!important;margin-top:12px!important;flex-wrap:wrap!important}
+#soumik-recovery-root .sr-v50 .sr-link{width:auto!important;border:0!important;padding:6px 2px!important;background:transparent!important;color:#1267df!important;font-weight:800!important;font-size:12px!important;text-decoration:none!important;cursor:pointer!important}
+#soumik-recovery-root .sr-v50 .sr-v49-countdown{text-align:right!important;margin:1px 0 0!important;min-height:14px!important;font-size:11px!important;color:#677d9d!important}
+#soumik-recovery-root .sr-v50 .sr-eye{position:relative!important;display:flex!important;align-items:center!important}
+#soumik-recovery-root .sr-v50 .sr-eye input{padding-right:82px!important}
+#soumik-recovery-root .sr-v50 .sr-eye button{right:6px!important;min-height:33px!important;padding:0 10px!important;border:0!important;background:#eaf2ff!important;border-radius:9px!important;color:#124da9!important;font-size:12px!important;font-weight:850!important;cursor:pointer!important}
+#soumik-recovery-root .sr-v50 .sr-status{margin-top:12px!important;border:1px solid #cce1ff!important;border-radius:11px!important;background:#ebf5ff!important;padding:11px 12px!important;font-size:12px!important;line-height:1.5!important;color:#1c508e!important}
+#soumik-recovery-root .sr-v50 .sr-status.error{border-color:#f6ccd4!important;background:#fff2f4!important;color:#a12348!important}
+#soumik-recovery-root .sr-v50 [hidden]{display:none!important}
+#soumik-recovery-root .sr-v50 .sr-v49-footer{margin-top:16px!important;padding-top:10px;border-top:1px solid #e2edfc;color:#7183a0!important;text-align:center!important;font-size:10px!important;line-height:1.4!important}
+#soumik-recovery-root .sr-v50 button:focus-visible,#soumik-recovery-root .sr-v50 input:focus-visible{outline:3px solid #76bcff!important;outline-offset:2px!important}
+@media(max-width:480px){#soumik-recovery-root.sr-overlay{padding:8px!important}#soumik-recovery-root .sr-card.sr-v49.sr-v50{max-height:calc(100dvh - 16px)!important;width:100%!important;padding:15px 15px 16px!important;border-radius:18px!important}#soumik-recovery-root .sr-v50 .sr-v50-emblem-wrap{height:70px;margin-top:3px}#soumik-recovery-root .sr-v50 .sr-v50-emblem{width:51px;height:51px;border-radius:15px}#soumik-recovery-root .sr-v50 .sr-v50-emblem svg{width:37px;height:37px}#soumik-recovery-root .sr-v50 h2{font-size:22px!important}#soumik-recovery-root .sr-v50 .sr-v50-progress{margin:13px 0!important}#soumik-recovery-root .sr-v50 .sr-v50-code-slot{height:36px;font-size:19px;border-radius:6px}#soumik-recovery-root .sr-v50 .sr-v50-code-shell{padding:5px;min-height:48px}#soumik-recovery-root .sr-v50 .sr-v50-step-label{font-size:10px!important}#soumik-recovery-root .sr-v50 .sr-v49-footer{margin-top:10px!important}}
+@media(prefers-reduced-motion:reduce){#soumik-recovery-root .sr-v50 *{scroll-behavior:auto!important;transition:none!important}}
 </style>
 
-<script id="so-v50-aurora-auth-logic">
+<!-- V51: release the first paint only after the final scripts/styles initialize. -->
+<script id="so51-ready-navigation">
 (function(){
-'use strict';
-const escapeV=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const eyeBtn=()=>`<button class="soumik-eye" type="button" aria-label="Show or hide password" onclick="const a=this.previousElementSibling;a.type=a.type==='password'?'text':'password';this.textContent=a.type==='password'?'👁':'🙈'">👁</button>`;
-const item=(label,name,type='text',extra='',wide=false)=>`<label class="soumik-line ${wide?'so-v50-wide':''}">${label}<input name="${name}" type="${type}" ${extra}>${type==='password'?eyeBtn():''}</label>`;
-const brand=()=>`<div class="so-v50-brand"><span class="so-v50-brand-icon" aria-hidden="true">✦</span><div>SOUMIK <span>ONLINE</span><div class="so-v50-subbrand">Digital Services Platform</div></div></div>`;
-const illustration=`<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Secure digital services illustration"><defs><linearGradient id="so50blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#56faff"/><stop offset="1" stop-color="#3857ff"/></linearGradient></defs><ellipse cx="210" cy="216" rx="185" ry="14" fill="#0a1a64" opacity=".25"/><rect x="96" y="28" width="265" height="165" rx="12" fill="#081e63" stroke="url(#so50blue)" stroke-width="6"/><rect x="113" y="44" width="232" height="128" rx="6" fill="#142c89"/><g fill="#1ad8f9"><rect x="136" y="128" width="32" height="30" rx="2"/><rect x="185" y="101" width="32" height="57" rx="2"/><rect x="234" y="75" width="32" height="83" rx="2"/><rect x="283" y="117" width="32" height="41" rx="2"/></g><path d="M83 193h287l24 18H57z" fill="#54cafd"/><rect x="40" y="85" width="82" height="125" rx="14" fill="#0b1e5d" stroke="#20e5ff" stroke-width="6"/><path d="m58 146 19 16 28-38" fill="none" stroke="#1cffe0" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
-const previous=typeof adminLogin==='function'?adminLogin:null;
-adminLogin=function(){
-  const reg=ownerMode==='register';
-  const intro=`<div class="so-v50-intro">${brand()}${illustration}<h2>Welcome <span>Back!</span></h2><p>Login to access your dashboard, manage services, requests and more.</p><div class="so-v50-perks"><span>⚡ Fast & Secure</span><span>🛡 Trusted Platform</span><span>🎧 Support</span></div><button class="so-v50-home" type="button" style="color:#fff;background:transparent;border:0;cursor:pointer;font-size:11px" onclick="go('home')">← Back to website</button></div>`;
-  const head=`<div class="so-v50-form-head">${brand()}<div class="so-v50-person" aria-hidden="true">♙</div><h2>${reg?'Create Your Account':'Welcome Back!'}</h2><p>${reg?'Register to access SOUMIK ONLINE services':'Access your owner account'}</p></div>`;
-  const fields=reg
-    ? item('Full Name','name','text','autocomplete="name" required')+item('Mobile Number','mobile','tel','inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required')+item('Email','email','email','required autocomplete="email"',true)+item('Password','password','password','id="ownerPass" minlength="8" autocomplete="new-password" required')+item('Confirm Password','confirm','password','id="ownerConfirm" minlength="8" autocomplete="new-password" required oninput="soumikMatchPassword()"')+`<div id="soumikPasswordMatch" class="soumik-pass-match so-v50-wide" aria-live="polite"></div>`+item('Official Owner ID','ownerCode','password','autocomplete="off" required',true)
-    :item('Email','identifier','email','id="ownerLoginIdentifier" autocomplete="username" required',true)+item('Password','password','password','id="ownerPass" autocomplete="current-password" required',true);
-  const switchLinks=`<div class="soumik-switch so-v50-wide">${reg?'Already have an account?':'Don\'t have an account?'} <button type="button" onclick="ownerMode='${reg?'login':'register'}';go('adminlogin')">${reg?'Sign In':'Sign Up'}</button></div>`;
-  return `<div class="soumik-auth-v2 so-v50-auth ${reg?'register':'signin so-login-v10'}">${!reg?intro:''}<div class="soumik-auth-form">${head}<div id="ownerNewId"></div><div id="ownerLoginNotice" class="owner-account-notice" role="alert" aria-live="polite" hidden></div><div id="ownerAccountNotice" class="owner-account-notice" role="status" aria-live="polite" hidden></div><form id="ownerAuthForm" onsubmit="ownerSubmit(event)" autocomplete="off">${fields}<button class="soumik-submit so-v50-wide" type="submit">${reg?'Request Registration':'Login'}</button>${switchLinks}${!reg?`<div class="soumik-switch so-v50-wide"><button type="button" id="so-v50-forgot" onclick="soumikOwnerForgotPassword()">Forgot password?</button></div>`:''}</form></div></div>`;
-};
-// Password recovery uses the configured Supabase Auth service.
-const MODAL_ID='so-v50-recovery';
-const $=(sel,root=document)=>root.querySelector(sel);
-const client=()=>{try{window.soumikSupabaseReady?.()}catch(_){}return window.soumikSupabase || null};
-const hostedRoot='https://soumik-online.github.io/'; // Publish this V50 file to this URL before testing real reset mail.
-function redirectUrl(){
-  // A file:// URL cannot receive Supabase recovery callbacks.
-  const base=(location.protocol==='https:'||location.protocol==='http:') && !['localhost','127.0.0.1'].includes(location.hostname)
-    ? location.origin+location.pathname : hostedRoot;
-  const url=new URL(base);url.searchParams.set('so_owner_reset','1');return url.toString();
-}
-function cleanRecoveryUrl(){
-  if(!['http:','https:'].includes(location.protocol))return;
-  const url=new URL(location.href);url.searchParams.delete('so_owner_reset');url.searchParams.delete('code');
-  if(url.hash.includes('access_token=')||url.hash.includes('type=recovery'))url.hash='';
-  history.replaceState(null,'',url.pathname+url.search+url.hash);
-}
-function status(root,msg,err=false){const el=$('#so-v50-recovery-feedback',root);if(el){el.hidden=!msg;el.className=err?'so-v50-recovery-error':'so-v50-recovery-success';el.textContent=msg}}
-function close(){const x=document.getElementById(MODAL_ID);x?.remove();document.removeEventListener('keydown',onKey)}
-function onKey(e){if(e.key==='Escape')close()}
-function createModal(title,subtitle,body){
-  close();
-  const el=document.createElement('div');el.id=MODAL_ID;el.className='so-v50-recovery';
-  el.innerHTML=`<section class="so-v50-recovery-card" role="dialog" aria-modal="true" aria-labelledby="so-v50-recovery-title"><div class="so-v51-hero"><div class="so-v50-recovery-top"><strong>SOUMIK ONLINE · ACCOUNT SECURITY</strong><button type="button" class="so-v50-recovery-close" aria-label="Close">×</button></div><div class="so-v51-lock" aria-hidden="true">🔐</div><h2 id="so-v50-recovery-title">${title}</h2><p>${subtitle}</p></div><div class="so-v51-main"><div class="so-v51-assurance"><span>✓ Secure email recovery</span><span>✓ Account protection</span></div>${body}<div id="so-v50-recovery-feedback" role="status" aria-live="polite" style="margin-top:11px" hidden></div><div class="so-v51-foot">Your password is never sent by email. Only use the official SOUMIK ONLINE website.</div></div></section>`;
-  document.body.appendChild(el);$('.so-v50-recovery-close',el).onclick=close;el.addEventListener('click',e=>{if(e.target===el)close()});document.addEventListener('keydown',onKey);return el;
-}
-function requestReset(){
- const el=createModal('Forgot your password?','Enter the email used for your SOUMIK ONLINE Owner account.',
- `<div class="so-v50-recovery-note">✉️ A secure reset link will be sent through Supabase to the registered email. The email must be opened on the published website. For a file opened from Downloads, deploy this HTML to your HTTPS website first.</div><form id="so-v50-recovery-form"><label>Registered owner email<input id="so-v50-recovery-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label><button class="so-v50-recovery-submit" type="submit">Send Password Reset Link</button></form><details class="so-v50-code-details" style="margin-top:13px"><summary style="cursor:pointer;font-weight:700">Received a 6-digit recovery code instead?</summary><form id="so-v50-code-form" style="margin-top:10px"><label>Recovery code<input name="token" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" required></label><button class="so-v50-recovery-submit" type="submit">Verify Email Code</button></form></details>`);
- const email=$('#so-v50-recovery-email',el);email.value=($('#ownerLoginIdentifier')?.value||'').trim();email.focus();
- $('#so-v50-recovery-form',el).onsubmit=async e=>{
-   e.preventDefault();const c=client();const b=$('[type=submit]',e.currentTarget);const address=email.value.trim().toLowerCase();
-   if(!c?.auth?.resetPasswordForEmail){status(el,'Supabase connection unavailable. Check the internet connection and your published website.',true);return}
-   if(!location.protocol.startsWith('http')){status(el,'This file is opened locally. The email link will return to https://soumik-online.github.io/ . Publish the latest HTML there first and allow that URL in Supabase Auth redirect settings.',true);return}
-   b.disabled=true;b.textContent='Sending…';
-   try{
-     const {error}=await c.auth.resetPasswordForEmail(address,{redirectTo:redirectUrl()});if(error)throw error;
-     status(el,'✓ Request accepted. Check your registered email, including Spam. Open the reset link to set a new password. (Email delivery depends on your Supabase email settings.)');
-   }catch(error){status(el,'Could not request password reset: '+(error?.message||'Unknown error'),true)}
-   finally{b.disabled=false;b.textContent='Send Password Reset Link'}
- };
- $('#so-v50-code-form',el).onsubmit=async e=>{
-   e.preventDefault();const c=client();const token=String(new FormData(e.currentTarget).get('token')||'').trim();if(!c?.auth?.verifyOtp){status(el,'Supabase connection unavailable.',true);return}
-   const b=$('[type=submit]',e.currentTarget);b.disabled=true;
-   try{const {data,error}=await c.auth.verifyOtp({email:email.value.trim().toLowerCase(),token,type:'recovery'});if(error)throw error;const session=data?.session||(await c.auth.getSession()).data?.session;if(!session)throw Error('Verified session unavailable');showSetPassword(session)}catch(error){status(el,'Recovery code could not be verified: '+(error?.message||'Invalid code'),true);b.disabled=false}
- };
-}
-async function showSetPassword(session){
- const c=client();if(!c?.auth){requestReset();return}
- const el=createModal('Create a new password','Your recovery link was verified. Choose a new password for your account.',
- `<div class="so-v50-recovery-note">🔐 For accounts with a verified Authenticator, the 6-digit authenticator code is required before changing the password.</div><form id="so-v50-new-password-form"><label>New password (8+ characters)<input type="password" name="newPassword" minlength="8" autocomplete="new-password" required></label><label>Confirm new password<input type="password" name="confirmPassword" minlength="8" autocomplete="new-password" required></label><div id="so-v50-mfa-wrap" hidden><label>Authenticator code (6 digits)<input name="mfaCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Authenticator app code"></label></div><button class="so-v50-recovery-submit" type="submit">Update Password</button></form>`);
- let totp=null;
- try{const {data,error}=await c.auth.mfa.listFactors();if(error)throw error;totp=[...(data?.totp||[]),...(data?.all||[])].find(f=>f.status==='verified'&&(f.factor_type==='totp'||f.friendly_name?.includes('Owner')))||null;
- if(totp){$('#so-v50-mfa-wrap',el).hidden=false;$('#so-v50-mfa-wrap input',el).required=true;}
- }catch(error){status(el,'Could not check account security settings: '+(error?.message||'Unknown error'),true);$('#so-v50-new-password-form [type=submit]',el).disabled=true;return}
- $('#so-v50-new-password-form',el).onsubmit=async e=>{
-   e.preventDefault();const f=Object.fromEntries(new FormData(e.currentTarget));const btn=$('[type=submit]',e.currentTarget);
-   if(f.newPassword!==f.confirmPassword){status(el,'Passwords do not match.',true);return}
-   if(f.newPassword.length<8){status(el,'Use at least 8 characters.',true);return}
-   btn.disabled=true;btn.textContent='Updating…';
-   try{
-     const {data:user,error:ue}=await c.auth.getUser();if(ue||!user?.user)throw ue||Error('Recovery session has expired. Please request a new link.');
-     if(totp){const {data:ch,error:ce}=await c.auth.mfa.challenge({factorId:totp.id});if(ce)throw ce;const {error:ve}=await c.auth.mfa.verify({factorId:totp.id,challengeId:ch.id,code:f.mfaCode});if(ve)throw ve;const {data:aal,error:ae}=await c.auth.mfa.getAuthenticatorAssuranceLevel();if(ae||aal?.currentLevel!=='aal2')throw ae||Error('Authenticator verification incomplete')}
-     const {error}=await c.auth.updateUser({password:f.newPassword});if(error)throw error;
-     cleanRecoveryUrl();try{await c.auth.signOut({scope:'local'})}catch(_){}
-     status(el,'✓ Password updated in Supabase. Sign in again with your new password.');$('#so-v50-new-password-form',el).hidden=true;
-     const back=document.createElement('button');back.className='so-v50-recovery-submit';back.style.marginTop='14px';back.textContent='Back to Owner Login';back.onclick=()=>{close();try{ownerMode='login';go('adminlogin')}catch(_){}};$('.so-v50-recovery-card',el).append(back);
-   }catch(error){status(el,'Password update failed: '+(error?.message||'Unknown error'),true);btn.disabled=false;btn.textContent='Update Password'}
- };
-}
-window.soumikOwnerForgotPassword=requestReset;
-window.soumikRecoveryOpen=requestReset;
-// Auth SDK parses Supabase recovery links. Listen for its event and also handle
-// page load after redirect when the event occurred before this listener attached.
-let completed=false,recoveryTries=0;
-function recoveryRequested(){return new URLSearchParams(location.search).get('so_owner_reset')==='1'||/type=recovery/.test(location.hash)}
-function watchRecovery(){
- const c=client();if(!c?.auth){if(recoveryRequested()&&recoveryTries++<30)setTimeout(watchRecovery,400);return}
- try{
-   c.auth.onAuthStateChange((event,session)=>{
-     if(event==='PASSWORD_RECOVERY' && session){completed=true;setTimeout(()=>showSetPassword(session),0)}
-   });
-   if(recoveryRequested()){
-     c.auth.getSession().then(({data,error})=>{
-       if(completed)return;
-       if(!error&&data?.session){completed=true;showSetPassword(data.session)}
-       else {const el=createModal('Recovery link not ready','The reset link may be expired, invalid, or still loading.',`<div class="so-v50-recovery-note">Request a fresh reset email and open it on the published website.</div><button type="button" class="so-v50-recovery-submit" id="so-v50-retry">Request a New Link</button>`);$('#so-v50-retry',el).onclick=requestReset}
-     }).catch(()=>{});
-   }
- }catch(error){console.warn('Recovery listener unavailable:',error)}
-}
-// Avoid blocking rendering when embedded in file:// previews.
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchRecovery,{once:true});else watchRecovery();
+  'use strict';
+  const html=document.documentElement;
+  let released=false;
+  function release(){
+    if(released)return;
+    released=true;
+    html.classList.remove('so51-booting');
+    html.classList.add('so51-ready');
+    const splash=document.getElementById('so51-boot-screen');
+    if(splash)splash.remove();
+  }
+  function afterFinalRender(){requestAnimationFrame(()=>requestAnimationFrame(release));}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',afterFinalRender,{once:true});
+  else afterFinalRender();
+  // Recovery route may be opened through a session link; do not leave the app cloaked.
+  window.addEventListener('pageshow',()=>{if(!released)afterFinalRender()},{once:true});
+  const oldGo=window.go;
+  if(typeof oldGo==='function')window.go=function(page,...args){
+    const ownerAuth=['adminlogin','login','register'].includes(page);
+    if(ownerAuth)html.classList.add('so51-auth-enter');
+    let result;
+    try{result=oldGo.apply(this,[page,...args]);}
+    catch(error){html.classList.remove('so51-auth-enter');throw error;}
+    if(ownerAuth){
+      // Legacy auth decorators are MutationObserver-driven and finish before paint.
+      requestAnimationFrame(()=>requestAnimationFrame(()=>html.classList.remove('so51-auth-enter')));
+    }else{html.classList.remove('so51-auth-enter');}
+    return result;
+  };
+  // Safety fallback if an optional script fails after this listener was installed.
+  setTimeout(release,6000);
 })();
 </script>
 </html>
