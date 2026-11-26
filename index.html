@@ -2374,7 +2374,7 @@ ${field('PIN Code','pin',true)}
 </b></div></div>`).join('')}
 </div><div class="toolbar">${['photo','signature'].map(k=>draft[k]?.startsWith('data:image')?`<img class="previewimg" alt="${k}" src="${draft[k]}">`:'').join('')}
 </div><p class="notice">Review all details before payment and submission.</p>`:paymentBody(s)}
-<div class="so52-application-help"><span>Already submitted? Payment page closed? Duplicate Aadhaar/PAN warning?</span><button class="btn outline mini" type="button" onclick="so52ApplicationHelp()">Get help / Recover payment →</button></div><div class="toolbar" style="justify-content:space-between;margin-top:22px"><button class="btn outline" onclick="backStep()">← Previous</button>${step<4?`<button class="btn" onclick="nextStep()">Next Step →</button>`:`<button class="btn green" onclick="submitApplication()">Submit Application & Get Receipt</button>`}
+<div class="toolbar" style="justify-content:space-between;margin-top:22px"><button class="btn outline" onclick="backStep()">← Previous</button>${step<4?`<button class="btn" onclick="nextStep()">Next Step →</button>`:`<button class="btn green" onclick="submitApplication()">Submit Application & Continue to Payment</button>`}
 </div></div></div></div>`}
 
 function field(label,id,required=false,type='text'){
@@ -6284,7 +6284,7 @@ function checkoutView(a){
  const mobile=String(a.mobile||a.phone||a.newMobile||a.contactNumber||'').trim();
  const email=String(a.email||a.emailId||a.email_id||a.newEmail||'').trim();
  const status=String(a.paymentStatus||'PENDING').toUpperCase();
- root.innerHTML=`<main class="soumik-checkout soumik-checkout-v2"><div class="soumik-pay-eyebrow">SOUMIK ONLINE <span class="soumik-checkout-dot">•</span> SECURE CHECKOUT</div><div class="soumik-checkout-heading"><div><h2>Complete Your Payment</h2><p class="soumik-pay-lead">Your application has been submitted. Choose a payment method to continue securely.</p></div><span class="soumik-checkout-lock">🔒 Secure</span></div><section class="soumik-pay-meta soumik-meta-v2" aria-label="Application details"><div><small>Tracking ID</small><b>${safe(a.id)}</b></div><div><small>Applicant</small><b>${safe(a.fullName||a.name||'—')}</b></div><div><small>Mobile Number</small><b>${safe(mobile||'Not provided')}</b></div><div><small>Email Address</small><b>${safe(email||'Not provided')}</b></div><div class="soumik-meta-service"><small>Service</small><b>${safe(SERVICES[a.type]?.name||a.type||'—')}</b></div><div class="soumik-meta-total"><small>Amount to Pay</small><strong>₹${payFee(a).toFixed(2)}</strong></div></section><h3 class="soumik-method-heading">Choose a Payment Method</h3><p class="soumik-method-subtitle">Select online payment or request cash payment verification.</p><div class="soumik-checkout-grid"><button type="button" class="soumik-pay-option" ${window.SOUMIK_RAZORPAY_LIVE_READY ? `onclick="soumikRazorpayStart('${safe(a.id)}')" title="Pay securely using Razorpay"` : 'disabled aria-disabled="true" title="Online payment is temporarily unavailable"'}><span class="soumik-pay-symbol">💳</span><b>Online Payment</b><span>Pay using UPI, debit or credit card, netbanking and other Razorpay-supported methods.</span><span class="soumik-pay-features">✓ Secure checkout &nbsp; ✓ Instant payment status &nbsp; ✓ Receipt after verification</span><em>${window.SOUMIK_RAZORPAY_LIVE_READY ? 'Continue to secure payment →' : location.protocol==='file:' ? 'Open published HTTPS website to pay' : 'Temporarily unavailable — use Cash Payment'}</em></button><button type="button" class="soumik-pay-option" onclick="soumikSelectCash('${safe(a.id)}')"><span class="soumik-pay-symbol">💵</span><b>Cash Payment Request</b><span>Submit a cash payment request to the service owner. Your application remains pending until the owner verifies and approves payment.</span><span class="soumik-pay-features">✓ Owner verification &nbsp; ✓ Request tracking &nbsp; ✓ Status updates</span><em>${status==='CASH_REJECTED'?'↻ Request again':status==='CASH_PENDING'?'Request pending':'Request cash verification →'}</em></button></div><div id="soumikCheckoutStatus" class="soumik-pay-status" role="status" aria-live="polite">Payment status: ${safe(status)}</div><div class="soumik-download-actions"><button class="btn outline" onclick="soumikApplicationPdf('${safe(a.id)}')">Application PDF</button><button class="btn outline" onclick="soumikReceiptPdf('${safe(a.id)}')">Download Paid Receipt</button><button class="btn outline" onclick="openReceipt('${safe(a.id)}')">View Application</button></div><p class="soumik-payment-disclaimer">Cash requests are confirmed only after the owner verifies payment.</p><div class="soumik-checkout-help"><strong>Need assistance with payment?</strong><span>WhatsApp: <a href="https://wa.me/919593106177" target="_blank" rel="noopener">+91 9593106177</a></span><span>Email: <a href="mailto:tutotisonlines@gmail.com">tutotisonlines@gmail.com</a></span></div></main>`;
+ root.innerHTML=`<main class="soumik-checkout soumik-checkout-v2"><div class="soumik-pay-eyebrow">SOUMIK ONLINE <span class="soumik-checkout-dot">•</span> SECURE CHECKOUT</div><div class="soumik-checkout-heading"><div><h2>Complete Your Payment</h2><p class="soumik-pay-lead">Your application has been submitted. Choose a payment method to continue securely.</p></div><span class="soumik-checkout-lock">🔒 Secure</span></div><section class="soumik-pay-meta soumik-meta-v2" aria-label="Application details"><div><small>Tracking ID</small><b>${safe(a.id)}</b></div><div><small>Applicant</small><b>${safe(a.fullName||a.name||'—')}</b></div><div><small>Mobile Number</small><b>${safe(mobile||'Not provided')}</b></div><div><small>Email Address</small><b>${safe(email||'Not provided')}</b></div><div class="soumik-meta-service"><small>Service</small><b>${safe(SERVICES[a.type]?.name||a.type||'—')}</b></div><div class="soumik-meta-total"><small>Amount to Pay</small><strong>₹${payFee(a).toFixed(2)}</strong></div></section><h3 class="soumik-method-heading">Choose a Payment Method</h3><p class="soumik-method-subtitle">Select online payment or request cash payment verification.</p><div class="soumik-checkout-grid"><button type="button" class="soumik-pay-option" ${window.SOUMIK_RAZORPAY_LIVE_READY ? `onclick="soumikRazorpayStart('${safe(a.id)}')" title="Pay securely using Razorpay"` : 'disabled aria-disabled="true" title="Online payment is temporarily unavailable"'}><span class="soumik-pay-symbol">💳</span><b>Online Payment</b><span>Pay using UPI, debit or credit card, netbanking and other Razorpay-supported methods.</span><span class="soumik-pay-features">✓ Secure checkout &nbsp; ✓ Instant payment status &nbsp; ✓ Receipt after verification</span><em>${window.SOUMIK_RAZORPAY_LIVE_READY ? 'Continue to secure payment →' : location.protocol==='file:' ? 'Open published HTTPS website to pay' : 'Temporarily unavailable — use Cash Payment'}</em></button><button type="button" class="soumik-pay-option" onclick="soumikSelectCash('${safe(a.id)}')"><span class="soumik-pay-symbol">💵</span><b>Cash Payment Request</b><span>Submit a cash payment request to the service owner. Your application remains pending until the owner verifies and approves payment.</span><span class="soumik-pay-features">✓ Owner verification &nbsp; ✓ Request tracking &nbsp; ✓ Status updates</span><em>${status==='CASH_REJECTED'?'↻ Request again':status==='CASH_PENDING'?'Request pending':'Request cash verification →'}</em></button></div><div id="soumikCheckoutStatus" class="soumik-pay-status" role="status" aria-live="polite">${status==='PAID'?'✓ Online Payment Completed':status==='CASH_CONFIRMED'?'✓ Cash Payment Completed':status==='CASH_PENDING'?'💵 Cash Payment — Awaiting Owner Confirmation':status==='CASH_REJECTED'?'Cash Request Rejected':'Payment Pending'}</div><div class="soumik-download-actions"><button class="btn outline" onclick="soumikApplicationPdf('${safe(a.id)}')">Application PDF</button><button class="btn outline" onclick="soumikReceiptPdf('${safe(a.id)}')">Download Paid Receipt</button><button class="btn outline" onclick="openReceipt('${safe(a.id)}')">View Application</button></div><p class="soumik-payment-disclaimer">Cash requests are confirmed only after the owner verifies payment.</p><div class="soumik-checkout-help"><strong>Need assistance with payment?</strong><span>WhatsApp: <a href="https://wa.me/919593106177" target="_blank" rel="noopener">+91 9593106177</a></span><span>Email: <a href="mailto:tutotisonlines@gmail.com">tutotisonlines@gmail.com</a></span></div></main>`;
  window.scrollTo(0,0);
 }
 function setStatus(s){const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent=s;}
@@ -6297,7 +6297,7 @@ window.soumikSelectCash=async function(id){
  if(a.paymentStatus==='CASH_CONFIRMED'||a.paymentStatus==='PAID'){setStatus('Payment already confirmed.');return;}
  if(a.paymentStatus==='CASH_PENDING'){setStatus('Cash request is already pending. Please wait for the owner decision.');window.soumikStartCashStatusPolling?.(a);return;}
  if(!await window.soumikConfirmCashRequest(a))return;
- busy.add('cash');setStatus('Saving Cash Request to Supabase…');
+ busy.add('cash');setStatus('Saving Cash Request to Supabase…'); const cashBusyButton=document.querySelector('.soumik-pay-option[onclick*="soumikSelectCash"]'); if(cashBusyButton){cashBusyButton.classList.add('is-loading');cashBusyButton.setAttribute('aria-busy','true');cashBusyButton.disabled=true;}
  try{
   const client=getClient();if(!client)throw Error('Supabase connection unavailable');
   if(!a._cloudSaved)throw Error('Application has not been saved to Supabase');
@@ -6318,22 +6318,16 @@ window.soumikSelectCash=async function(id){
   a.history=Array.isArray(a.history)?a.history:[];
   a.history.push({status:'Payment Pending',at:new Date().toISOString(),note:'Cash request saved; awaiting owner confirmation'});
   checkoutView(a);
-  setStatus('⏳ Cash request received. Payment Processing — waiting for owner confirmation. Tracking ID: '+a.id);
+  setStatus('💵 Cash Payment — Awaiting Owner Confirmation. Tracking ID: '+a.id);
   window.soumikStartCashStatusPolling?.(a);
   const statusEl=document.getElementById('soumikCheckoutStatus');
-  if(statusEl){
-    const pdfButton=document.createElement('button');
-    pdfButton.type='button';pdfButton.className='btn outline';
-    pdfButton.style.marginTop='12px';pdfButton.textContent='📄 Download Application PDF';
-    pdfButton.addEventListener('click',()=>window.soumikApplicationPdf(a.id));
-    statusEl.insertAdjacentElement('afterend',pdfButton);
-  }
+  // V57: Do not offer the final application PDF while cash is pending.
   window.soumikNotify?.('Cash request saved to Supabase: '+a.id,'success');
-  setTimeout(()=>{try{history.replaceState({},'',location.pathname)}catch(_){};try{window.go?.('home')}catch(_){};setTimeout(()=>{if(document.getElementById('soumikCheckoutStatus'))location.assign(location.origin+location.pathname)},700)},1300);
+  // V57: Stay on the checkout so the applicant can see the cash request status.
  }catch(e){
   console.error('Cash request save failed',e);
   setStatus('Cash request failed: '+(e?.message||'Please try again.'));
- }finally{busy.delete('cash')}
+ }finally{busy.delete('cash');if(cashBusyButton){cashBusyButton.disabled=false;cashBusyButton.classList.remove('is-loading');cashBusyButton.removeAttribute('aria-busy')}}
 };
 // Keep the original application receipt and its existing Print/PDF button.
 const originalReceipt=window.receiptPage;
@@ -6358,7 +6352,7 @@ window.submitApplication=async function(){
   state.applications.unshift(a);save();trackQuery=a.id;checkoutView(a);
   // Keep a direct download button and also attempt the original automatic PDF download.
   // Some mobile browsers block automatic downloads; the manual download remains available.
-  Promise.resolve(window.downloadReceiptPDF?.(a.id,true)).catch(err=>console.error('PDF download:',err));
+  // V57: Final Application PDF is provided only after confirmed payment.
   notify('Application submitted: '+a.id);
  }catch(e){console.error('Application submit:',e);window.so52ApplicationHelp?.('আবেদন Submit হয়নি: '+(e.message||String(e)))}finally{busy.delete('submit')}
 };
@@ -6681,17 +6675,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const status=String(d.status||'').toUpperCase();
     if(status==='CONFIRMED'){
      a.paymentStatus='CASH_CONFIRMED';a.paymentMethod='Cash';a.status=a.status==='Payment Pending'?'Submitted':a.status;try{save()}catch(_){}stop();
-     const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='✓ Cash Payment Successful! Returning to Home…';
+     const el=document.getElementById('soumikCheckoutStatus');if(el){el.textContent='✓ Cash Payment Completed — Owner Confirmed. Final Application PDF is now available.';if(!document.getElementById('so57-cash-download')){const b=document.createElement('button');b.type='button';b.id='so57-cash-download';b.className='btn green';b.textContent='⬇ Download Final Application PDF';b.style.margin='12px 0';b.onclick=()=>window.soumikApplicationPdf?.(a.id);el.insertAdjacentElement('afterend',b);}}
      window.soumikNotify?.('Cash payment confirmed successfully','success');
-     setTimeout(()=>{try{history.replaceState({},'',location.pathname)}catch(_){};try{window.go?.('home')}catch(_){};setTimeout(()=>{if(document.getElementById('soumikCheckoutStatus'))location.assign(location.origin+location.pathname)},650)},1400);
+     // V57: Do not navigate away before the confirmed Application PDF can be accessed.
     }else if(status==='REJECTED'||status==='CANCELLED'){
      a.paymentStatus='CASH_REJECTED';try{save()}catch(_){}stop();
      const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='✕ Cash request rejected/cancelled. You may submit another cash request without a retry limit.';
     }else{
      if(status==='PENDING')a.paymentStatus='CASH_PENDING';
-     const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='⏳ Payment Processing — awaiting owner cash confirmation. Tracking ID: '+a.id;
+     const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='💵 Cash Payment — Awaiting Owner Confirmation. Tracking ID: '+a.id;
     }
-   }catch(e){console.warn('Cash status check:',e.message);const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='Payment status could not be checked ('+String(e.message||'connection error')+'). Please keep this page open and retry.';}
+   }catch(e){console.warn('Cash status check:',e.message);const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='💵 Cash Payment — Awaiting Owner Confirmation. Refresh is temporarily delayed; please check again shortly.';}
   };
   check();pollTimer=setInterval(check,8000);
  };
@@ -7090,11 +7084,12 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
     const phone=String(a.mobile||a.phone||a.newMobile||a.contactNumber||'').replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'');
     if(!/^[6-9]\d{9}$/.test(phone)){status('A valid application mobile number is required');return;}
     busy=true;
+    const onlineBusyButton=document.querySelector('.soumik-pay-option[onclick*="soumikRazorpayStart"]');
+    if(onlineBusyButton){onlineBusyButton.classList.add('is-loading');onlineBusyButton.setAttribute('aria-busy','true');onlineBusyButton.disabled=true;}
     try{
       status('Connecting to Supabase payment server…');
-      const order=await invoke('razorpay-create-order',{tracking_id:trackingId,customer_phone:phone});
+      const [order]=await Promise.all([invoke('razorpay-create-order',{tracking_id:trackingId,customer_phone:phone}),loadCheckout()]);
       status('Opening secure Razorpay checkout…');
-      await loadCheckout();
       if(!order?.success||!/^order_[A-Za-z0-9]+$/.test(order.razorpay_order_id)||!/^rzp_(live|test)_[A-Za-z0-9]+$/.test(order.key_id)||!Number.isSafeInteger(order.amount)||order.amount<100)throw Error('Invalid payment order');
       if(!/^rzp_live_[A-Za-z0-9]+$/.test(order.key_id))throw Error('Live payment is not configured: Supabase returned a non-live Razorpay key. No checkout was opened.');
       window.__soumikVerifiedCheckoutOrder=window.__soumikVerifiedCheckoutOrder||Object.create(null);
@@ -7120,7 +7115,7 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
             // Never navigate away immediately after requesting a download: browsers
             // can cancel the download or block it after an async payment callback.
             // Provide a user-initiated retry on this page and a separate Home button.
-            try{if(receiptReady){sessionStorage.setItem('soumik_checkout_return_home_until',String(Date.now()+120000));setTimeout(()=>{window.location.assign(window.soumikPublicWebsiteUrl?.()||'https://soumikonline.github.io/')},2200)}else window.soumikShowPaidReceiptActions?.(a,verified,response,false);}catch(e){console.warn('Receipt actions:',e)}
+            try{window.soumikShowPaidReceiptActions?.(a,verified,response,receiptReady);}catch(e){console.warn('Receipt actions:',e)}
             resolve();
           }catch(e){reject(e);}},
           modal:{ondismiss:()=>reject(Error('Payment window closed. If money was debited, contact support with your payment reference before retrying.'))}
@@ -7129,7 +7124,7 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
         checkout.open();
       });
     }catch(e){status('Online payment: '+(e?.message||'Unable to process payment'));}
-    finally{busy=false;}
+    finally{busy=false;if(onlineBusyButton){onlineBusyButton.disabled=false;onlineBusyButton.classList.remove('is-loading');onlineBusyButton.removeAttribute('aria-busy');}}
   };
 })();
 </script>
@@ -7249,6 +7244,8 @@ window.soumikShowPaidReceiptActions=function(a,v,r,automaticRequested){
   }catch(e){note.textContent='PDF could not be created: '+(e?.message||e)}
   finally{btn.disabled=false;btn.textContent='⬇ Download Payment Receipt PDF'}
  });panel.appendChild(btn);
+ const appBtn=document.createElement('button');appBtn.type='button';appBtn.textContent='⬇ Download Application PDF';appBtn.style.cssText='background:#135bd6;color:white;border:0;border-radius:10px;padding:13px 17px;font-size:16px;font-weight:bold;cursor:pointer;margin:4px';
+ appBtn.addEventListener('click',()=>window.soumikApplicationPdf(id));panel.appendChild(appBtn);
  const home=document.createElement('button');home.type='button';home.textContent='Go to Home';home.style.cssText='background:#e8efff;color:#103b82;border:0;border-radius:10px;padding:13px 17px;font-size:16px;font-weight:bold;cursor:pointer;margin:4px';
  home.addEventListener('click',()=>{try{sessionStorage.setItem('soumik_checkout_return_home_until',String(Date.now()+120000))}catch(_){}window.location.assign(window.soumikPublicWebsiteUrl())});panel.appendChild(home);
 };
@@ -7696,7 +7693,7 @@ window.soumikSharePaidReceipt=async function(id,channel){
     async function guardedSubmit(){
       if(submitting)return;
       submitting=true;
-      const button=Array.from(document.querySelectorAll('button')).find(b=>/Submit Application & Get Receipt/i.test(b.textContent||''));
+      const button=Array.from(document.querySelectorAll('button')).find(b=>/Submit Application & Continue to Payment/i.test(b.textContent||''));
       const oldDisabled=button?.disabled;
       if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
       const overlay=document.createElement('div');overlay.className='soumik-submit-progress';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
@@ -10233,4 +10230,234 @@ function show(img){modalClose();window.__so47OldOverflow=document.body.style.ove
  };
 })();
 </script>
+<!-- SOUMIK ONLINE V57: header, payment/receipt controls, private support inbox -->
+<style id="so57-ui">
+/* One clean, non-overlapping language selector in all three languages. */
+header.top .soumik-language-control,header.top .nav .soumik-language-control{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;width:145px!important;min-width:145px!important;max-width:145px!important;
+  height:43px!important;min-height:43px!important;overflow:visible!important;box-sizing:border-box!important;
+  border:1px solid #bfd5f7!important;border-radius:12px!important;background:#f4f8ff!important;
+  padding:0 24px 0 10px!important;position:relative!important;isolation:isolate!important;
+}
+header.top .soumik-language-control .soumik-language-icon{display:none!important}
+header.top .soumik-language-control .soumik-language-chevron{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;line-height:1!important;font-size:16px!important;color:#234e98!important;z-index:0!important;pointer-events:none!important}
+header.top .nav .soumik-language-control select#lang,header.top .nav select#lang{
+  appearance:none!important;-webkit-appearance:none!important;display:block!important;box-sizing:border-box!important;
+  width:100%!important;min-width:0!important;max-width:none!important;height:100%!important;min-height:0!important;
+  padding:0!important;margin:0!important;line-height:1.2!important;border:0!important;box-shadow:none!important;
+  outline:0!important;border-radius:0!important;color:#10377d!important;background:transparent!important;
+  background-image:none!important;font-size:13px!important;font-weight:800!important;letter-spacing:0!important;
+  text-overflow:clip!important;white-space:nowrap!important;position:relative!important;z-index:1!important;
+}
+header.top .soumik-language-control:focus-within{outline:3px solid #80bfff!important;outline-offset:2px!important}
+@media(max-width:700px){header.top .soumik-language-control,header.top .nav .soumik-language-control{width:130px!important;min-width:130px!important;max-width:130px!important}}
+/* Form submit always proceeds to payment; avoid duplicate and irrelevant bottom cards. */
+#app .so52-application-help{display:none!important}
+#app .soumik-checkout .soumik-download-actions button[disabled]{opacity:.48!important;cursor:not-allowed!important}
+#app .soumik-pay-option.is-loading{opacity:.7!important;cursor:progress!important;pointer-events:none!important}
+#app .so57-checkout-outcome{border:1px solid #cbdcf5;border-radius:12px;padding:12px 15px;background:#e9f3ff;color:#123d82;font-weight:750;margin-top:14px}
+#app .so57-checkout-outcome[data-kind=paid]{background:#e3faef;border-color:#a9e7ca;color:#096543}
+#app .so57-checkout-outcome[data-kind=cash]{background:#fff4dd;border-color:#f5d28f;color:#754900}
+/* Dialog scroll is isolated from the page under it. */
+#soumikPublicHelpPanel,#soumikProfileDialog .soumik-dialog,#soumikOwnerSettingsOverlay .soumik-settings-card,
+#soControl>section,.owner-modal-card,.soumik-edit-panel,.sr-card,.so32-fullscreen .so28-inner{
+ overscroll-behavior:contain!important;touch-action:pan-y!important;
+}
+#soumikPublicHelpPanel{z-index:2147483600!important;max-height:min(80dvh,740px)!important;overflow:hidden!important}
+#soumikHelpMessages{overscroll-behavior:contain!important;overflow-y:auto!important;min-height:120px!important}
+#so57-help-identity{padding:12px 13px 8px;overflow:auto;max-height:48dvh;display:grid;gap:9px}
+#so57-help-identity label{display:grid;gap:5px;color:#173767;font-size:12px;font-weight:750}
+#so57-help-identity input:not([type=checkbox]){width:100%;border:1px solid #bcd4f7;border-radius:10px;padding:10px 12px;background:#fff;color:#16315e;font-size:14px}
+#so57-help-identity .so57-consent{display:flex;align-items:flex-start;gap:8px;line-height:1.35;font-weight:500;color:#495c7d}
+#so57-help-identity .so57-consent input{margin-top:2px;flex:0 0 auto}
+.so57-help-primary{border:0;border-radius:10px;background:linear-gradient(105deg,#106dff,#084fc5);color:#fff;font-weight:800;padding:11px 13px;cursor:pointer}
+#so57-help-identity .so57-error{font-size:12px;color:#a12143;min-height:15px}
+#so57-help-chat{display:flex;min-height:0;flex-direction:column;flex:1}
+#so57-help-chat[hidden],#so57-help-identity[hidden]{display:none!important}
+#so57-help-chat .so57-chat-meta{display:flex;gap:7px;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #dce9f9;background:#f2f7ff;font-size:12px;color:#244e86}
+#so57-help-chat .so57-chat-meta button{border:1px solid #bcd4f7;background:white;color:#124bab;padding:6px 9px;border-radius:8px;font-weight:750}
+#so57-help-chat .so57-chat-note{padding:6px 12px;font-size:11px;color:#5b6b84;background:#f5f9ff}
+#so57-help-chat .so57-chat-status{padding:5px 12px;font-size:11px;color:#9b3f14;min-height:20px}
+#soumikPublicHelpPanel .soumik-help-chips{padding:6px 9px!important}
+#soumikPublicHelpPanel .soumik-help-links{border-top:1px solid #e0ecfa}
+#app #aiHistory,#app .ai-send{display:none!important}
+.so57-admin-inbox{max-width:1250px;margin:15px auto;display:grid;gap:15px}
+.so57-admin-inbox .so57-inbox-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.so57-inbox-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.so57-inbox-card{border:1px solid #cfdef6;border-radius:15px;background:#fff;padding:15px;text-align:left;color:#193963;box-shadow:0 7px 20px #16366311}
+.so57-inbox-card strong{display:block;font-size:15px;color:#0c378d;margin-bottom:8px}
+.so57-inbox-card p{margin:5px 0;font-size:12px;overflow-wrap:anywhere}
+.so57-inbox-card .btn{margin-top:9px}
+.so57-inbox-chat{max-height:390px;overflow:auto;overscroll-behavior:contain;background:#f7faff;border:1px solid #dae6fa;border-radius:14px;padding:12px}
+.so57-owner-message{padding:10px 12px;border-radius:10px;background:white;margin:8px 0;border-left:3px solid #1672dc;white-space:pre-wrap;overflow-wrap:anywhere}
+.so57-owner-message.user{border-left-color:#14a178}
+#so57OwnerHelpLink{display:inline-flex!important;align-items:center;gap:6px;margin:9px 0!important}
+</style>
+<script id="so57-updates">
+(function(){'use strict';
+  const getLang=()=>document.getElementById('lang')?.value||'en';
+  const text={
+    en:{intro:'Please enter your name and mobile number to start help.',name:'Your name',phone:'Mobile number (10 digits)',consent:'I agree to share my contact details and conversation with SOUMIK ONLINE support for follow-up.',ai:'For general questions, allow securely processing the question with an AI provider (optional).',start:'Start help',missing:'Enter a valid name, 10-digit mobile number and consent.',hello:'How can I help? Ask about services, payment, tracking or general topics. Never share OTP, passwords, Aadhaar number or bank details.',pending:'Sending…',unavailable:'Live help is not connected yet. Please use WhatsApp or email support.',escalate:'Ask owner to contact me',escalated:'Your request has been sent to the owner.',chat:'Support chat',pdf:'Your application PDF is available only after payment is confirmed. Use Tracking and complete verification to download available documents.',tracking:'For a private application status, open Tracking and complete the required identity check. I cannot show personal records from an unverified tracking ID.'},
+    bn:{intro:'সাহায্য শুরু করতে আপনার নাম ও ১০ সংখ্যার মোবাইল নম্বর দিন।',name:'আপনার নাম',phone:'মোবাইল নম্বর (১০ সংখ্যা)',consent:'পরবর্তী সহায়তার জন্য SOUMIK ONLINE-এ আমার যোগাযোগের তথ্য ও কথোপকথন সংরক্ষণে সম্মতি দিচ্ছি।',ai:'সাধারণ প্রশ্নের উত্তরে নিরাপদে AI সেবায় শুধু প্রশ্ন পাঠাতে সম্মতি দিচ্ছি (ঐচ্ছিক)।',start:'সাহায্য শুরু করুন',missing:'সঠিক নাম, ১০ সংখ্যার মোবাইল নম্বর ও সম্মতি দিন।',hello:'কীভাবে সাহায্য করতে পারি? সার্ভিস, পেমেন্ট, ট্র্যাকিং বা সাধারণ প্রশ্ন করুন। OTP, পাসওয়ার্ড, আধার বা ব্যাংক তথ্য দেবেন না।',pending:'পাঠানো হচ্ছে…',unavailable:'লাইভ সহায়তা এখনও যুক্ত হয়নি। WhatsApp বা ইমেইলে যোগাযোগ করুন।',escalate:'Owner-এর সাহায্য চাই',escalated:'আপনার সমস্যাটি Owner-এর কাছে পাঠানো হয়েছে।',chat:'সাপোর্ট চ্যাট',pdf:'পেমেন্ট নিশ্চিত হওয়ার পরে Application PDF পাওয়া যাবে। Tracking-এ গিয়ে পরিচয় যাচাই করে উপলব্ধ নথি ডাউনলোড করুন।',tracking:'ব্যক্তিগত স্ট্যাটাস জানতে Tracking-এ পরিচয় যাচাই করুন। শুধু Tracking ID দেখে ব্যক্তিগত তথ্য দেখানো নিরাপদ নয়।'},
+    hi:{intro:'सहायता शुरू करने के लिए नाम और 10 अंकों का मोबाइल नंबर दें।',name:'आपका नाम',phone:'मोबाइल नंबर (10 अंक)',consent:'मैं फॉलो-अप के लिए SOUMIK ONLINE को अपनी संपर्क जानकारी और बातचीत सहेजने की अनुमति देता/देती हूँ।',ai:'सामान्य प्रश्न के लिए केवल प्रश्न AI सेवा को सुरक्षित रूप से भेजने की अनुमति (वैकल्पिक)।',start:'सहायता शुरू करें',missing:'सही नाम, 10 अंकों का मोबाइल नंबर और सहमति दर्ज करें।',hello:'कैसे मदद करूँ? सेवाओं, भुगतान, ट्रैकिंग या सामान्य विषयों पर पूछें। OTP, पासवर्ड, आधार या बैंक विवरण न भेजें।',pending:'भेज रहा है…',unavailable:'लाइव सहायता अभी कनेक्ट नहीं है। WhatsApp या ईमेल से संपर्क करें।',escalate:'Owner से संपर्क का अनुरोध',escalated:'आपका अनुरोध Owner को भेज दिया गया है।',chat:'सहायता चैट',pdf:'भुगतान पुष्टि के बाद आवेदन PDF मिलेगा। Tracking पर पहचान सत्यापित करके दस्तावेज़ डाउनलोड करें।',tracking:'निजी आवेदन स्थिति के लिए Tracking पर पहचान सत्यापित करें। सिर्फ Tracking ID से निजी जानकारी नहीं दिखाई जा सकती।'}
+  };
+  const T=k=>(text[getLang()]||text.en)[k];
+  const $=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const digits=v=>String(v||'').replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'').slice(0,10);
+  const client=()=>{window.soumikSupabaseReady?.();return window.soumikSupabase};
+  async function call(action,body={},owner=false){
+    const c=client();if(!c)throw Error(T('unavailable'));
+    const args={body:{action,...body}};
+    if(owner){const r=await c.auth.getSession();const jwt=r.data?.session?.access_token;if(!jwt)throw Error('Supabase Owner sign-in is required');args.headers={Authorization:'Bearer '+jwt};}
+    const {data,error}=await c.functions.invoke('support-assistant',args);
+    if(error){let msg=error.message||'Service unavailable';try{msg=(await error.context?.clone?.().json())?.error||msg}catch(_){}throw Error(msg)}
+    if(data?.error)throw Error(data.error);return data;
+  }
+  /* The old FAQ widget is replaced by a privacy-aware, server-backed conversation. */
+  function installHelp(){
+    const panel=$('soumikPublicHelpPanel'),form=$('soumikHelpForm'),history=$('soumikHelpMessages');
+    if(!panel||!form||!history||panel.dataset.so57)return;
+    panel.dataset.so57='1';
+    const identity=document.createElement('form');identity.id='so57-help-identity';identity.innerHTML=`<p style="margin:0;font-size:12px;color:#45658d">${esc(T('intro'))}</p><label><span data-i18n="name">${esc(T('name'))}</span><input id="so57-help-name" required maxlength="80" autocomplete="name" placeholder="Name / নাম"></label><label><span data-i18n="phone">${esc(T('phone'))}</span><input id="so57-help-phone" type="tel" required inputmode="numeric" maxlength="12" autocomplete="tel-national" placeholder="10-digit mobile"></label><label class="so57-consent"><input id="so57-help-consent" type="checkbox" required><span data-i18n="consent">${esc(T('consent'))}</span></label><label class="so57-consent"><input id="so57-help-ai" type="checkbox"><span data-i18n="ai">${esc(T('ai'))}</span></label><button type="submit" class="so57-help-primary" id="so57-help-start">${esc(T('start'))}</button><div class="so57-error" id="so57-help-error" role="alert"></div>`;
+    const chat=document.createElement('section');chat.id='so57-help-chat';chat.hidden=true;
+    chat.innerHTML=`<div class="so57-chat-meta"><strong id="so57-chat-user"></strong><button type="button" id="so57-help-escalate">${esc(T('escalate'))}</button></div><div class="so57-chat-note">${esc(T('hello'))}</div><div class="so57-chat-status" id="so57-chat-status" role="status"></div>`;
+    panel.insertBefore(identity,history);
+    chat.append(history, panel.querySelector('.soumik-help-chips'),form);
+    panel.insertBefore(chat,panel.querySelector('.soumik-help-links'));
+    form.addEventListener('submit',async e=>{e.preventDefault();e.stopImmediatePropagation();await sendMessage($('soumikHelpInput')?.value||'')},true);
+    panel.querySelectorAll('[data-help]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();sendMessage(b.dataset.help||'')},true));
+    identity.addEventListener('submit',async e=>{
+      e.preventDefault();const name=$('so57-help-name').value.trim(),phone=digits($('so57-help-phone').value);
+      if(name.length<2||!/^[6-9]\d{9}$/.test(phone)||!$('so57-help-consent').checked){$('so57-help-error').textContent=T('missing');return}
+      const b=$('so57-help-start');b.disabled=true;$('so57-help-error').textContent='';
+      try{const result=await call('start',{name,phone,consent:true,allow_ai:$('so57-help-ai').checked});
+        session={id:result.conversation_id,token:result.session_token,name,phone};
+        identity.hidden=true;chat.hidden=false;$('so57-chat-user').textContent=name+' • '+phone.slice(0,2)+'******'+phone.slice(-2);
+        history.replaceChildren();add(T('hello'),'bot');$('soumikHelpInput')?.focus();
+      }catch(err){$('so57-help-error').textContent=T('unavailable')+' ('+err.message+')'}finally{b.disabled=false}
+    });
+    $('so57-help-escalate').onclick=async()=>{
+      if(!session)return;const b=$('so57-help-escalate');b.disabled=true;
+      try{await call('escalate',{conversation_id:session.id,session_token:session.token});add(T('escalated'),'bot')}catch(e){setStatus(T('unavailable'))}finally{b.disabled=false}
+    };
+    const navToggle=window.soumikToggleHelp;
+    window.soumikToggleHelp=function(show){if(typeof show!=='boolean')show=!panel.classList.contains('is-open');navToggle?.(show);
+      const active=panel.classList.contains('is-open');document.documentElement.classList.toggle('so57-chat-open',active);
+      if(active){if(!session){identity.hidden=false;chat.hidden=true;$('so57-help-name')?.focus()}else{$('soumikHelpInput')?.focus()}}
+    };
+    $('soumikHelpClose')?.addEventListener('click',()=>document.documentElement.classList.remove('so57-chat-open'));
+    $('soumikPublicHelpBtn')?.addEventListener('click',()=>document.documentElement.classList.toggle('so57-chat-open',panel.classList.contains('is-open')));
+  }
+  let session=null,busy=false;
+  function add(message,who){const h=$('soumikHelpMessages');if(!h)return;const div=document.createElement('div');div.className='soumik-help-message'+(who==='user'?' user':'');div.textContent=String(message);h.append(div);h.scrollTop=h.scrollHeight;}
+  function setStatus(message){const el=$('so57-chat-status');if(el)el.textContent=message||''}
+  async function sendMessage(value){
+    const q=String(value||'').trim();if(!session||!q||busy)return;
+    if(q.length>600){setStatus('Message too long (max 600 characters).');return}
+    busy=true;const input=$('soumikHelpInput');if(input)input.value='';add(q,'user');setStatus(T('pending'));
+    try{const result=await call('message',{conversation_id:session.id,session_token:session.token,message:q,language:getLang()});add(result.reply||T('unavailable'),'bot');}
+    catch(e){add(T('unavailable'),'bot');console.warn('Help:',e.message)}finally{busy=false;setStatus('')}
+  }
+  // Remove the obsolete localStorage-based FAQ form from Support screen to avoid false "owner history" promises.
+  function syncLegacySupport(){const h=$('aiHistory');if(!h||h.dataset.so57)return;h.dataset.so57='1';const box=h.closest('.ai-box');if(box){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='🤖 '+T('chat');b.onclick=()=>window.soumikToggleHelp(true);box.append(b)}}
+  async function ownerList(){const r=await call('owner-list',{},true);return r.conversations||[]}
+  window.showSupportAdmin=async function(){
+    if(typeof admin==='undefined'||!admin){window.go?.('adminlogin');return}
+    const root=$('app');if(!root)return;
+    root.innerHTML=`<div class="so57-admin-inbox"><div class="panel so57-inbox-head"><div><h2>🤖 SOUMIK ONLINE — Customer Help History</h2><p>Owner can review opted-in support conversations and contact customers.</p></div><div class="actions"><button class="btn outline" id="so57-inbox-back">← Dashboard</button><button class="btn" id="so57-inbox-refresh">Refresh</button></div></div><div id="so57-inbox-loading" role="status" class="panel">Loading secure conversations…</div><section id="so57-inbox-list" class="so57-inbox-list"></section><section id="so57-inbox-detail" class="panel" hidden></section></div>`;
+    $('so57-inbox-back').onclick=()=>window.go?.('admin');$('so57-inbox-refresh').onclick=loadOwner;
+    await loadOwner();
+  };
+  async function loadOwner(){
+    const list=$('so57-inbox-list'),loading=$('so57-inbox-loading');if(!list)return;list.replaceChildren();if(loading)loading.textContent='Loading…';
+    try{const rows=await ownerList();if(loading)loading.textContent=rows.length?rows.length+' conversation(s)':'No customer conversations yet.';
+      for(const row of rows){const card=document.createElement('div');card.className='so57-inbox-card';const name=document.createElement('strong');name.textContent=row.customer_name||'Customer';card.append(name);
+        const p=document.createElement('p');p.textContent='Mobile: '+row.customer_phone+' • '+(row.needs_owner?'⚠ Needs owner':'Open')+' • '+new Date(row.created_at).toLocaleString();card.append(p);
+        const actions=document.createElement('div');actions.className='actions';const detail=document.createElement('button');detail.type='button';detail.className='btn mini';detail.textContent='View conversation';detail.onclick=()=>ownerDetail(row.id);actions.append(detail);
+        const wa=document.createElement('a');wa.className='btn green mini';wa.textContent='WhatsApp';wa.rel='noopener noreferrer';wa.target='_blank';wa.href='https://wa.me/91'+row.customer_phone;actions.append(wa);
+        const tel=document.createElement('a');tel.className='btn outline mini';tel.textContent='Call';tel.href='tel:+91'+row.customer_phone;actions.append(tel);card.append(actions);list.append(card);
+      }
+    }catch(err){if(loading)loading.textContent='Cannot load secure support history: '+err.message+'. Deploy the support-assistant Function, database SQL, and sign in as Owner.'}
+  }
+  async function ownerDetail(id){
+    const view=$('so57-inbox-detail');if(!view)return;view.hidden=false;view.textContent='Loading messages…';
+    try{const d=await call('owner-detail',{conversation_id:id},true);view.replaceChildren();const title=document.createElement('h3');title.textContent='Conversation with '+(d.conversation?.customer_name||'Customer');view.append(title);
+      const box=document.createElement('div');box.className='so57-inbox-chat';for(const m of d.messages||[]){const row=document.createElement('div');row.className='so57-owner-message '+(m.role==='user'?'user':'');row.textContent=(m.role==='user'?'Customer':'Assistant')+' · '+new Date(m.created_at).toLocaleString()+'\n'+m.content;box.append(row)}view.append(box);view.scrollIntoView({block:'nearest'});
+    }catch(err){view.textContent='Unable to read conversation: '+err.message}
+  }
+  document.getElementById('lang')?.addEventListener('change',()=>{
+    document.querySelectorAll('#so57-help-identity [data-i18n]').forEach(el=>{const key=el.dataset.i18n;if(key)el.textContent=T(key)});
+    if($('so57-help-start'))$('so57-help-start').textContent=T('start');
+    if($('so57-help-escalate'))$('so57-help-escalate').textContent=T('escalate');
+    const intro=$('so57-help-identity')?.querySelector('p');if(intro)intro.textContent=T('intro');
+  });
+  /* Prevent background wheel/touch scrolling while a support window or an actual overlay is open. */
+  document.addEventListener('wheel',ev=>{
+    const panel=$('soumikPublicHelpPanel');
+    if(panel?.classList.contains('is-open')&&!panel.contains(ev.target)){ev.preventDefault();return}
+    const nodes=[...document.querySelectorAll('#soumikProfileDialog,#soumikOwnerSettingsOverlay,#soControl,#soumikPdfVerifyModal,.owner-modal,.sr-overlay,.soumik-edit-overlay,.so32-stage-shade')];
+    const active=nodes.find(x=>x.getClientRects().length>0&&getComputedStyle(x).display!=='none');
+    if(active&&!active.contains(ev.target))ev.preventDefault();
+  },{capture:true,passive:false});
+  /* Do not create automatic customer PDFs before a verified payment status. */
+  const paid=a=>!!a&&['PAID','CASH_CONFIRMED'].includes(String(a.paymentStatus||'').toUpperCase());
+  const originalPDF=window.downloadReceiptPDF;
+  if(typeof originalPDF==='function')window.downloadReceiptPDF=async function(id,automatic=false){
+    const a=typeof state!=='undefined'&&state.applications?.find(x=>String(x.id)===String(id));
+    if(!paid(a)){if(!automatic)window.soumikNotify?.('Application PDF is available after payment confirmation.','warning');return false}
+    return originalPDF.call(this,id,false);
+  };
+  const oldApplicationPdf=window.soumikApplicationPdf;
+  window.soumikApplicationPdf=async function(id){
+    const a=typeof state!=='undefined'&&state.applications?.find(x=>String(x.id)===String(id));
+    if(!paid(a)){window.soumikNotify?.('Complete payment / Owner cash confirmation before downloading Application PDF.','warning');return false}
+    if(typeof oldApplicationPdf==='function')return oldApplicationPdf(id);
+    return window.downloadReceiptPDF?.(id,false);
+  };
+  const originalOpenReceipt=window.openReceipt;
+  if(typeof originalOpenReceipt==='function')window.openReceipt=function(id,...rest){
+    const a=typeof state!=='undefined'&&state.applications?.find(x=>String(x.id)===String(id));
+    if(!paid(a)){window.soumikShowPayment?.(id);window.soumikNotify?.('Application PDF will be available after payment confirmation.','info');return}
+    return originalOpenReceipt.call(this,id,...rest);
+  };
+  const originalReceiptPage=window.receiptPage;
+  if(typeof originalReceiptPage==='function')window.receiptPage=function(){
+    const a=typeof state!=='undefined'&&state.applications?.find(x=>String(x.id)===String(trackQuery));
+    if(a&&!paid(a)){return '<section class="panel" style="max-width:760px;margin:20px auto"><h2>Payment confirmation required</h2><p>Final Application PDF is available only after successful Online Payment or Owner Cash Confirmation.</p><button class="btn" onclick="soumikShowPayment(trackQuery)">Continue to Payment →</button></section>'}
+    return originalReceiptPage.apply(this,arguments);
+  };
+  /* Refresh checkout cards and state after the existing checkout renderer creates them. */
+  function checkoutEnhance(){const main=document.querySelector('#app .soumik-checkout');if(!main)return;
+    const id=main.querySelector('.soumik-pay-meta b')?.textContent?.trim();const a=typeof state!=='undefined'&&state.applications?.find(x=>String(x.id)===id);
+    if(!a)return;const status=String(a.paymentStatus||'PENDING').toUpperCase();const statusEl=$('soumikCheckoutStatus');if(!statusEl)return;
+    if(!statusEl.dataset.so57Loaded) {
+      if(status==='CASH_PENDING')statusEl.textContent='💵 Cash Payment — Awaiting Owner Confirmation';
+      else if(status==='CASH_CONFIRMED')statusEl.textContent='✓ Cash Payment Completed — Owner Confirmed';
+      else if(status==='PAID')statusEl.textContent='✓ Online Payment Completed';
+      else if(status==='CASH_REJECTED')statusEl.textContent='Cash Request Rejected — You can try again';
+      else statusEl.textContent='Payment Pending — Choose Online Payment or Cash Request';
+    }
+    statusEl.dataset.so57Loaded='1';
+    const row=main.querySelector('.soumik-download-actions');if(row){
+      const pdf=row.querySelector('button[onclick*="soumikApplicationPdf"]');
+      const receipt=row.querySelector('button[onclick*="soumikReceiptPdf"]');
+      const view=row.querySelector('button[onclick*="openReceipt"]');
+      for(const b of [pdf,view])if(b){b.disabled=!paid(a);b.title=paid(a)?'Download after payment confirmation':'Available only after payment confirmation'}
+      if(receipt){receipt.disabled=!paid(a);if(status==='CASH_CONFIRMED'){if(receipt.textContent!=='Cash Confirmation Receipt')receipt.textContent='Cash Confirmation Receipt';receipt.title='Owner-confirmed cash application receipt';receipt.onclick=()=>window.soumikApplicationPdf?.(id)}else{if(receipt.textContent!=='Download Paid Receipt')receipt.textContent='Download Paid Receipt';receipt.title=status==='PAID'?'Verified online receipt':'Available after verified payment'}}
+      if(!paid(a)){const tip=document.createElement('small');tip.textContent='Final PDF and paid receipt unlock after payment confirmation.';tip.style.cssText='display:block;width:100%;color:#627c9b';if(!row.querySelector('small'))row.append(tip)}
+    }
+  }
+  let queued=false;
+  const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;syncLegacySupport();if(document.querySelector('#app .soumik-checkout'))checkoutEnhance();addOwnerLink();})});
+  function addOwnerLink(){const root=document.querySelector('#app .soumik-admin-layout');if(!root||$('so57OwnerHelpLink'))return;
+    const btn=document.createElement('button');btn.id='so57OwnerHelpLink';btn.type='button';btn.className='btn outline';btn.textContent='🤖 Customer Help History';btn.onclick=()=>window.showSupportAdmin();
+    const main=root.querySelector('main')||root;main.insertBefore(btn,main.firstChild);
+  }
+  function boot(){installHelp();syncLegacySupport();checkoutEnhance();addOwnerLink();observer.observe($('app')||document.body,{subtree:true,childList:true})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
 </html>
