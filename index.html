@@ -2324,7 +2324,7 @@ function appTable(arr,adm){
 if(adm)return `<div class="soumik-owner-application-list">${arr.length?arr.map(a=>{
 const id=encodeURIComponent(a.id),status=String(a.status||'Submitted'),payment=String(a.paymentStatus||'PENDING');
 const paid=payment==='PAID'||payment==='CASH_CONFIRMED';
-return `<article class="soumik-owner-app-card"><div class="soumik-owner-app-info"><div class="soumik-owner-app-fields"><div><small>TRACKING ID</small><strong class="soumik-owner-track">${esc(a.id)}</strong><button class="btn mini outline" type="button" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))">📋 Copy ID</button></div><div><small>SERVICE</small><b>${esc(SERVICES[a.type]?.name||a.type||'—')}</b></div><div><small>APPLICANT</small><b>${esc(a.fullName||'—')}</b></div><div><small>DATE</small><b>${esc(String(a.date||'').slice(0,10)||'—')}</b></div><div><small>STATUS</small><span class="pill ${esc(status.replace(/ /g,'-'))}">${esc(status)}</span></div></div><p class="soumik-owner-payline">${payment.startsWith('CASH')?'💵 Cash Payment':'💳 Online Payment'} — ${esc(payment)}</p><div class="soumik-owner-receiptbox"><b>PAYMENT RECEIPT</b><div class="soumik-owner-action-grid"><button class="btn green mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 Receipt / PDF</button><button class="btn mini" onclick="soumikOwnerPaymentShare('${id}','email')">✉️ Email Receipt Details</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${id}','whatsapp')">🟢 WhatsApp Receipt Details</button><button class="btn outline mini" onclick="openReceipt(decodeURIComponent('${id}'))">📤 View / Share PDF</button></div></div></div><div class="soumik-owner-app-actions"><button class="btn mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 View / PDF</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')">🟢 WhatsApp Status</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'email')">✉️ Email Status</button><label class="soumik-owner-status-label">⚙ Update status<select id="status_${esc(a.id)}" onchange="soumikInstantStatus(this,decodeURIComponent('${id}'))" aria-label="Update application status for ${esc(a.id)}">${ADMIN_STATUSES.map(st=>`<option value="${esc(st)}" ${status===st?'selected':''}>${statusIcon(st)} ${esc(st)}</option>`).join('')}</select></label><span class="soumik-status-save-hint">✓ Selecting a status saves automatically</span><button class="btn mini outline" onclick="soumikShowHistory(decodeURIComponent('${id}'))">🕒 Timeline</button><button class="btn mini outline" onclick="soumikOwnerEditApplication(decodeURIComponent('${id}'))">✏️ Edit</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 Payment</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${id}'))">🗑 Delete</button><button class="btn mini" onclick="soumikOpenReferenceEditor(decodeURIComponent('${id}'))">📨 Reference / Message</button><details class="soumik-owner-more"><summary>📂 More Actions</summary><button class="btn mini outline" onclick="adminPdfSlots(decodeURIComponent('${id}'))">📄 3 PDFs</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 View Payment</button><button class="btn mini outline" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))">📋 Copy Tracking ID</button><button class="btn mini outline" onclick="window.print()">🖨 Print / Save PDF</button></details></div></article>`;
+return `<article class="soumik-owner-app-card"><div class="soumik-owner-app-info"><div class="soumik-owner-app-fields"><div><small>TRACKING ID</small><strong class="soumik-owner-track">${esc(a.id)}</strong><button class="btn mini outline" type="button" onclick="so60CopyTracking(decodeURIComponent('${id}'),this)">📋 Copy ID</button></div><div><small>SERVICE</small><b>${esc(SERVICES[a.type]?.name||a.type||'—')}</b></div><div><small>APPLICANT</small><b>${esc(a.fullName||'—')}</b></div><div><small>DATE</small><b>${esc(String(a.date||'').slice(0,10)||'—')}</b></div><div><small>STATUS</small><span class="pill ${esc(status.replace(/ /g,'-'))}">${esc(status)}</span></div></div><p class="soumik-owner-payline">${payment.startsWith('CASH')?'💵 Cash Payment':'💳 Online Payment'} — ${esc(payment)}</p><div class="soumik-owner-receiptbox"><b>PAYMENT RECEIPT</b><div class="soumik-owner-action-grid"><button class="btn green mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 Receipt / PDF</button><button class="btn mini" onclick="soumikOwnerPaymentShare('${id}','email')">✉️ Email Receipt Details</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${id}','whatsapp')">🟢 WhatsApp Receipt Details</button><button class="btn outline mini" onclick="openReceipt(decodeURIComponent('${id}'))">📤 View / Share PDF</button><button class="btn green mini so60-wa-pdf" type="button" onclick="so60ShareReceiptWhatsApp(decodeURIComponent('${id}'))">📎 Share PDF via WhatsApp</button></div></div></div><div class="soumik-owner-app-actions"><button class="btn mini" onclick="openReceipt(decodeURIComponent('${id}'))">📄 View / PDF</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')">🟢 WhatsApp Status</button><button class="btn mini so60-wa-pdf" type="button" onclick="so60ShareReceiptWhatsApp(decodeURIComponent('${id}'))">📎 Share Paid PDF</button><button class="btn mini outline" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'email')">✉️ Email Status</button><label class="soumik-owner-status-label">⚙ Update status<select id="status_${esc(a.id)}" onchange="soumikInstantStatus(this,decodeURIComponent('${id}'))" aria-label="Update application status for ${esc(a.id)}">${ADMIN_STATUSES.map(st=>`<option value="${esc(st)}" ${status===st?'selected':''}>${statusIcon(st)} ${esc(st)}</option>`).join('')}</select></label><span class="soumik-status-save-hint">✓ Selecting a status saves automatically</span><button class="btn mini outline" onclick="soumikShowHistory(decodeURIComponent('${id}'))">🕒 Timeline</button><button class="btn mini outline" onclick="soumikOwnerEditApplication(decodeURIComponent('${id}'))">✏️ Edit</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 Payment</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${id}'))">🗑 Delete</button><button class="btn mini" onclick="soumikOpenReferenceEditor(decodeURIComponent('${id}'))">📨 Reference / Message</button><details class="soumik-owner-more"><summary>📂 More Actions</summary><button class="btn mini outline" onclick="adminPdfSlots(decodeURIComponent('${id}'))">📄 3 PDFs</button><button class="btn mini outline" onclick="soumikShowPayment(decodeURIComponent('${id}'))">💳 View Payment</button><button class="btn mini outline" onclick="so60CopyTracking(decodeURIComponent('${id}'),this)">📋 Copy Tracking ID</button><button class="btn mini outline" onclick="window.print()">🖨 Print / Save PDF</button></details></div></article>`;
 }).join(''):'<div class="panel">No applications found for the selected filter.</div>'}</div>`;
 return (function originalCustomerTable(){
 return `<div class="tablewrap soumik-app-cards"><table><thead><tr><th>Tracking ID</th><th>Service</th><th>Name</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>${arr.length?arr.map(a=>`<tr><td><div class="soumik-tracking-id-cell"><b>${esc(a.id)}</b><button type="button" class="soumik-copy-tracking" data-copy-tracking="${esc(a.id)}" aria-label="Copy tracking ID ${esc(a.id)}" title="Copy tracking ID">📋 Copy ID</button><span class="soumik-payment-status-chip" aria-label="Payment status">${esc((a.paymentMethod==='Cash'||String(a.paymentStatus||'').startsWith('CASH_'))?'💵 Cash Payment':(a.paymentMethod==='Online'||a.paymentStatus==='PAID')?'💳 Online Payment':'Payment')} — ${esc(a.paymentStatus||'PENDING')}</span></div></td><td>${esc(SERVICES[a.type]?.name||a.type)}
@@ -2789,7 +2789,7 @@ function adminPage(){
     const status=String(a.status||'Submitted');
     const statusClass=/approved|completed|delivered/i.test(status)?'ok':/cancelled|rejected/i.test(status)?'bad':/hold|pending|objection/i.test(status)?'warn':'info';
     const dated=String(a.date||a.created_at||'').slice(0,10)||'—';
-    return `<tr class="so28-recent-row"><td data-label="#"><span class="so28-rownum">${i+1}</span></td><td data-label="Tracking ID"><button type="button" class="so28-tracking" onclick="navigator.clipboard?.writeText(decodeURIComponent('${id}'))" title="Copy tracking ID">${esc(a.id||'—')}</button></td><td data-label="Service">${esc(SERVICES[a.type]?.name||a.service||a.type||'—')}</td><td data-label="Applicant"><b>${esc(a.fullName||'—')}</b>${a.mobile?`<small>${esc(a.mobile)}</small>`:''}</td><td data-label="Date">${esc(dated)}</td><td data-label="Status"><span class="so28-status ${statusClass}">${esc(status)}</span></td><td data-label="Actions"><div class="so28-row-actions"><button class="so28-action view" type="button" onclick="openReceipt(decodeURIComponent('${id}'))" title="View / PDF">◉ <span>View / PDF</span></button><button class="so28-action whatsapp" type="button" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')" title="WhatsApp">${waIcon}<span>WhatsApp</span></button><button class="so28-action so52-delete-action" type="button" onclick="so52DeleteConfirm(decodeURIComponent('${id}'))" title="Delete application">🗑 Delete</button><button class="so28-action more" type="button" onclick="so28OpenDetails(decodeURIComponent('${id}'))" title="Show application actions">•••</button></div></td></tr>`;
+    return `<tr class="so28-recent-row"><td data-label="#"><span class="so28-rownum">${i+1}</span></td><td data-label="Tracking ID"><button type="button" class="so28-tracking" onclick="so60CopyTracking(decodeURIComponent('${id}'),this)" title="Copy tracking ID">${esc(a.id||'—')}</button></td><td data-label="Service">${esc(SERVICES[a.type]?.name||a.service||a.type||'—')}</td><td data-label="Applicant"><b>${esc(a.fullName||'—')}</b>${a.mobile?`<small>${esc(a.mobile)}</small>`:''}</td><td data-label="Date">${esc(dated)}</td><td data-label="Status"><span class="so28-status ${statusClass}">${esc(status)}</span></td><td data-label="Actions"><div class="so28-row-actions"><button class="so28-action view" type="button" onclick="openReceipt(decodeURIComponent('${id}'))" title="View / PDF">◉ <span>View / PDF</span></button><button class="so28-action whatsapp" type="button" onclick="soumikShareUpdate(decodeURIComponent('${id}'),'whatsapp')" title="WhatsApp">${waIcon}<span>WhatsApp</span></button><button class="so28-action so52-delete-action" type="button" onclick="so52DeleteConfirm(decodeURIComponent('${id}'))" title="Delete application">🗑 Delete</button><button class="so28-action more" type="button" onclick="so28OpenDetails(decodeURIComponent('${id}'))" title="Show application actions">•••</button></div></td></tr>`;
  }).join('');
  const sidebar=`<aside class="so28-sidebar" aria-label="Owner dashboard navigation">
    <div class="so28-sidebar-brand"><div class="so28-owner-avatar"><img src="${ASSETS.logo}" alt="SOUMIK ONLINE"/></div><div><strong>Owner Dashboard</strong><small>SOUMIK ONLINE • Control Center</small></div></div>
@@ -5728,7 +5728,7 @@ button,.btn{min-height:44px;touch-action:manipulation}
  const notice=(msg,ok=false)=>{const el=document.getElementById('soumikCloudNotice');if(el){el.textContent=msg;el.style.color=ok?'#087443':'#9a3412';}};
  const cleanApp=a=>{const x={...a};delete x._dbid;delete x._dbtable;delete x._cloudSaved;return x;};
  async function ownerProfile(){const {data:{user},error}=await client.auth.getUser();if(error)throw error;if(!user)return null;const {data,error:e}=await client.from('owner_profiles').select('user_id,full_name,mobile,email,role').eq('user_id',user.id).maybeSingle();if(e)throw e;if(!data||data.role!=='owner'){const r=await client.rpc('so_my_request_status');await client.auth.signOut();throw new Error(r.data==='rejected'?'Account registration rejected.':'Account approval pending or not authorized.');}return {id:user.id,name:data.full_name||user.user_metadata?.full_name||user.email,email:data.email||user.email,mobile:data.mobile||''};}
- async function loadAll(){const owner=await ownerProfile();if(!owner){state.applications=[];state.users=[];session=null;admin=false;return;}const {data,error}=await client.from('applications').select('tracking_id,payload,status,created_at').order('created_at',{ascending:false});if(error)throw error;state.applications=(data||[]).map(r=>({...r.payload,id:r.tracking_id,status:r.status||r.payload?.status||'Submitted',history:Array.isArray(r.payload?.history)?r.payload.history:[],date:r.payload?.date||r.created_at,_cloudSaved:true}));
+ async function loadAll(){const owner=await ownerProfile();if(!owner){state.applications=[];state.users=[];session=null;admin=false;return;}const {data,error}=await client.from('applications').select('tracking_id,payload,status,created_at').order('created_at',{ascending:false});if(error)throw error;state.applications=(data||[]).filter(r=>!r.payload?.archivedAt).map(r=>({...r.payload,id:r.tracking_id,status:r.status||r.payload?.status||'Submitted',history:Array.isArray(r.payload?.history)?r.payload.history:[],date:r.payload?.date||r.created_at,_cloudSaved:true}));
  // Gateway integration disabled; historical application payment status is retained.
  const paymentResult={data:[],error:null};
  if(paymentResult.error){console.warn('Owner payment reconciliation unavailable:',paymentResult.error.message);window.soumikPaymentSyncError=paymentResult.error.message;}
@@ -8338,28 +8338,42 @@ decorateAll();
   el.querySelector('#so52-track').onclick=()=>{const id=el.querySelector('#so52-help-id').value.trim();el.remove();window.go?.('tracking');if(id){const field=document.getElementById('trackInput');if(field)field.value=id}};
   el.querySelector('#so52-close').onclick=()=>el.remove();
  };
+ // V60: protected owner-only server action replaces direct client-side DELETE.
  window.so52DeleteConfirm=async function(id){
-   if(typeof admin==='undefined'||!admin)return alert('Owner login required');
-   const a=state.applications.find(x=>String(x.id)===String(id));if(!a)return alert('Application not found');
-   const el=modal('<h2>🗑 Delete application?</h2><p>Tracking ID: <strong>'+safe(id)+'</strong></p><p>This deletes the database application record. Uploaded document files may still exist in private storage and require separate cleanup. Keep a backup first.</p><label>To confirm, enter the exact Tracking ID<input type="text" id="so52-delete-id" autocomplete="off" spellcheck="false" placeholder="'+safe(id)+'"></label><p class="so52-error" role="alert" id="so52-delete-error"></p><div class="so52-actions"><button class="so52-secondary" id="so52-delete-cancel">Cancel</button><button class="so52-danger" id="so52-delete-do">Permanently Delete</button></div>');
-   el.querySelector('#so52-delete-cancel').onclick=()=>el.remove();
-   el.querySelector('#so52-delete-do').onclick=async()=>{
-     const entry=el.querySelector('#so52-delete-id').value.trim(),error=el.querySelector('#so52-delete-error'),button=el.querySelector('#so52-delete-do');
-     if(entry!==String(id)){error.textContent='Tracking ID does not match.';return}
-     button.disabled=true;button.textContent='Deleting from Supabase...';error.textContent='';
-     try{
-       window.soumikSupabaseReady?.();const c=window.soumikSupabase;
-       if(!c)throw Error('Supabase is not connected');
-       const auth=await c.auth.getUser();if(auth.error||!auth.data?.user)throw Error('Supabase Owner login required; local-only login is not enough');
-       const profile=await c.from('owner_profiles').select('role').eq('user_id',auth.data.user.id).maybeSingle();
-       if(profile.error||profile.data?.role!=='owner')throw Error('Owner permission not verified');
-       const deleted=await c.from('applications').delete().eq('tracking_id',id).select('tracking_id');
-       if(deleted.error)throw deleted.error;
-       if(!Array.isArray(deleted.data)||!deleted.data.some(x=>String(x.tracking_id)===String(id)))throw Error('No record deleted; check RLS DELETE policy, or record already removed');
-       const idx=state.applications.findIndex(x=>String(x.id)===String(id));if(idx>=0)state.applications.splice(idx,1);
-       el.remove();window.soumikNotify?.('Application '+id+' deleted from Supabase','success');await window.soumikLoadData?.();window.go?.('admin');
-     }catch(e){error.textContent='Delete failed: '+(e.message||String(e));button.disabled=false;button.textContent='Permanently Delete';}
-   };
+  if(typeof admin==='undefined'||!admin)return alert('Owner login required');
+  const a=state.applications.find(x=>String(x.id)===String(id));
+  if(!a)return alert('Application not found');
+  const el=modal('<h2>🗑 Remove application?</h2><p>Tracking ID: <strong>'+safe(id)+'</strong></p><p><b>Archive</b> removes the application from the owner dashboard without destroying payment history. <b>Permanently Delete</b> is available only for unpaid records with no recorded Razorpay transactions.</p><label>Paste the Tracking ID to confirm<input type="text" id="so52-delete-id" autocomplete="off" spellcheck="false" placeholder="'+safe(id)+'"></label><p class="so52-error" role="alert" id="so52-delete-error"></p><div class="so52-actions"><button class="so52-secondary" type="button" id="so52-delete-cancel">Cancel</button><button type="button" id="so52-archive-do">Archive / Hide</button><button class="so52-danger" type="button" id="so52-delete-do">Permanently Delete</button></div>');
+  el.querySelector('#so52-delete-cancel').onclick=()=>el.remove();
+  const run=async action=>{
+   const entry=el.querySelector('#so52-delete-id').value.trim().toUpperCase();
+   const error=el.querySelector('#so52-delete-error');
+   const buttons=[...el.querySelectorAll('button')];
+   if(entry!==String(id).trim().toUpperCase()){
+    error.textContent='Tracking ID does not match. Paste the copied ID exactly.';return;
+   }
+   if(action==='delete'&&!confirm('Permanently delete UNPAID application '+id+'? This cannot be undone.'))return;
+   buttons.forEach(b=>b.disabled=true);error.textContent='Verifying owner access and updating database…';
+   try{
+    window.soumikSupabaseReady?.();const client=window.soumikSupabase;
+    if(!client)throw Error('Supabase is not connected');
+    const auth=await client.auth.getUser();
+    if(auth.error||!auth.data?.user)throw Error('Please sign in as the Supabase Owner first');
+    const {data, error:fnError}=await client.functions.invoke('owner-application-actions',{
+      body:{action,tracking_id:id}
+    });
+    if(fnError){let msg=fnError.message||'Server action failed';try{
+      const details=await fnError.context?.clone?.().json();msg=details?.error||msg;
+    }catch(_){}throw Error(msg)}
+    if(!data?.success)throw Error(data?.error||'Server did not verify the change');
+    const idx=state.applications.findIndex(x=>String(x.id)===String(id));
+    if(idx>=0)state.applications.splice(idx,1);
+    el.remove();window.soumikNotify?.((action==='archive'?'Application archived: ':'Application permanently deleted: ')+id,'success');
+    await window.soumikLoadData?.();window.go?.('admin');
+   }catch(e){error.textContent=(action==='delete'?'Delete failed: ':'Archive failed: ')+(e.message||String(e))+' — If the application has a confirmed payment, use Archive.';buttons.forEach(b=>b.disabled=false);}
+  };
+  el.querySelector('#so52-archive-do').onclick=()=>run('archive');
+  el.querySelector('#so52-delete-do').onclick=()=>run('delete');
  };
  // The older dashboard stylesheet opens Payment Follow-ups as a full-screen stage.
  // Keep it visible inline, and show confirmed records distinctly when requested.
@@ -10569,6 +10583,8 @@ function tr(en,bn,hi){return lang()==='bn'?bn:lang()==='hi'?hi:en}
 function statusText(st){return st==='CASH_CONFIRMED'?tr('Cash Payment Confirmed — Owner Approved','ক্যাশ পেমেন্ট নিশ্চিত — ওনার অনুমোদিত','नकद भुगतान पुष्टि — मालिक द्वारा स्वीकृत'):st==='CASH_REJECTED'?tr('Cash Request Rejected — Not Paid','ক্যাশ অনুরোধ বাতিল — পেমেন্ট হয়নি','नकद अनुरोध अस्वीकृत — भुगतान नहीं हुआ'):st==='PAID'?tr('Online Payment Completed — Verified','অনলাইন পেমেন্ট সফল — যাচাই হয়েছে','ऑनलाइन भुगतान सफल — सत्यापित'):tr('Cash Request Submitted — Awaiting Owner Confirmation','ক্যাশ অনুরোধ জমা হয়েছে — ওনার অনুমোদন বাকি','नकद अनुरोध जमा — मालिक की पुष्टि बाकी')}
 function last(){let a=find(stored(LAST_KEY));if(a)return a;a=find(stored(CASH_KEY));if(a)return a;a=find(stored(ONLINE_KEY));return a||null}
 function refreshPanel(){
+ // V60: protect customer privacy—never show a payment result, tracking ID or private action panel on Home.
+ document.getElementById('so59-home-result')?.remove();return;
  const old=document.getElementById('so59-home-result');if(!here()){old?.remove();return}
  const a=last();if(!a){old?.remove();return}
  const st=upper(a.paymentStatus),isCash=st.startsWith('CASH')||/^cash$/i.test(a.paymentMethod||'');
@@ -10645,6 +10661,8 @@ async function refreshCashStatus(a,manual=false){
  finally{checkBusy=false}
 }
 function monitor(a){
+ // V60: Home never displays customer status and does not poll private decisions.
+ return;
  if(!a||upper(a.paymentStatus)!=='CASH_PENDING')return;
  stop();active=a.id;startedAt=Date.now();
  const check=()=>{if(active!==a.id||Date.now()-startedAt>20*60*1000){stop();return}if(!here()||document.visibilityState==='hidden')return;refreshCashStatus(a,false).catch(e=>console.warn(e))};
@@ -10678,4 +10696,68 @@ else{refreshPanel();const a=find(stored(CASH_KEY));if(a&&upper(a.paymentStatus)=
 })();
 </script>
 
+<style id="so60-private-home-and-owner-actions">
+/* No public payment/status banner. Hidden even before JS has hydrated. */
+#so59-home-result,.so59-home-result{display:none!important}
+.so60-wa-pdf{background:#e9faf2!important;color:#08714c!important;border:1px solid #8ad7b0!important;font-weight:750!important}
+#so60-copy-status{position:fixed;z-index:2147483601;right:18px;top:18px;padding:12px 17px;color:#fff;background:#0d7b58;border-radius:12px;box-shadow:0 10px 28px #0004;font:700 13px/1.5 system-ui;max-width:min(94vw,420px)}
+</style>
+<script id="so60-private-home-copy-share">
+(()=>{'use strict';
+function alertToast(t,good=true){document.getElementById('so60-copy-status')?.remove();const d=document.createElement('div');d.id='so60-copy-status';d.setAttribute('role','status');d.textContent=t;d.style.background=good?'#08714c':'#ab3939';document.body.appendChild(d);setTimeout(()=>d.remove(),3100)}
+window.so60CopyTracking=async function(id,btn){const value=String(id||'').trim();if(!value)return;
+ try{if(navigator.clipboard?.writeText&&window.isSecureContext)await navigator.clipboard.writeText(value);
+ else{const t=document.createElement('textarea');t.value=value;t.style.cssText='position:fixed;top:-9999px;opacity:0';document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();if(!ok)throw Error('Copy unavailable')}
+ alertToast('✓ Tracking ID copied: '+value);
+ if(btn?.textContent){const old=btn.textContent;btn.textContent='✓ Copied!';setTimeout(()=>{if(btn.isConnected)btn.textContent=old},2100)}
+ }catch(e){alertToast('Could not copy. Please select the Tracking ID.',false)}
+};
+// Legacy table buttons already have a copy event listener. Show a success message on all variants.
+document.addEventListener('click',e=>{const b=e.target.closest('[data-copy-tracking]');if(b){const orig=b.textContent;setTimeout(()=>{if(b.isConnected){b.textContent='✓ Copied!';setTimeout(()=>{if(b.isConnected)b.textContent=orig},1800)}},70)}},true);
+function buildPdf(canvas){
+ const b64=canvas.toDataURL('image/jpeg',.91).split(',')[1],bin=atob(b64),enc=new TextEncoder(),chunks=[];let size=0;const offsets=[0];
+ const put=s=>{const x=enc.encode(s);chunks.push(x);size+=x.length};
+ const obj=(i,head,data,tail='')=>{offsets[i]=size;put(i+' 0 obj\n'+head);if(data){chunks.push(data);size+=data.length}if(tail)put(tail);put('\nendobj\n')};
+ put('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+ const jpg=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)jpg[i]=bin.charCodeAt(i);
+ obj(4,'<< /Type /XObject /Subtype /Image /Width '+canvas.width+' /Height '+canvas.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n',jpg,'\nendstream');
+ const content='q\n595.28 0 0 841.89 0 0 cm\n/Im0 Do\nQ\n';obj(5,'<< /Length '+enc.encode(content).length+' >>\nstream\n'+content+'endstream');
+ const pos=size;put('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<6;i++)put(String(offsets[i]).padStart(10,'0')+' 00000 n \n');put('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+pos+'\n%%EOF');return new Blob(chunks,{type:'application/pdf'});
+}
+function save(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),120000)}
+const phone=v=>String(v??'').replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'');
+window.so60ShareReceiptWhatsApp=async function(id){
+ if(typeof admin==='undefined'||!admin){alertToast('Owner login required',false);return}
+ const a=state?.applications?.find(x=>String(x.id)===String(id));if(!a){alertToast('Application not found',false);return}
+ const st=String(a.paymentStatus||'').toUpperCase();
+ if(!['CASH_CONFIRMED','PAID'].includes(st)){alertToast('PDF can be shared only after verified payment.',false);return}
+ const mobile=phone(a.mobile||a.newMobile||a.phone||a.customer_phone||a.contactNumber);
+ if(!/^[6-9]\d{9}$/.test(mobile)){alertToast('Customer mobile not available',false);return}
+ if(!confirm('Share this PRIVATE application PDF on WhatsApp with the verified customer whose phone ends in ' +mobile.slice(-4)+'? Confirm consent and recipient carefully.'))return;
+ try{
+  window.soumikSupabaseReady?.();const db=window.soumikSupabase;
+  if(!db)throw Error('Supabase is unavailable');
+  const auth=await db.auth.getUser();if(auth.error||!auth.data?.user)throw Error('Supabase Owner login required');
+  const {data:profile,error:pe}=await db.from('owner_profiles').select('role').eq('user_id',auth.data.user.id).maybeSingle();
+  if(pe||profile?.role!=='owner')throw Error('Owner permission not verified');
+  // For cash, revalidate the actual SERVER status, never trust local cache to send a paid receipt.
+  if(st==='CASH_CONFIRMED'){
+   const {data:r,error}=await db.functions.invoke('cash-request-management',{body:{action:'list'}});
+   if(error||r?.success!==true||(r.requests||[]).find(x=>String(x.tracking_id)===String(id))?.status!=='CONFIRMED')throw Error('Cash confirmation could not be verified with server');
+  }else{throw Error('Online paid PDF share requires server receipt verification; use the verified payment page until integrated')}
+  const canvas=await window.soumikBuildApplicationReceiptImage?.(a);if(!canvas)throw Error('Receipt renderer unavailable');
+  const blob=buildPdf(canvas),name='SOUMIK_ONLINE_CASH_CONFIRMED_'+String(id).replace(/[^a-zA-Z0-9_-]/g,'')+'.pdf';
+  const file=new File([blob],name,{type:'application/pdf'});
+  if(navigator.share && navigator.canShare?.({files:[file]})){
+    try{await navigator.share({files:[file],title:'SOUMIK ONLINE — Cash Confirmed PDF'});alertToast('Share sheet opened. Choose WhatsApp and confirm sending.');return}catch(e){if(e?.name==='AbortError')return}
+  }
+  save(blob,name);
+  alertToast('PDF downloaded. Attach it manually in WhatsApp.');
+  window.open('https://wa.me/91'+mobile+'?text='+encodeURIComponent('Your SOUMIK ONLINE cash payment is confirmed. I will attach your application receipt PDF in this chat.'),'_blank','noopener,noreferrer');
+ }catch(e){alertToast(e.message||'Could not prepare PDF',false)}
+};
+// Remove any previously visible result banner immediately after this script loads.
+document.querySelectorAll('#so59-home-result,.so59-home-result').forEach(x=>x.remove());
+})();
+</script>
 </html>
