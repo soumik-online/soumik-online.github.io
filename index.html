@@ -2801,6 +2801,8 @@ function adminPage(){
    <button type="button" onclick="go('serviceprices')"><span class="so28-nav-icon">🏷️</span>Edit Service Prices</button>
    <button type="button" onclick="soumikOpenMaintenance()"><span class="so28-nav-icon">⏻</span>Public Website ON / OFF</button>
    <button type="button" onclick="soAccountRequests()"><span class="so28-nav-icon">👥</span>Account Registration Requests</button>
+   <div class="so28-nav-title">CUSTOMER SUPPORT</div>
+   <button type="button" class="so58-owner-support-nav" onclick="window.showSupportAdmin()"><span class="so28-nav-icon">🤖</span>Customer Help History / WhatsApp</button>
    <div class="so28-nav-title">PAYMENT MANAGEMENT</div>
    <button type="button" onclick="so28ShowPayments()"><span class="so28-nav-icon">💳</span>Payment Pending / Failed</button>
    <div class="so28-nav-title">APPLICATION MANAGEMENT</div>
@@ -2810,6 +2812,7 @@ function adminPage(){
    <div class="so28-nav-title">SESSION</div><button type="button" class="so28-logout" onclick="logout()"><span class="so28-nav-icon">↪</span>Owner Logout</button>
  </aside>`;
  return `<div class="so28-shell">${sidebar}<main class="so28-main" id="so28Main">
+ <div class="so58-owner-help-shortcut"><button type="button" class="btn outline" onclick="window.showSupportAdmin()">🤖 Customer Help History &amp; Follow-up</button><small>Customer messages • WhatsApp • Call</small></div>
  <header class="so28-welcome"><div class="so28-welcome-copy"><span class="so28-kicker">OWNER CONTROL DASHBOARD</span><h1>Welcome to <em>SOUMIK ONLINE</em></h1><p>Monitor applications, payments, services and your website from one place.</p></div><div class="so28-welcome-device" aria-hidden="true">💻</div><div class="so28-hero-meta"><div><span>📅 &nbsp; Today</span><strong id="v19-today">22 Nov 2026</strong></div><div><span>◷ &nbsp; Time</span><strong id="v19-clock">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</strong></div></div></header>
  <section class="so28-metrics" aria-label="Live application statistics">${[
  ['📋','মোট আবেদন','All Applications',all.length,'blue','all'],['✅','অনুমোদিত','Approved',count('Approved'),'green','Approved'],['🕒','অপেক্ষমান','On Hold',count('On Hold'),'orange','On Hold'],['❌','বাতিল','Cancelled',count('Cancelled'),'pink','Cancelled'],['🏁','সম্পন্ন','Completed',count('Completed'),'purple','Completed'],['💵','পেমেন্ট নিশ্চিত','Cash Confirmed',cashCount,'aqua','cash']
@@ -4538,7 +4541,7 @@ const appName=SERVICES[a.type]?.name||a.serviceName||a.type||'Application';
 const payRaw=String(a.paymentStatus||'PENDING').toUpperCase().replace(/\s+/g,'_');
 const isPaid=/^(PAID|CASH_CONFIRMED|CONFIRMED|VERIFIED|SUCCESS|SUCCESSFUL|COMPLETED)$/.test(payRaw);
 const isFailed=/^(FAILED|CASH_REJECTED|REJECTED|PAYMENT_FAILED|CANCELLED)$/.test(payRaw);
-const paymentDisplay=payRaw.replace(/_/g,' ');
+const paymentDisplay=payRaw==='CASH_CONFIRMED'?'CASH PAYMENT CONFIRMED':payRaw.replace(/_/g,' ');
 const payColor=isPaid?C.green:isFailed?'#c23e3e':C.orange;
 const fee=Number(a.fee??SERVICES[a.type]?.fee??0);
 const amount='₹'+new Intl.NumberFormat('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number.isFinite(fee)?fee:0);
@@ -4602,7 +4605,7 @@ box(934,898,210,27,8,C.navy);text('SIGNATURE',1039,918,16,'#fff',true,205,'cente
 // Payment section with a large warm gold alert card and clock ring.
 section(975,'PAYMENT DETAILS',C.blue,'credit');
 box(51,1017,1138,192,15,'#ffffff','#1681e0',2);
-const payRows=[['Payment Method',a.paymentMethod||'Not selected'],['Amount',amount],['Payment Date',a.paymentDate?formatDate(a.paymentDate,true):'Not recorded']];
+const payRows=[['Payment Method',/^cash/i.test(String(a.paymentMethod||''))?'Cash Payment':(a.paymentMethod||'Not selected')],['Amount',amount],['Payment Date',(a.paymentDate||a.cashConfirmedAt)?formatDate(a.paymentDate||a.cashConfirmedAt,true):'Not recorded']];
 payRows.forEach(([label,value],i)=>{const yy=1062+i*50;rowIcon(101,yy,i,i===0?'credit':i===1?'rupee':'calendar');text(label,140,yy,21,C.ink,true,246);text(':',390,yy,21,C.ink,true);text(value,414,yy,22,C.ink,true,270);if(i<2){x.strokeStyle='#d3e6f5';x.beginPath();x.moveTo(94,yy+14);x.lineTo(699,yy+14);x.stroke();}});
 x.strokeStyle='#abc5e3';x.lineWidth=2;x.beginPath();x.moveTo(718,1034);x.lineTo(718,1186);x.stroke();
 box(756,1035,401,157,17,isPaid?'#e0f8e9':isFailed?'#ffe8e7':'#fff0ba',isPaid?'#8fd1a8':isFailed?'#f0a19a':'#ffe08a',2);
@@ -6674,10 +6677,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(activeId!==a.id)return;
     const status=String(d.status||'').toUpperCase();
     if(status==='CONFIRMED'){
-     a.paymentStatus='CASH_CONFIRMED';a.paymentMethod='Cash';a.status=a.status==='Payment Pending'?'Submitted':a.status;try{save()}catch(_){}stop();
+     a.paymentStatus='CASH_CONFIRMED';a.paymentMethod='Cash';a.paymentDate=d.confirmed_at||a.paymentDate||'';a.cashConfirmedAt=d.confirmed_at||a.cashConfirmedAt||'';a.status=a.status==='Payment Pending'?'Submitted':a.status;stop();
      const el=document.getElementById('soumikCheckoutStatus');if(el){el.textContent='✓ Cash Payment Completed — Owner Confirmed. Final Application PDF is now available.';if(!document.getElementById('so57-cash-download')){const b=document.createElement('button');b.type='button';b.id='so57-cash-download';b.className='btn green';b.textContent='⬇ Download Final Application PDF';b.style.margin='12px 0';b.onclick=()=>window.soumikApplicationPdf?.(a.id);el.insertAdjacentElement('afterend',b);}}
      window.soumikNotify?.('Cash payment confirmed successfully','success');
-     // V57: Do not navigate away before the confirmed Application PDF can be accessed.
+     // Offer the chosen Design 1 PDF once. Browser policy may require the manual button.
+     if(!a._so58PaymentOnly&&!a._so58AutoDownloadAttempted&&document.visibilityState==='visible'&&document.querySelector('#app .soumik-checkout')){a._so58AutoDownloadAttempted=true;Promise.resolve().then(()=>window.soumikApplicationPdf?.(a.id)).catch(e=>console.warn('Cash auto PDF:',e))}
+     // The manual PDF button remains available if the browser blocks automatic downloads.
     }else if(status==='REJECTED'||status==='CANCELLED'){
      a.paymentStatus='CASH_REJECTED';try{save()}catch(_){}stop();
      const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='✕ Cash request rejected/cancelled. You may submit another cash request without a retry limit.';
@@ -6701,7 +6706,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const r=map.get(String(a.id));if(!r)continue;
     const st=String(r.status||'').toUpperCase();
     a.paymentMethod='Cash';
-    if(st==='CONFIRMED')a.paymentStatus='CASH_CONFIRMED';
+    if(st==='CONFIRMED'){a.paymentStatus='CASH_CONFIRMED';a.paymentDate=r.updated_at||a.paymentDate||'';a.cashConfirmedAt=r.updated_at||a.cashConfirmedAt||'';}
     else if(st==='PENDING')a.paymentStatus='CASH_PENDING';
     else if(st==='REJECTED'||st==='CANCELLED')a.paymentStatus='CASH_REJECTED';
    }
@@ -6710,14 +6715,16 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   return true;
  };
  window.soumikCashDecision=async function(encodedId,action){
+  if(window.so58CashDecisionBusy)return;
   if(!admin)return alert('Owner login required');
   const id=decodeURIComponent(encodedId);
   if(!await window.soumikProfessionalCashConfirm(id,action))return;
+  window.so58CashDecisionBusy=true;
   try{
    await invoke({action,tracking_id:id},true);
    await window.soumikLoadData();go('admin');
    window.soumikNotify?.('Cash request '+(action==='confirm'?'confirmed':'rejected'),'success');
-  }catch(e){alert('Cash update failed: '+e.message)}
+  }catch(e){const detail=String(e?.message||'Unknown error');const advice=/Failed to send a request to the Edge Function|FunctionsFetchError|fetch failed|network/i.test(detail)?'Cannot reach cash-request-management. Deploy this EXACT Edge Function with CORS and owner authentication. Open its Supabase Logs.':detail;window.soumikNotify?.('Cash update not confirmed: '+advice,'error');alert('Cash confirmation was NOT saved. '+advice)}finally{window.so58CashDecisionBusy=false}
  };
  // Recheck status after switching back to the checkout for a pending cash request.
  const originalShow=window.soumikShowPayment;
@@ -6750,7 +6757,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  if(!id||!/^[A-Za-z0-9_-]{4,100}$/.test(id))return;
  function showResume(){document.getElementById('soumikCashDialog')?.remove();const el=document.createElement('div');el.id='soumikCashDialog';el.className='soumik-confirm-overlay';el.innerHTML='<section class="soumik-confirm-dialog" role="dialog" aria-modal="true"><div class="soumik-confirm-icon">💳</div><h2>Application Payment Options</h2><p>Tracking ID: <b>'+esc(id)+'</b></p><p>Enter the mobile number used in your application. Online payment is temporarily unavailable. Enter the application mobile number to view your application and request cash payment. No email OTP is sent on this page.</p><label for="soumikResumeMobile"><b>Application mobile number</b></label><input id="soumikResumeMobile" class="soumik-resume-input" type="tel" inputmode="numeric" maxlength="12" autocomplete="tel" placeholder="10-digit mobile number"><p id="soumikResumeError" class="soumik-resume-error" role="alert"></p><div class="soumik-confirm-actions"><button class="soumik-confirm-cancel" id="soumikResumeCancel">Cancel</button><button class="soumik-confirm-ok" id="soumikResumeOpen">Continue to Cash Payment</button></div></section>';document.body.appendChild(el);
  el.querySelector('#soumikResumeCancel').onclick=()=>{el.remove();history.replaceState({},'',location.pathname)};
- el.querySelector('#soumikResumeOpen').onclick=async()=>{const btn=el.querySelector('#soumikResumeOpen');const mobile=el.querySelector('#soumikResumeMobile').value.replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'');const error=el.querySelector('#soumikResumeError');if(!/^[6-9]\d{9}$/.test(mobile)){error.textContent='Enter a valid 10-digit mobile number.';return}btn.disabled=true;btn.textContent='Verifying…';error.textContent='';try{window.soumikSupabaseReady?.();const c=window.soumikSupabase;if(!c)throw Error('Supabase connection unavailable');const {data,error:e}=await c.functions.invoke('cash-request-management',{body:{action:'resume',tracking_id:id,customer_phone:mobile}});if(e){let msg=e.message;try{const d=await e.context?.clone?.().json();msg=d?.error||msg}catch(_){}throw Error(msg)}if(!data?.success||!data.application)throw Error(data?.error||'Application could not be loaded');const a=data.application;a.id=id;a._cloudSaved=true;a.paymentStatus=data.status==='CONFIRMED'?'CASH_CONFIRMED':data.status==='REJECTED'?'CASH_REJECTED':data.status==='PENDING'?'CASH_PENDING':'PENDING';a.paymentMethod=data.status==='NOT_REQUESTED'?'':'Cash';if(typeof state==='undefined'||!Array.isArray(state.applications))throw Error('Application state unavailable');const idx=state.applications.findIndex(x=>x.id===id);if(idx>=0)state.applications[idx]={...state.applications[idx],...a};else state.applications.unshift(a);el.remove();window.soumikShowPayment(id);if(['CASH_PENDING','CASH_REJECTED'].includes(a.paymentStatus))window.soumikStartCashStatusPolling?.(state.applications.find(x=>x.id===id));if(a.paymentStatus==='CASH_CONFIRMED'){window.soumikNotify?.('Cash payment already confirmed','success');setTimeout(()=>go('home'),1800)}history.replaceState({},'',location.pathname)}catch(e){error.textContent=e.message||'Unable to open payment page';btn.disabled=false;btn.textContent='Continue to Cash Payment'}};
+ el.querySelector('#soumikResumeOpen').onclick=async()=>{const btn=el.querySelector('#soumikResumeOpen');const mobile=el.querySelector('#soumikResumeMobile').value.replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'');const error=el.querySelector('#soumikResumeError');if(!/^[6-9]\d{9}$/.test(mobile)){error.textContent='Enter a valid 10-digit mobile number.';return}btn.disabled=true;btn.textContent='Verifying…';error.textContent='';try{window.soumikSupabaseReady?.();const c=window.soumikSupabase;if(!c)throw Error('Supabase connection unavailable');const {data,error:e}=await c.functions.invoke('cash-request-management',{body:{action:'resume',tracking_id:id,customer_phone:mobile}});if(e){let msg=e.message;try{const d=await e.context?.clone?.().json();msg=d?.error||msg}catch(_){}throw Error(msg)}if(!data?.success||!data.application)throw Error(data?.error||'Application could not be loaded');const a=data.application;a.id=id;a._cloudSaved=true;a._so58PaymentOnly=!!a._so58PaymentOnly;a.paymentDate=data.confirmed_at||'';a.paymentStatus=data.status==='CONFIRMED'?'CASH_CONFIRMED':data.status==='REJECTED'?'CASH_REJECTED':data.status==='PENDING'?'CASH_PENDING':'PENDING';a.paymentMethod=data.status==='NOT_REQUESTED'?'':'Cash';if(typeof state==='undefined'||!Array.isArray(state.applications))throw Error('Application state unavailable');const idx=state.applications.findIndex(x=>x.id===id);if(idx>=0)state.applications[idx]={...state.applications[idx],...a};else state.applications.unshift(a);el.remove();window.soumikShowPayment(id);if(['CASH_PENDING','CASH_REJECTED'].includes(a.paymentStatus))window.soumikStartCashStatusPolling?.(state.applications.find(x=>x.id===id));if(a.paymentStatus==='CASH_CONFIRMED'){window.soumikNotify?.('Cash payment confirmed. Open Tracking and complete identity verification to download the full application PDF.','success')}history.replaceState({},'',location.pathname)}catch(e){error.textContent=e.message||'Unable to open payment page';btn.disabled=false;btn.textContent='Continue to Cash Payment'}};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(showResume,1000));else setTimeout(showResume,1000);
 })();
@@ -10457,6 +10464,66 @@ header.top .soumik-language-control:focus-within{outline:3px solid #80bfff!impor
   }
   function boot(){installHelp();syncLegacySupport();checkoutEnhance();addOwnerLink();observer.observe($('app')||document.body,{subtree:true,childList:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
+
+<style id="so58-styles">
+.so58-owner-help-shortcut{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 12px;}
+.so58-owner-help-shortcut small{font-size:11px;font-weight:650;color:#4e628c;}
+.so28-sidebar .so58-owner-support-nav{background:linear-gradient(95deg,#124bac,#2079e8);color:white;border:1px solid #70b5ff;border-radius:11px;font-weight:750;box-shadow:0 7px 17px #07193830}
+.so28-sidebar .so58-owner-support-nav:hover{background:linear-gradient(95deg,#1868d1,#28a1e9)}
+@media(max-width:640px){.so58-owner-help-shortcut{justify-content:stretch}.so58-owner-help-shortcut .btn{width:100%}}
+</style>
+<script id="so58-cash-receipt-hardening">
+(()=>{'use strict';
+  function find(id){return typeof state!=='undefined'?state.applications?.find(a=>String(a.id)===String(id)):null}
+  function mobile(a){return String(a?.mobile||a?.newMobile||a?.phone||a?.contactNumber||'').replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'')}
+  const previousDownload=window.soumikApplicationPdf;
+  // For cash, ask the server whether payment really was confirmed before printing anything.
+  window.soumikApplicationPdf=async function(id){
+    const a=find(id);if(!a){window.soumikNotify?.('Application not loaded. Please open Tracking and verify your identity.','warning');return false}
+    if(a._so58PaymentOnly){window.soumikNotify?.('This is payment-only recovery. Open Tracking and complete OTP verification to access your full application PDF.','warning');return false}
+    const cash=/^CASH/i.test(String(a.paymentStatus||''))||/^cash$/i.test(String(a.paymentMethod||''));
+    if(cash){
+      const client=window.soumikSupabase;
+      if(!client){window.soumikNotify?.('Cannot verify cash payment; internet connection required.','error');return false}
+      const number=mobile(a);
+      if(!/^[6-9]\d{9}$/.test(number)){window.soumikNotify?.('Customer mobile is missing. Contact support before downloading.','warning');return false}
+      try{
+        const {data,error}=await client.functions.invoke('cash-request-management',{body:{action:'status',tracking_id:id,customer_phone:number}});
+        if(error||data?.success!==true)throw Error(data?.error||error?.message||'Cash status unavailable');
+        if(String(data.status).toUpperCase()!=='CONFIRMED'){window.soumikNotify?.('Cash payment is not yet confirmed by the Owner.','warning');return false}
+        a.paymentStatus='CASH_CONFIRMED';a.paymentMethod='Cash';
+        a.paymentDate=data.confirmed_at||a.paymentDate||'';a.cashConfirmedAt=data.confirmed_at||a.cashConfirmedAt||'';
+      }catch(err){window.soumikNotify?.('Cash payment could not be verified; please retry.','warning');console.warn('Cash receipt verification:',err);return false}
+    }
+    return typeof previousDownload==='function'?previousDownload(id):false;
+  };
+  const originalPaymentReceipt=window.soumikReceiptPdf;
+  window.soumikReceiptPdf=async function(id){
+    const a=find(id);if(!a)return false;
+    if(/^CASH/i.test(String(a.paymentStatus||''))||/^cash$/i.test(String(a.paymentMethod||''))){
+      // Cash confirmation is represented by the selected Design 1 application receipt;
+      // the online Razorpay payment invoice is intentionally not reused for cash.
+      return window.soumikApplicationPdf(id);
+    }
+    return typeof originalPaymentReceipt==='function'?originalPaymentReceipt(id):false;
+  };
+  // When the customer returns to a pending cash application, allow manual refresh.
+  const previousShowPayment=window.soumikShowPayment;
+  if(typeof previousShowPayment==='function')window.soumikShowPayment=function(id,...rest){
+    const result=previousShowPayment(id,...rest);
+    const a=find(id);
+    if(a&&String(a.paymentStatus).toUpperCase()==='CASH_PENDING'){
+      const status=document.getElementById('soumikCheckoutStatus');
+      if(status&&!document.getElementById('so58CheckCashNow')){
+        const b=document.createElement('button');b.id='so58CheckCashNow';b.type='button';b.className='btn mini outline';b.style.margin='12px 0';b.textContent='↻ Check Cash Confirmation';
+        b.onclick=()=>window.soumikStartCashStatusPolling?.(a);status.insertAdjacentElement('afterend',b);
+      }
+    }
+    return result;
+  };
 })();
 </script>
 
