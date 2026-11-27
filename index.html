@@ -2351,7 +2351,7 @@ ${panContact||voterMobile?'':field("Father's / Husband's Name",'fatherName',true
 ${voter&&!voterMobile?field("Mother's Name",'motherName'):''}
 ${panContact||voterMobile?'':field('Date of Birth','dob',true,'date')}
 ${panContact||voterMobile?'':`<label class="field">Gender<select id="gender"><option>Male</option><option>Female</option><option>Other</option></select></label>`}
-${panContact?field('Aadhaar Number','aadhaarNumber',true):''}
+${field('Aadhaar Number','aadhaarNumber',true)}
 ${panContact?`<label class="field">PAN Card Number<input id="oldPan" type="text" required maxlength="10" minlength="10" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCDE1234F" value="${esc(draft.oldPan||'')}" oninput="formatPanInput(this)"><small class="muted">Format: 5 capital letters + 4 numbers + 1 capital letter</small></label>`:service==='pancorrection'?field('Existing PAN Number (if available)','oldPan'):''}
 ${panContact?field('Old Mobile Number (Optional)','oldMobile',false,'tel'):''}
 ${voterMobile?field('Existing EPIC / Voter Card Number','epicNumber',true):''}
@@ -2371,7 +2371,7 @@ ${field('PIN Code','pin',true)}
 </textarea></label></div>`:step===2?(panContact||voterMobile?`<h3>03 — Supporting Document (Optional)</h3><p class="muted">You may continue without uploading a document, or attach a supporting card image.</p><label class="field">Supporting Document<input type="file" accept="image/*,.pdf" id="correctionProof"></label>`:`<h3>03 — Upload Required Documents</h3>
 <div class="soumik-doc-guide"><strong>📄 ${window.soumikDocLang==='bn'?'ডকুমেন্ট আপলোডের নির্দেশনা':'Document Upload Instructions'}</strong><div class="soumik-doc-lang"><button type="button" class="${window.soumikDocLang==='bn'?'active':''}" onclick="soumikSetDocLang('bn')">বাংলা</button><button type="button" class="${window.soumikDocLang!=='bn'?'active':''}" onclick="soumikSetDocLang('en')">English</button></div><p>${window.soumikDocLang==='bn'?'আধার কার্ডের একটি পাতায় সম্পূর্ণ তথ্য থাকলে একবার আপলোড করুন। সামনে ও পেছনে আলাদা তথ্য থাকলে উভয় পাশ আপলোড করুন।':'If all Aadhaar details appear on one page, upload it once. If information is on separate front and back sides, upload both sides.'}</p></div>
 <div class="formgrid">${(pan?[['Upload Photo','photo'],['Signature','signature'],['Aadhaar Card – Front / Full Page','aadhaar'],['Aadhaar Card – Back Side (if needed)','aadhaarBack'],['Date of Birth Proof','dobProof'],...(service==='pancorrection'?[['Old PAN Card','oldPanProof']]:[])]:voter?[['Upload Photo','photo'],['Aadhaar Card – Front / Full Page','aadhaar'],['Aadhaar Card – Back Side (if needed)','aadhaarBack'],['Address Proof','addressProof'],['Date of Birth Proof','dobProof'],...(service==='votercorrection'?[['Correction Supporting Proof','correctionProof']]:[])]:[['Aadhaar Card – Front / Full Page','aadhaar'],['Aadhaar Card – Back Side (if needed)','aadhaarBack']]).map(([label,k])=>`<label class="field soumik-doc-field">${label}${k==='addressProof'?`<span class="soumik-doc-helper">${window.soumikDocLang==='bn'?'ঠিকানার প্রমাণের ধরন নির্বাচন করুন':'Select the address proof document'}</span><select id="addressProofType" onchange="soumikDocumentTypeChanged('addressProof',this.value)"><option value="">${window.soumikDocLang==='bn'?'ডকুমেন্ট নির্বাচন করুন':'Select document'}</option>${[['Aadhaar Card','Aadhaar Card'],['Voter ID Card','Voter ID Card'],['Passport','Passport'],['Driving Licence','Driving Licence'],['Other Accepted Document','Other Accepted Document']].map(([v,t])=>`<option value="${v}" ${draft.addressProofType===v?'selected':''}>${t}</option>`).join('')}</select>`:''}${k==='dobProof'?`<span class="soumik-doc-helper">${window.soumikDocLang==='bn'?'জন্মতারিখের প্রমাণ নির্বাচন করুন':'Select date of birth proof'}</span><select id="dobProofType" onchange="soumikDocumentTypeChanged('dobProof',this.value)"><option value="">${window.soumikDocLang==='bn'?'ডকুমেন্ট নির্বাচন করুন':'Select document'}</option>${['Madhyamik / Class 10 Marksheet','Aadhaar Card','PAN Card','Birth Certificate','Passport','Driving Licence','Voter ID','Other Accepted Document'].map(v=>`<option value="${v}" ${draft.dobProofType===v?'selected':''}>${v}</option>`).join('')}</select>`:''}<input type="file" ${['addressProof','dobProof'].includes(k)&&!draft[k+'Type']?'hidden disabled':''} accept="${['photo','signature'].includes(k)?'image/jpeg,image/png,image/webp,image/heic,image/heif':'image/*,.pdf'}" id="${k}" onchange="soumikImageSelected(this,'${k}')" ${['photo','signature','aadhaar','oldPanProof','correctionProof'].includes(k)?'required':''}><small class="muted">${['photo','signature'].includes(k)?'JPG, PNG, WEBP or supported phone photo. PDF not allowed. Adjust crop, zoom and brightness after selecting.':k==='aadhaarBack'?(window.soumikDocLang==='bn'?'পেছনে আলাদা তথ্য থাকলে আপলোড করুন (সর্বোচ্চ ১০ MB)।':'Upload if the back contains additional details (max 10 MB).'):'Upload a clear photo or PDF (maximum 10 MB).'}</small>${['photo','signature'].includes(k)?`<div id="${k}EditStatus" class="soumik-edit-status"></div><img id="${k}EditPreview" class="soumik-upload-preview" alt="Edited image preview" hidden><button type="button" class="btn outline mini" onclick="soumikReeditImage('${k}')">✎ Adjust ${label}</button>`:''}</label>`).join('')}${voter?`<section class="soumik-relation-card span2"><h3>🗳️ Relation Voter Documents / সম্পর্কের ভোটার ডকুমেন্ট</h3><p class="muted">প্রথমে সম্পর্ক নির্বাচন করুন। তারপর ভোটার কার্ড ও ভোটার স্লিপ আপলোড করুন। / Select the relation first, then upload the documents.</p><label class="field">Relation / সম্পর্ক<select id="relationType" onchange="soumikRelationChange(this.value)"><option value="">— Select relation / সম্পর্ক নির্বাচন —</option>${[['Father','বাবা / Father'],['Mother','মা / Mother'],['Paternal Grandfather','দাদু / Paternal Grandfather'],['Paternal Grandmother','ঠাকুমা / Paternal Grandmother'],['Maternal Grandfather','নানা / Maternal Grandfather'],['Maternal Grandmother','দিদা / Maternal Grandmother'],['Husband','স্বামী / Husband'],['Wife','স্ত্রী / Wife'],['Guardian','অভিভাবক / Guardian'],['Not Applicable','প্রযোজ্য নয় / Not Applicable']].map(([v,t])=>`<option value="${v}" ${draft.relationType===v?'selected':''}>${t}</option>`).join('')}</select></label><div id="soumikRelationUploads" ${!draft.relationType||draft.relationType==='Not Applicable'?'hidden':''}><div class="formgrid"><label class="field">Relation Voter Card / সম্পর্কের ভোটার কার্ড<input type="file" accept="image/*,.pdf" id="relationVoter" onchange="soumikRelationFile(this,'relationVoter')"><small>Photo or PDF • Max 10 MB</small>${draft.relationVoter?'<small class="soumik-file-ready">✓ Previously selected / আগে আপলোড করা হয়েছে</small>':''}</label><label class="field">Relation Voter Slip / সম্পর্কের ভোটার স্লিপ<input type="file" accept="image/*,.pdf" id="relationSlip" onchange="soumikRelationFile(this,'relationSlip')"><small>Photo or PDF • Max 10 MB</small>${draft.relationSlip?'<small class="soumik-file-ready">✓ Previously selected / আগে আপলোড করা হয়েছে</small>':''}</label></div></div></section>`:''}</div>`):step===3?`<h3>04 — Review Your Application</h3><div class="formgrid">${Object.entries(draft).filter(([k,v])=>typeof v==='string'&&!v.startsWith('data:')).map(([k,v])=>`<div><small class="muted">${esc(k)}
-</small><div><b>${esc(v)}
+</small><div><b>${esc(k==='aadhaarNumber'?'XXXX XXXX '+String(v).slice(-4):v)}
 </b></div></div>`).join('')}
 </div><div class="toolbar">${['photo','signature'].map(k=>draft[k]?.startsWith('data:image')?`<img class="previewimg" alt="${k}" src="${draft[k]}">`:'').join('')}
 </div><p class="notice">Review all details before payment and submission.</p>`:paymentBody(s)}
@@ -2414,7 +2414,7 @@ mobile.setCustomValidity('');
 return false}
 const panField=document.getElementById('oldPan');
 if(panField&&service==='pancontact'&&!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(panField.value.trim().toUpperCase())){panField.setCustomValidity('Enter a valid 10-character PAN number');panField.reportValidity();panField.setCustomValidity('');return false}
-if(aadhaar&&aadhaar.value.trim()&&digitsOnly(aadhaar.value,20).length!==12){
+if(aadhaar&&digitsOnly(aadhaar.value,20).length!==12){
 aadhaar.setCustomValidity('Aadhaar number must contain exactly 12 digits');
 aadhaar.reportValidity();
 aadhaar.setCustomValidity('');
@@ -2471,7 +2471,7 @@ aadhaar.value=formatAadhaar(aadhaar.value);
 aadhaar.addEventListener('input',()=>{
 aadhaar.value=formatAadhaar(aadhaar.value);
 aadhaar.setCustomValidity('')}
-)}
+);window.so63BindAadhaar?.(aadhaar);}
 
 const email=document.getElementById('email');
 if(email){
@@ -2535,6 +2535,7 @@ async function soumikRelationFile(input,key){
 async function nextStep(){
 if(window.soumikImageEditing){alert('Please save or cancel the photo editor first.');return;}
 if(step<2&&!capture())return;
+if(step===0&&window.so63AllowNext&&!(await window.so63AllowNext()))return;
 if(step===2){ if(document.getElementById('relationType')){const relation=document.getElementById('relationType').value;draft.relationType=relation;if(!relation){alert('Please select a relation, or Not Applicable.');document.getElementById('relationType').focus();return;}if(relation!=='Not Applicable'&&!((draft.relationVoter||document.getElementById('relationVoter')?.files?.length)&&(draft.relationSlip||document.getElementById('relationSlip')?.files?.length))){alert('Please upload both Relation Voter Card and Relation Voter Slip.');return;}} if(document.getElementById('addressProof')&&!document.getElementById('addressProofType')?.value){alert('Please select the Address Proof document type.');document.getElementById('addressProofType')?.focus();return;} if(document.getElementById('dobProof')&&!document.getElementById('dobProofType')?.value){alert('Please select the Date of Birth Proof document type.');document.getElementById('dobProofType')?.focus();return;} const requiredFiles=(service==='pancontact'||service==='votermobile')?[]:service.startsWith('pan')?['photo','signature','aadhaar','dobProof',...(service==='pancorrection'?['oldPanProof']:[])]:service.startsWith('voter')?['photo','aadhaar','addressProof','dobProof',...(service==='votercorrection'?['correctionProof']:[])]:['aadhaar'];
 for(const k of requiredFiles){
 if(!draft[k]&&!document.getElementById(k)?.files?.length){
@@ -6368,7 +6369,7 @@ window.submitApplication=async function(){
   // Some mobile browsers block automatic downloads; the manual download remains available.
   // V57: Final Application PDF is provided only after confirmed payment.
   notify('Application submitted: '+a.id);
- }catch(e){console.error('Application submit:',e);window.so52ApplicationHelp?.('আবেদন Submit হয়নি: '+(e.message||String(e)))}finally{busy.delete('submit')}
+ }catch(e){if(e?.code==='SO63_DUPLICATE'){step=0;goStep();window.so63ShowDuplicate?.();}else{console.error('Application submit:',e);window.so52ApplicationHelp?.('আবেদন Submit হয়নি: '+(e.message||String(e)))}}finally{busy.delete('submit')}
 };
 // Remove the old pre-submit UPI/Bank form; preserve the rest of the original form.
 if(typeof window.paymentBody==='function')window.paymentBody=function(s){return `<section class="soumik-payment"><div class="soumik-pay-head"><span>📄 Submit Application</span><strong>₹${Number(s.fee).toFixed(2)}</strong></div><p>Submit your application to receive your tracking ID and continue to secure payment.</p></section>`};
@@ -6873,8 +6874,10 @@ async function uploadDocs(a){
 // Wrap the final cloud submission function. Do not claim submission success before Storage and DB succeed.
 const oldInsert=window.soumikCloudInsertApplication;
 if(typeof oldInsert==='function')window.soumikCloudInsertApplication=async function(a){
+ await window.so63BeforeUpload?.(a);
  const prepared=await uploadDocs(a);
- const result=await oldInsert(prepared);
+ let result;
+ try{result=await oldInsert(prepared)}catch(e){if(String(e?.code)==='23505'&&String(e?.message||'').includes('so63_unique_service_aadhaar'))throw window.so63DuplicateError();throw e;}
  for(const key of Object.keys(prepared))if(typeof prepared[key]==='string'&&prepared[key].startsWith('storage:')){
   // Keep image data for immediate application PDF; the database has storage paths.
   if((key==='photo'||key==='signature')&&typeof a[key]==='string'&&a[key].startsWith('data:image/'))continue;
@@ -10836,4 +10839,84 @@ window.so61RefreshPayments=async function(btn){
 .so62-delete-overlay .so52-actions button:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:420px){.so62-delete-overlay .so52-modal{padding:18px!important}.so62-delete-overlay .so52-actions{grid-template-columns:1fr}}
 </style>
+<style id="so63-aadhaar-check-style">
+.so63-aadhaar-feedback{display:block;font-size:12px;font-weight:700;line-height:1.45;margin-top:7px;white-space:normal;overflow-wrap:anywhere;color:#516580}.so63-aadhaar-feedback[data-state="blocked"],.so63-aadhaar-feedback[data-state="error"]{color:#b42318!important}.so63-aadhaar-feedback[data-state="available"]{color:#067647!important}#aadhaarNumber[aria-invalid="true"]{border-color:#b42318!important;outline-color:#fda29b!important}
+</style>
+<script id="so63-service-aadhaar-check">
+(function(){
+'use strict';
+const types=new Set(['pan','pancorrection','pancontact','voter','votercorrection','votermobile','pvc','download','voterdownload']);
+const copy={
+ en:{checking:'Checking eligibility for this service…',available:'You may continue with this service.',blocked:'This Aadhaar number cannot be used to submit another application for this service. Please contact support or use your existing tracking ID.',error:'Unable to verify eligibility. Please retry before continuing.',limited:'Too many checks. Please retry in a minute.',invalid:'Enter a 12-digit Aadhaar number.',notice:'Used to prevent duplicate applications for this service only.'},
+ bn:{checking:'এই সার্ভিসের জন্য যাচাই করা হচ্ছে…',available:'এই সার্ভিসে আবেদন করতে পারবেন।',blocked:'এই আধার নম্বর দিয়ে এই সার্ভিসে আবার আবেদন করা যাবে না। আগের ট্র্যাকিং আইডি ব্যবহার করুন অথবা সাপোর্টে যোগাযোগ করুন।',error:'যাচাই করা যায়নি। আবার চেষ্টা করুন।',limited:'অনেকবার যাচাই হয়েছে। এক মিনিট পরে চেষ্টা করুন।',invalid:'১২ সংখ্যার আধার নম্বর লিখুন।',notice:'শুধু এই সার্ভিসে একই আবেদন পুনরায় জমা আটকাতে ব্যবহার করা হয়।'},
+ hi:{checking:'इस सेवा के लिए पात्रता जाँची जा रही है…',available:'आप इस सेवा के लिए आगे बढ़ सकते हैं।',blocked:'इस आधार नंबर से इस सेवा में दोबारा आवेदन नहीं किया जा सकता। पुरानी ट्रैकिंग आईडी का उपयोग करें या सहायता से संपर्क करें।',error:'जाँच नहीं हो सकी। फिर कोशिश करें।',limited:'बहुत अधिक जाँच हुई हैं। एक मिनट बाद फिर कोशिश करें।',invalid:'12 अंकों का आधार नंबर दर्ज करें।',notice:'केवल इस सेवा में दोबारा आवेदन रोकने के लिए उपयोग किया जाता है।'}
+};
+const tr=k=>{let l='en';try{l=sessionStorage.getItem('soumik_lang')||document.getElementById('lang')?.value||'en'}catch(_){}return (copy[l]||copy.en)[k]||copy.en[k]};
+const norm=v=>String(v||'').replace(/[\s-]/g,'');
+const field=()=>document.getElementById('aadhaarNumber');
+let active=null, timer=0, advancing=false;
+function paint(el,status){
+ if(!el?.isConnected)return;
+ const info=el.parentElement.querySelector('.so63-aadhaar-feedback');
+ if(info){info.dataset.state=status==='limited'?'error':status;info.textContent=tr(status)}
+ if(status==='blocked'||status==='invalid'){el.setAttribute('aria-invalid','true');el.setCustomValidity(tr(status))}
+ else {el.removeAttribute('aria-invalid');el.setCustomValidity('')}
+}
+async function request(s,n){
+ if(!types.has(s)||!/^\d{12}$/.test(n))return 'invalid';
+ try{
+  window.soumikSupabaseReady?.();const db=window.soumikSupabase;
+  if(!db)return 'error';
+  const {data,error}=await db.rpc('so63_check_service_aadhaar',{p_service:s,p_aadhaar:n});
+  if(error)return 'error';
+  return ['available','blocked','limited','invalid'].includes(data)?data:'error';
+ }catch(_){return 'error'}
+}
+function check(el,force=false){
+ const s=String(service),n=norm(el.value);
+ if(!/^\d{12}$/.test(n)){paint(el,n?'invalid':'notice');return Promise.resolve('invalid')}
+ if(active?.el===el&&active.s===s&&active.n===n&&(!force||active.pending))return active.promise;
+ const record={el,s,n,pending:true,promise:null};active=record;paint(el,'checking');
+ record.promise=request(s,n).then(result=>{
+  record.pending=false;
+  if(active===record&&el.isConnected&&norm(el.value)===n&&String(service)===s)paint(el,result);
+  return result;
+ });
+ return record.promise;
+}
+window.so63BindAadhaar=function(el){
+ if(el.dataset.so63Bound)return;
+ el.dataset.so63Bound='1';el.autocomplete='off';el.spellcheck=false;
+ const info=document.createElement('small');info.id='so63-aadhaar-feedback';info.className='so63-aadhaar-feedback';info.setAttribute('aria-live','polite');info.setAttribute('role','status');el.setAttribute('aria-describedby',info.id);el.insertAdjacentElement('afterend',info);
+ paint(el,'notice');
+ const onInput=()=>{clearTimeout(timer);active=null;el.setCustomValidity('');el.removeAttribute('aria-invalid');const n=norm(el.value);paint(el,n.length===12?'checking':'notice');if(n.length===12)timer=setTimeout(()=>{if(el.isConnected)check(el)},400)};
+ el.addEventListener('input',onInput);
+ el.addEventListener('blur',()=>{clearTimeout(timer);if(norm(el.value).length===12)check(el);else if(el.value)paint(el,'invalid')});
+ if(norm(el.value).length===12)check(el);
+};
+window.so63AllowNext=async function(){
+ const el=field();if(!el||advancing)return false;
+ clearTimeout(timer);advancing=true;
+ const s=String(service),n=norm(el.value);const btn=document.querySelector('button[onclick="nextStep()"]');
+ if(btn)btn.disabled=true;
+ try{
+  let result=await check(el);
+  if(result==='error'||result==='limited')result=await check(el,true);
+  if(!el.isConnected||step!==0||String(service)!==s||norm(el.value)!==n)return false;
+  if(result!=='available'){paint(el,result);el.focus();return false}
+  return true;
+ }finally{advancing=false;if(btn?.isConnected)btn.disabled=false}
+};
+window.so63DuplicateError=()=>Object.assign(new Error(tr('blocked')),{code:'SO63_DUPLICATE'});
+window.so63ShowDuplicate=()=>{const el=field();if(el){paint(el,'blocked');el.focus()}};
+window.so63BeforeUpload=async function(a){
+ const s=String(a.type||''),n=norm(a.aadhaarNumber);
+ if(!types.has(s))return;
+ const result=await request(s,n);
+ if(result==='blocked')throw window.so63DuplicateError();
+ if(result!=='available')throw new Error(tr(result==='invalid'?'invalid':result==='limited'?'limited':'error'));
+};
+})();
+
+</script>
 </html>
