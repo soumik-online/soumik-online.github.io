@@ -2321,6 +2321,7 @@ return `<div class="layout">${side()}
 </div></div></div>`}
 
 function appTable(arr,adm){
+if(adm)arr=arr.filter(a=>window.so61IsVerifiedPaid?.(a)===true);
 if(adm)return `<div class="soumik-owner-application-list">${arr.length?arr.map(a=>{
 const id=encodeURIComponent(a.id),status=String(a.status||'Submitted'),payment=String(a.paymentStatus||'PENDING');
 const paid=payment==='PAID'||payment==='CASH_CONFIRMED';
@@ -2778,7 +2779,12 @@ window.soumikOpenProfile=function(){
 
 function adminPage(){
  if(!admin)return adminLogin();
- const all=state.applications.slice();  const paymentQueue=all.filter(a=>!['PAID','CASH_CONFIRMED'].includes(String(a.paymentStatus||'PENDING').toUpperCase()));
+ const allRecords=state.applications.slice();
+ // V61: All Applications is the PAID queue, never all submitted/unfinished records.
+ const all=allRecords.filter(a=>window.so61IsVerifiedPaid?.(a)===true);
+ const paymentQueue=allRecords.filter(a=>window.so61IsVerifiedPaid?.(a)!==true);
+ const cashRequests=paymentQueue.filter(a=>String(a.paymentStatus||'').toUpperCase()==='CASH_PENDING');
+ const otherPaymentIssues=paymentQueue.filter(a=>String(a.paymentStatus||'').toUpperCase()!=='CASH_PENDING');
  const filtered=all.filter(a=>(adminCategory==='all'||a.type===adminCategory)&&(adminFilter==='all'||a.status===adminFilter));
  const count=(status)=>all.filter(a=>a.status===status).length;
  const cashCount=all.filter(a=>String(a.paymentStatus||'').toUpperCase()==='CASH_CONFIRMED').length;
@@ -2817,7 +2823,7 @@ function adminPage(){
  <section class="so28-metrics" aria-label="Live application statistics">${[
  ['📋','মোট আবেদন','All Applications',all.length,'blue','all'],['✅','অনুমোদিত','Approved',count('Approved'),'green','Approved'],['🕒','অপেক্ষমান','On Hold',count('On Hold'),'orange','On Hold'],['❌','বাতিল','Cancelled',count('Cancelled'),'pink','Cancelled'],['🏁','সম্পন্ন','Completed',count('Completed'),'purple','Completed'],['💵','পেমেন্ট নিশ্চিত','Cash Confirmed',cashCount,'aqua','cash']
  ].map(([icon,bn,name,n,color,filter])=>`<button type="button" class="so28-metric ${color}" onclick="${filter==='cash'?"so28ShowPayments('confirmed')":`adminCategory='all';adminFilter='${filter==='all'?'all':filter}';go('admin')`}" aria-label="${name}: ${n}"><span class="so28-metric-symbol">${icon}</span><span class="so28-metric-text"><small>${bn}</small><span class="so28-metric-caption">${name}</span><strong>${n}</strong></span></button>`).join('')}</section>
- <section class="so52-alert" aria-label="Pending payments needing action"><div><span class="so52-alert-icon">💳</span><div><small>PAYMENT FOLLOW-UP / CASH REQUEST</small><strong>${paymentQueue.length} pending or failed application${paymentQueue.length===1?'':'s'}</strong><p>Submitted applications are visible in All Applications, even before payment.</p></div></div><button type="button" onclick="so28ShowPayments()">Open Payment Queue →</button></section>
+ <section class="so52-alert" aria-label="Pending payments needing action"><div><span class="so52-alert-icon">💳</span><div><small>PAYMENT FOLLOW-UP / CASH REQUEST</small><strong>${paymentQueue.length} pending or failed application${paymentQueue.length===1?'':'s'}</strong><p>Only server-verified paid applications appear in All Applications; cash requests stay in the payment queue until Owner confirms.</p></div></div><button type="button" onclick="so28ShowPayments()">Open Payment Queue →</button></section>
   <section class="so28-flow so28-panel"><div class="so28-panel-heading"><h2>▣ &nbsp; আবেদন প্রক্রিয়ার অবস্থা <small>(Application Status Flow)</small></h2></div><div class="so28-steps">${[
  ['📩','নতুন আবেদন','Submitted','Submitted'],['🔍','যাচাই চলছে','Under Review','Under Review'],['✅','অনুমোদিত','Approved','Approved'],['💳','পেমেন্ট নিশ্চিত','Payment Confirmed','cash'],['⚙️','প্রক্রিয়াধীন','Processing','Processing'],['🏁','সম্পন্ন','Completed','Completed']
  ].map(([icon,bn,en,target],i)=>`${i?'<span class="so28-step-arrow" aria-hidden="true">→</span>':''}<button type="button" class="so28-step" onclick="${target==='cash'?'so28ShowPayments()':`adminCategory='all';adminFilter='${target}';go('admin')`}"><span class="so28-step-symbol">${icon}</span><span><b>${bn}</b><small>${en}</small></span></button>`).join('')}</div></section>
@@ -2828,11 +2834,13 @@ function adminPage(){
   <section class="so28-panel so28-daily"><div class="so28-panel-heading"><h2>▦ &nbsp; Daily Application Report</h2></div><p>Select a date to see submitted applications and their statuses.</p><label class="so28-report-label" for="soumikOwnerReportDate">Report Date</label><input id="soumikOwnerReportDate" type="date" value="${new Date().toISOString().slice(0,10)}" onchange="soumikOwnerDailyReport(this.value)"/><button type="button" class="so28-primary" onclick="soumikOwnerDailyReport(document.getElementById('soumikOwnerReportDate').value)">▥ &nbsp; View Report</button><div class="so28-report-counts"><div><span>📋 Total Applications</span><strong>${all.length}</strong></div><div><span>✅ Approved</span><strong>${count('Approved')}</strong></div><div><span>🕒 On Hold</span><strong>${count('On Hold')}</strong></div><div><span>❌ Cancelled</span><strong>${count('Cancelled')}</strong></div><div><span>🏁 Completed</span><strong>${count('Completed')}</strong></div></div><div id="soumikOwnerReportResults" class="so28-daily-results" aria-live="polite">Select a date to load the report.</div></section>
  </div>
  <div class="so28-bottom-grid">
-  <section class="so28-panel so28-payment-summary"><div class="so28-panel-heading"><h2>▣ &nbsp; পেমেন্ট ব্যবস্থাপনা <small>(Payment Management)</small></h2></div><div class="so28-pay-cards"><div class="so28-paybox green"><b>✅ Payment Confirmed</b><strong>${cashCount+onlineCount}</strong></div><div class="so28-paybox orange"><b>⌛ Pending Payment</b><strong>${paymentQueue.filter(a=>String(a.paymentStatus||'').toUpperCase()==='CASH_PENDING').length}</strong></div><div class="so28-paybox pink"><b>⚠ Pending / Failed</b><strong>${paymentQueue.filter(a=>a.paymentStatus!=='CASH_PENDING').length}</strong></div><button type="button" class="so28-primary" onclick="so28ShowPayments()">▥ &nbsp; Payment Report ↗</button></div></section>
+  <section class="so28-panel so28-payment-summary"><div class="so28-panel-heading"><h2>▣ &nbsp; পেমেন্ট ব্যবস্থাপনা <small>(Payment Management)</small></h2></div><div class="so28-pay-cards"><div class="so28-paybox green"><b>✅ Payment Confirmed</b><strong>${cashCount+onlineCount}</strong></div><div class="so28-paybox orange"><b>⌛ Pending Payment</b><strong>${cashRequests.length}</strong></div><div class="so28-paybox pink"><b>⚠ Pending / Failed</b><strong>${otherPaymentIssues.length}</strong></div><button type="button" class="so28-primary" onclick="so28ShowPayments()">▥ &nbsp; Payment Report ↗</button></div></section>
   <section class="so28-panel so28-service-summary"><div class="so28-panel-heading"><h2>▰ &nbsp; সেবা ব্যবস্থাপনা <small>(Service Management)</small></h2></div><div class="so28-service-buttons"><button type="button" onclick="so28OpenDetails()">▦<b>সেবা তালিকা</b><small>All Services</small></button><button type="button" onclick="go('serviceprices')">🏷️<b>মূল্য পরিবর্তন</b><small>Edit Prices</small></button><button type="button" onclick="soumikOpenMaintenance()">🌐<b>সেবা ON / OFF</b><small>Website Control</small></button><button type="button" onclick="soumikOwnerStudio()">🎨<b>ফর্ম ডিজাইন</b><small>Design & Forms</small></button></div></section>
  </div>
  ${window.soumikCashSyncError?`<div class="notice">Cash request sync failed: ${esc(window.soumikCashSyncError)}. Verify backend permissions.</div>`:''}${window.soumikPaymentSyncError?`<div class="notice">Payment records could not be loaded: ${esc(window.soumikPaymentSyncError)}</div>`:''}
- <details class="so28-detail-panel so52-payment-panel" id="so28payments" open><summary><span>💳 &nbsp; Payment Follow-ups & Cash Requests</span><span class="so52-queue-count">${paymentQueue.length} PAYMENT ACTION REQUIRED</span></summary><div class="so28-inner" id="soumikPaymentQueue"><p id="soumikRecheckFeedback" class="muted tiny" role="status"></p><div class="tablewrap"><table><thead><tr><th>Tracking ID</th><th>Applicant</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${paymentQueue.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.fullName||'')}</td><td>${esc(a.paymentStatus||'NOT PAID')}</td><td><div class="actions"><button class="btn mini" type="button" onclick="so52CopyPaymentLink('${encodeURIComponent(a.id)}')">🔗 Copy Link</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','whatsapp')">WhatsApp</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','email')">Email</button>${['PAID','CASH_CONFIRMED','CASH_PENDING'].includes(a.paymentStatus)?'':`<button class="btn outline mini" onclick="soumikShowPayment('${encodeURIComponent(a.id)}')">View Payment</button>`}${a.paymentStatus==='CASH_PENDING'?`<button class="btn green mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','confirm')">✓ Confirm Cash Received</button><button class="btn red mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','reject')">✕ Reject</button>`:''}<button class="btn outline mini" onclick="soumikOwnerEditApplication(decodeURIComponent('${encodeURIComponent(a.id)}'))">✏️ Edit</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${encodeURIComponent(a.id)}'))">🗑 Delete</button></div></td></tr>`).join('')||'<tr><td colspan="4">No pending payment records</td></tr>'}</tbody></table></div></div></details>
+  ${window.so61PaymentLedgerError?`<div class="notice" role="alert" style="border:2px solid #d97706;background:#fff7ed;color:#7c2d12"><strong>Payment verification unavailable.</strong> All Applications is temporarily hidden to protect payment accuracy. Check V61 owner SQL / Supabase connection. ${esc(window.so61PaymentLedgerError)}</div>`:''}
+  <div class="so61-refresh-bar"><span>🔐 All Applications: verified Online Paid + Owner-confirmed Cash only.</span><button class="btn mini" type="button" onclick="so61RefreshPayments(this)">⟳ Refresh Payment Status</button></div>
+ <details class="so28-detail-panel so52-payment-panel" id="so28payments" open><summary><span>💳 &nbsp; Payment Follow-ups & Cash Requests</span><span class="so52-queue-count">${paymentQueue.length} PAYMENT ACTION REQUIRED</span></summary><div class="so28-inner" id="soumikPaymentQueue"><p id="soumikRecheckFeedback" class="muted tiny" role="status"></p><section class="so61-cash-queue"><h3>💵 Cash Payment Requests — Awaiting Owner Confirmation (${cashRequests.length})</h3><div class="tablewrap"><table><thead><tr><th>Tracking ID</th><th>Applicant</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${cashRequests.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.fullName||'')}</td><td>${esc(a.paymentStatus||'NOT PAID')}</td><td><div class="actions"><button class="btn mini" type="button" onclick="so52CopyPaymentLink('${encodeURIComponent(a.id)}')">🔗 Copy Link</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','whatsapp')">WhatsApp</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','email')">Email</button>${['PAID','CASH_CONFIRMED','CASH_PENDING'].includes(a.paymentStatus)?'':`<button class="btn outline mini" onclick="soumikShowPayment('${encodeURIComponent(a.id)}')">View Payment</button>`}${a.paymentStatus==='CASH_PENDING'?`<button class="btn green mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','confirm')">✓ Confirm Cash Received</button><button class="btn red mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','reject')">✕ Reject</button>`:''}<button class="btn outline mini" onclick="soumikOwnerEditApplication(decodeURIComponent('${encodeURIComponent(a.id)}'))">✏️ Edit</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${encodeURIComponent(a.id)}'))">🗑 Delete</button></div></td></tr>`).join('')||'<tr><td colspan="4">No cash requests waiting for Owner confirmation.</td></tr>'}</tbody></table></div></section><section class="so61-unpaid-queue"><h3>💳 Online Pending / Failed / Unfinished (${otherPaymentIssues.length})</h3><div class="tablewrap"><table><thead><tr><th>Tracking ID</th><th>Applicant</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${otherPaymentIssues.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.fullName||'')}</td><td>${esc(a.paymentStatus||'NOT PAID')}</td><td><div class="actions"><button class="btn mini" type="button" onclick="so52CopyPaymentLink('${encodeURIComponent(a.id)}')">🔗 Copy Link</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','whatsapp')">WhatsApp</button><button class="btn outline mini" onclick="soumikOwnerPaymentShare('${encodeURIComponent(a.id)}','email')">Email</button>${['PAID','CASH_CONFIRMED','CASH_PENDING'].includes(a.paymentStatus)?'':`<button class="btn outline mini" onclick="soumikShowPayment('${encodeURIComponent(a.id)}')">View Payment</button>`}${a.paymentStatus==='CASH_PENDING'?`<button class="btn green mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','confirm')">✓ Confirm Cash Received</button><button class="btn red mini" type="button" onclick="soumikCashDecision('${encodeURIComponent(a.id)}','reject')">✕ Reject</button>`:''}<button class="btn outline mini" onclick="soumikOwnerEditApplication(decodeURIComponent('${encodeURIComponent(a.id)}'))">✏️ Edit</button><button class="btn mini so52-delete-action" onclick="so52DeleteConfirm(decodeURIComponent('${encodeURIComponent(a.id)}'))">🗑 Delete</button></div></td></tr>`).join('')||'<tr><td colspan="4">No unfinished or failed payments.</td></tr>'}</tbody></table></div></section></div></details>
  <details class="so28-detail-panel" id="so28advanced" open><summary><span>📋 &nbsp; Detailed Application Management</span><span>Receipt · WhatsApp · Status · Timeline · Edit ↘</span></summary><div class="so28-inner"><div class="so28-detail-toolbar"><label class="field">Service<select onchange="adminCategory=this.value;go('admin')">${ADMIN_GROUPS.map(([type,name])=>`<option value="${type}" ${type===adminCategory?'selected':''}>${esc(name)}</option>`).join('')}</select></label><label class="field">Filter by Status<select onchange="adminFilter=this.value;go('admin')"><option value="all">All Statuses</option>${ADMIN_STATUSES.map(st=>`<option value="${st}" ${adminFilter===st?'selected':''}>${statusIcon(st)} ${esc(st)}</option>`).join('')}</select></label></div>${appTable(filtered,true)}</div></details>
  <section class="so28-panel so28-services-breakdown"><div class="so28-panel-heading"><h2>▤ &nbsp; Services Overview</h2><p>Click any service to filter its applications.</p></div><div class="so28-services-grid">${ADMIN_GROUPS.slice(1).map(([type,name],i)=>`<button type="button" onclick="adminCategory='${type}';adminFilter='all';go('admin')"><span>${['🪪','✏️','📱','🗳️','📲','📝','💳','📥','⬇️'][i]}</span><b>${esc(name)}</b><strong>${all.filter(a=>a.type===type).length}</strong></button>`).join('')}</div></section>
  </main></div>`;
@@ -2842,7 +2850,7 @@ window.so28OpenDetails=function(id){const panel=document.getElementById('so28adv
 window.so28ShowPayments=function(mode='pending'){
  const panel=document.getElementById('so28payments');if(!panel)return;
  panel.open=true;let old=document.getElementById('so52-confirmed-view');old?.remove();
- const isPaid=x=>['PAID','CASH_CONFIRMED'].includes(String(x.paymentStatus||'').toUpperCase());
+ const isPaid=x=>window.so61IsVerifiedPaid?.(x)===true;
  if(mode==='confirmed'){
    const records=state.applications.filter(isPaid);const block=document.createElement('section');block.id='so52-confirmed-view';block.className='so52-confirmed-view';
    const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2859,7 +2867,7 @@ async function adminSet(id,status){
  const a=state.applications.find(x=>x.id===id);
  if(!a||!ADMIN_STATUSES.includes(status))return;
  if(status==='Objection'){showObjectionEditor(id);return;}
- if(a.paymentStatus!=='PAID'&&a.paymentStatus!=='CASH_CONFIRMED')return alert('Payment not verified. Cannot move this application to All Applications.');
+ if(window.so61IsVerifiedPaid?.(a)!==true)return alert('Payment has not been confirmed on the server. This record belongs in Payment Queue.');
  const old=a.status;a.status=status;
  try{await soumikSyncStatus(a);await soumikLoadData();go('admin')}
  catch(e){a.status=old;alert('Status not saved: '+e.message)}
@@ -7797,7 +7805,7 @@ document.addEventListener('DOMContentLoaded',()=>observer.observe(document.getEl
 })();
 </script>
 <script id="soumik-owner-merged-features">
-window.soumikOwnerDailyReport=function(day){const host=document.getElementById('soumikOwnerReportResults');if(!host)return;const list=state.applications.filter(a=>String(a.date||a.created_at||'').slice(0,10)===day);host.replaceChildren();const p=document.createElement('p');p.textContent=list.length+' application(s) on '+day;host.appendChild(p);for(const a of list){const item=document.createElement('p');item.textContent=(a.id||'—')+' · '+(a.fullName||'—')+' · '+(a.status||'Submitted')+' · '+(a.paymentStatus||'PENDING');host.appendChild(item);}};
+window.soumikOwnerDailyReport=function(day){const host=document.getElementById('soumikOwnerReportResults');if(!host)return;const list=state.applications.filter(a=>window.so61IsVerifiedPaid?.(a)===true&&String(a.date||a.created_at||'').slice(0,10)===day);host.replaceChildren();const p=document.createElement('p');p.textContent=list.length+' application(s) on '+day;host.appendChild(p);for(const a of list){const item=document.createElement('p');item.textContent=(a.id||'—')+' · '+(a.fullName||'—')+' · '+(a.status||'Submitted')+' · '+(a.paymentStatus||'PENDING');host.appendChild(item);}};
 // Website design and form settings are a local preview, never presented as cloud-published edits.
 window.soumikOwnerStudio=function(){if(typeof admin==='undefined'||!admin)return alert('Owner login required');document.getElementById('soumikStudioOverlay')?.remove();const root=document.createElement('div');root.id='soumikStudioOverlay';root.className='soumik-studio-modal';const data=(()=>{try{return JSON.parse(localStorage.getItem('soumik_owner_studio_preview')||'{}')}catch{return {}}})();const groups=[['Branding & Header',[['siteTitle','Website Title','text'],['tagline','Tagline','text'],['logoSize','Logo Size (px)','number'],['headerColor','Header Color','color']]],['Navigation & Footer',[['homeLabel','Home Button Text','text'],['servicesLabel','Services Button Text','text'],['footerText','Footer Text','text']]],['Service Cards',[['cardColumns','Service Card Columns','number'],['cardRadius','Card Corner Radius','number']]],['Form Steps & Layout',[['formColumns','Form Columns','number'],['formStepLabel','Form Step Heading','text']]],['Fields & Validation',[['requiredMobile','Mobile Number Required','checkbox'],['requiredEmail','Email Required','checkbox'],['requiredPhoto','Photo Required','checkbox'],['requiredSignature','Signature Required','checkbox']]],['Documents & Uploads',[['uploadLimit','Maximum Upload Size (MB)','number'],['allowedFiles','Allowed File Types','text']]],['Payments & Prices',[['paymentNotice','Payment Notice','text'],['receiptFooter','Receipt Footer','text']]],['Tracking & Status',[['trackingHeading','Tracking Heading','text'],['trackingHelp','Tracking Help Text','text']]],['OTP & Notifications',[['otpHeading','OTP Heading','text'],['whatsappTemplate','WhatsApp Message Template','text']]],['Colors & Typography',[['primaryColor','Primary Color','color'],['accentColor','Accent Color','color'],['fontSize','Base Font Size','number']]],['Buttons & Spacing',[['buttonRadius','Button Radius','number'],['sectionGap','Section Spacing','number']]],['Admin Profile & Roles',[['adminTitle','Admin Dashboard Title','text']]],['Dashboard Appearance',[['dashboardAccent','Dashboard Accent','color'],['dashboardColumns','Dashboard Columns','number']]],['Website Notices',[['announcement','Announcement Text','text'],['noticeEnabled','Show Announcement','checkbox']]],['Mobile Layout',[['mobileColumns','Mobile Service Columns','number'],['mobilePadding','Mobile Padding','number']]]];const escValue=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));root.innerHTML='<section class="soumik-studio-panel"><div class="toolbar" style="justify-content:space-between"><h2>🎨 Website Design & Form Settings</h2><button class="btn outline" id="soumikStudioClose">✕ Close</button></div><p class="notice">Preview settings only. Saving here does not publish changes to the live website or Supabase. Existing public design is unchanged.</p><form id="soumikStudioForm">'+groups.map(([title,fields],i)=>'<details '+(i===0?'open':'')+'><summary>'+title+'</summary><div class="soumik-studio-grid" style="margin-top:12px">'+fields.map(([key,label,type])=>'<label>'+label+'<input data-setting="'+key+'" type="'+type+'" '+(type==='checkbox'?(data[key]?'checked':''):'value="'+escValue(data[key]??(type==='color'?'#1458ef':''))+'"')+'></label>').join('')+'</div></details>').join('')+'<div class="toolbar"><button class="btn" type="submit">💾 Save Preview Settings</button><button class="btn outline" type="button" id="soumikStudioExport">Export JSON</button><button class="btn outline" type="button" id="soumikStudioReset">Reset</button></div><p id="soumikStudioFeedback" role="status"></p></form></section>';document.body.append(root);root.querySelector('#soumikStudioClose').onclick=()=>root.remove();const collect=()=>{const result={};root.querySelectorAll('[data-setting]').forEach(el=>result[el.dataset.setting]=el.type==='checkbox'?el.checked:el.value);return result};root.querySelector('form').onsubmit=e=>{e.preventDefault();localStorage.setItem('soumik_owner_studio_preview',JSON.stringify(collect()));root.querySelector('#soumikStudioFeedback').textContent='Preview settings saved in this browser. Live website unchanged.'};root.querySelector('#soumikStudioExport').onclick=()=>{const blob=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='soumik-website-settings-preview.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)};root.querySelector('#soumikStudioReset').onclick=()=>{if(confirm('Reset preview settings?')){localStorage.removeItem('soumik_owner_studio_preview');root.remove();soumikOwnerStudio()}}};
 </script>
@@ -8383,7 +8391,7 @@ decorateAll();
    panel.classList.remove('so32-fullscreen');panel.open=true;
    document.getElementById('so52-confirmed-view')?.remove();
    if(mode==='confirmed'){
-     const rows=state.applications.filter(a=>['PAID','CASH_CONFIRMED'].includes(String(a.paymentStatus||'').toUpperCase()));
+     const rows=state.applications.filter(a=>window.so61IsVerifiedPaid?.(a)===true);
      const section=document.createElement('section');section.id='so52-confirmed-view';section.className='so52-confirmed-view';
      section.innerHTML='<h3>✅ Confirmed Payments ('+rows.length+')</h3>'+(rows.length?rows.map(a=>'<div class="so52-paid-line"><strong>'+safe(a.id)+'</strong><span>'+safe(a.fullName||'')+'</span><b>'+safe(a.paymentStatus)+'</b><button type="button" data-id="'+safe(a.id)+'">View Receipt</button></div>').join(''):'<p>No confirmed payments yet.</p>');
      section.querySelectorAll('[data-id]').forEach(btn=>btn.onclick=()=>window.openReceipt?.(btn.dataset.id));
@@ -10730,7 +10738,7 @@ window.so60ShareReceiptWhatsApp=async function(id){
  if(typeof admin==='undefined'||!admin){alertToast('Owner login required',false);return}
  const a=state?.applications?.find(x=>String(x.id)===String(id));if(!a){alertToast('Application not found',false);return}
  const st=String(a.paymentStatus||'').toUpperCase();
- if(!['CASH_CONFIRMED','PAID'].includes(st)){alertToast('PDF can be shared only after verified payment.',false);return}
+ if(window.so61IsVerifiedPaid?.(a)!==true){alertToast('PDF can be shared only after server-verified payment. Refresh the Owner payment list.',false);return}
  const mobile=phone(a.mobile||a.newMobile||a.phone||a.customer_phone||a.contactNumber);
  if(!/^[6-9]\d{9}$/.test(mobile)){alertToast('Customer mobile not available',false);return}
  if(!confirm('Share this PRIVATE application PDF on WhatsApp with the verified customer whose phone ends in ' +mobile.slice(-4)+'? Confirm consent and recipient carefully.'))return;
@@ -10758,6 +10766,58 @@ window.so60ShareReceiptWhatsApp=async function(id){
 };
 // Remove any previously visible result banner immediately after this script loads.
 document.querySelectorAll('#so59-home-result,.so59-home-result').forEach(x=>x.remove());
+})();
+</script>
+<style id="so61-verified-payment-styles">
+.so61-refresh-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:13px 16px;border-radius:13px;background:#e8f3ff;border:1px solid #aacaf6;color:#0b367f;font-size:13px;font-weight:700}
+.so61-cash-queue,.so61-unpaid-queue{margin:14px 0 20px}
+.so61-cash-queue h3,.so61-unpaid-queue h3{margin:8px 0 12px;padding:14px;border-radius:11px;background:linear-gradient(95deg,#ddf9ee,#f5fefa);color:#075c40;font-size:16px}
+.so61-unpaid-queue h3{background:linear-gradient(95deg,#ecf3ff,#f6f9ff);color:#103b8e}
+@media(max-width:600px){.so61-refresh-bar{flex-direction:column;align-items:stretch}.so61-refresh-bar button{width:100%}}
+</style>
+<script id="so61-authorized-payment-reconciliation">
+(function(){'use strict';
+// The browser never decides which payment is paid. Supabase RPC returns
+// the owner-only, server-side verified payment ledger.
+window.so61IsVerifiedPaid=function(a){return !!a&&a._so61VerifiedPaid===true&&['PAID','CASH_CONFIRMED'].includes(String(a.paymentStatus||'').toUpperCase())};
+const previousLoad=window.soumikLoadData;
+if(typeof previousLoad==='function')window.soumikLoadData=async function(...args){
+  const result=await previousLoad.apply(this,args);
+  if(typeof admin==='undefined'||!admin)return result;
+  const apps=typeof state!=='undefined'&&Array.isArray(state.applications)?state.applications:[];
+  // Never trust cached payment flags from HTML/localStorage or an old server payload.
+  for(const a of apps){a._so61VerifiedPaid=false;a._so61LedgerChecked=false}
+  try{
+    const db=window.soumikSupabase;if(!db)throw Error('Supabase client is unavailable');
+    const {data,error}=await db.rpc('so61_owner_payment_statuses');
+    if(error)throw Error(error.message||'Payment ledger unavailable');
+    if(!Array.isArray(data))throw Error('Invalid server payment list');
+    const ledger=new Map(data.map(r=>[String(r.tracking_id),r]));
+    for(const a of apps){
+      const r=ledger.get(String(a.id));
+      const status=String(r?.payment_status||'PENDING').trim().toUpperCase();
+      a._so61LedgerChecked=true;
+      a._so61VerifiedPaid=status==='PAID'||status==='CASH_CONFIRMED';
+      // Fully reconcile every record (including failed or aborted payments).
+      a.paymentStatus=status;
+      if(status==='PAID')a.paymentMethod='Online';
+      else if(status.startsWith('CASH_'))a.paymentMethod='Cash';
+    }
+    window.so61PaymentLedgerError='';
+  }catch(e){
+    window.so61PaymentLedgerError=String(e?.message||e);
+    // Fail closed: never show unpaid/unknown applications in All Applications.
+    for(const a of apps){a._so61VerifiedPaid=false;a._so61LedgerChecked=false;a.paymentStatus='VERIFICATION_UNAVAILABLE'}
+    console.error('Owner payment verification unavailable:',e);
+  }
+  return result;
+};
+window.so61RefreshPayments=async function(btn){
+  if(typeof admin==='undefined'||!admin)return;
+  if(btn){btn.disabled=true;btn.textContent='Checking Supabase…'}
+  try{await window.soumikLoadData();window.go?.('admin')}
+  catch(e){window.soumikNotify?.('Could not refresh payments: '+(e?.message||e),'error');if(btn){btn.disabled=false;btn.textContent='⟳ Refresh Payment Status'}}
+};
 })();
 </script>
 </html>
