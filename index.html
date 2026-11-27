@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
  <head>
+  <meta name="google-site-verification" content="wt3fpmRwkveJ3WCGPWfm5Sq_CIMnWuYGsQydNwnh3x0"/>
 <!-- V51: render guard is installed before any legacy layout is painted. -->
 <script id="so51-startup-class">document.documentElement.classList.add('so51-booting');</script>
 <style id="so51-startup-visibility">
@@ -29,16 +30,16 @@ html.so51-auth-enter #app .soumik-auth-v2,html.so51-auth-enter #app > .auth{visi
   <!-- SOUMIK ONLINE: search engine and sharing metadata -->
   <meta name="description" content="SOUMIK ONLINE offers digital service assistance, online application forms, PAN and Voter Card services, application status tracking, document support and downloads."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <link rel="canonical" href="https://soumikonline.github.io/"/>
+  <link rel="canonical" href="https://soumik-online.github.io/"/>
   <link rel="icon" type="image/png" sizes="512x512" href="./favicon.png"/>
   <link rel="apple-touch-icon" href="./favicon.png"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="SOUMIK ONLINE"/>
   <meta property="og:title" content="SOUMIK ONLINE | Digital Services"/>
   <meta property="og:description" content="Digital service assistance, application forms, PAN and Voter Card services, status tracking and document support."/>
-  <meta property="og:url" content="https://soumikonline.github.io/"/>
+  <meta property="og:url" content="https://soumik-online.github.io/"/>
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"SOUMIK ONLINE","alternateName":"Soumik Online Digital Services","url":"https://soumikonline.github.io/"}
+  {"@context":"https://schema.org","@type":"WebSite","name":"SOUMIK ONLINE","alternateName":"Soumik Online Digital Services","url":"https://soumik-online.github.io/"}
   </script>
   <style>
    :root{
@@ -5910,7 +5911,7 @@ button,.btn{min-height:44px;touch-action:manipulation}
      'Updated At: '+(when||'Not recorded'),
      e?.note?'Update Note: '+String(e.note).slice(0,300):'',
      'Please check the latest status with your Tracking ID.',
-     'Leave a review: https://soumikonline.github.io/#reviews'
+     'Leave a review: https://soumik-online.github.io/#reviews'
    ].filter(Boolean).join('\n');
  }
  window.soumikShareUpdate=async function(id,channel){
@@ -6920,7 +6921,7 @@ window.soumikDocExists=isDoc;
 <script id="soumik-nov19-enhancements-js">
 (function(){
 'use strict';
-const url='https://soumikonline.github.io/#reviews';
+const url='https://soumik-online.github.io/#reviews';
 window.soumikShareReview=async function(){
  const message='SOUMIK ONLINE — Share your review: '+url;
  if(navigator.share){try{await navigator.share({title:'SOUMIK ONLINE Reviews',text:message,url});return}catch(e){if(e.name==='AbortError')return;}}
@@ -6955,7 +6956,7 @@ window.addEventListener('hashchange',()=>{if(location.hash==='#reviews'&&typeof 
 <script id="soumik-nov19-final-patches">
 (function(){
  'use strict';
- const reviewUrl='https://soumikonline.github.io/#reviews';
+ const reviewUrl='https://soumik-online.github.io/#reviews';
  // Review links open the dedicated review route, not Help or Support.
  window.addEventListener('hashchange',()=>{if(location.hash==='#reviews'&&typeof go==='function')go('reviews')});
  const translations={
@@ -6985,7 +6986,7 @@ window.addEventListener('hashchange',()=>{if(location.hash==='#reviews'&&typeof 
 (function(){
 'use strict';
 const endpoint='https://utowfubjmyfixmucoujr.supabase.co/functions/v1/';
-const review='https://soumikonline.github.io/#reviews';
+const review='https://soumik-online.github.io/#reviews';
 const pick=(obj,keys,depth=0)=>{if(!obj||typeof obj!=='object'||depth>4)return '';for(const [k,v] of Object.entries(obj)){if(keys.includes(k.toLowerCase())&&typeof v==='string'&&v.trim())return v.trim();}for(const v of Object.values(obj)){if(v&&typeof v==='object'){const result=pick(v,keys,depth+1);if(result)return result;}}return '';};
 const labels={bn:{email:'ইমেইল পাঠান',wa:'হোয়াটসঅ্যাপ',sent:'ইমেইল সেবাদাতা বার্তাটি গ্রহণ করেছে।',failed:'ইমেইল পাঠানো যায়নি',noMobile:'আবেদনকারীর সঠিক মোবাইল নম্বর পাওয়া যায়নি।',noEmail:'আবেদনকারীর ইমেইল পাওয়া যায়নি।',login:'মালিক হিসেবে আবার লগইন করুন।',busy:'অনুগ্রহ করে অপেক্ষা করুন।'},hi:{email:'ईमेल भेजें',wa:'व्हाट्सऐप',sent:'ईमेल सेवा ने संदेश स्वीकार कर लिया है।',failed:'ईमेल नहीं भेजा जा सका',noMobile:'आवेदक का सही मोबाइल नंबर नहीं मिला।',noEmail:'आवेदक का ईमेल नहीं मिला।',login:'मालिक के रूप में फिर लॉगिन करें।',busy:'कृपया प्रतीक्षा करें।'},en:{email:'Send Email',wa:'WhatsApp',sent:'Email provider accepted the message.',failed:'Email could not be sent',noMobile:'Valid applicant mobile number not found.',noEmail:'Applicant email not found.',login:'Please sign in as owner again.',busy:'Please wait.'}};
 const lang=()=>labels[document.getElementById('lang')?.value]||labels.en;
@@ -6994,7 +6995,7 @@ function applicationMessage(a){
  const service=pick(a.payload||a,['servicename','service_name','service','type'])||a.type||'Digital Service';
  const history=a.payload?.history||a.history||[];const latest=Array.isArray(history)?history[history.length-1]:null;
  const reason=pick(a.payload||a,['cancellationreason','cancelreason','objection_note'])||latest?.note||'';
- return ['SOUMIK ONLINE — Application Update','Tracking ID: '+id,'Service: '+service,'Current Application Status: '+status,reason?'Update Note: '+reason:'','Track your application: https://soumikonline.github.io/','Review our website: '+review,'Support: +91 9593106177'].filter(Boolean).join('\n');
+ return ['SOUMIK ONLINE — Application Update','Tracking ID: '+id,'Service: '+service,'Current Application Status: '+status,reason?'Update Note: '+reason:'','Track your application: https://soumik-online.github.io/','Review our website: '+review,'Support: +91 9593106177'].filter(Boolean).join('\n');
 }
 window.soumikShareUpdate=async function(id,channel){
  // WhatsApp navigation must happen in the original click gesture, before any await.
@@ -7219,7 +7220,7 @@ function drawReceipt(a,p){
  row('Order ID',p.order_id,70,1053,1095);
  row('Gateway','Razorpay',70,1114,1095);
  
- let publicSite='https://soumikonline.github.io/';try{const settings=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}');if(/^https:\/\//i.test(settings.website_url||''))publicSite=settings.website_url;}catch(_){}text(publicSite.replace(/^https?:\/\//i,''),77,1320,22,'#153e80',true,1060);
+ let publicSite='https://soumik-online.github.io/';try{const settings=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}');if(/^https:\/\//i.test(settings.website_url||''))publicSite=settings.website_url;}catch(_){}text(publicSite.replace(/^https?:\/\//i,''),77,1320,22,'#153e80',true,1060);
  x.fillStyle='#0a55ac';x.fillRect(25,1344,W-50,18);x.fillStyle='#e5ae45';x.fillRect(25,1340,W-50,5);
  return c;
 }
@@ -7255,7 +7256,7 @@ window.soumikVerifiedPaidInvoice=async function(a,v,r){
  try{sessionStorage.setItem(verifiedStoreKey(a.id),JSON.stringify(p));}catch(_){}
  return download(a,p);
 };
-window.soumikPublicWebsiteUrl=function(){try{const x=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}').website_url;if(/^https:\/\//i.test(x||''))return x}catch(_){}return 'https://soumikonline.github.io/'};
+window.soumikPublicWebsiteUrl=function(){try{const x=JSON.parse(localStorage.getItem('soumik_owner_settings')||'{}').website_url;if(/^https:\/\//i.test(x||''))return x}catch(_){}return 'https://soumik-online.github.io/'};
 window.soumikShowPaidReceiptActions=function(a,v,r,automaticRequested){
  const id=String(a?.id||'');
  let panel=document.getElementById('soumik-paid-receipt-recovery');
