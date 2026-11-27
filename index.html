@@ -4541,7 +4541,7 @@ const appName=SERVICES[a.type]?.name||a.serviceName||a.type||'Application';
 const payRaw=String(a.paymentStatus||'PENDING').toUpperCase().replace(/\s+/g,'_');
 const isPaid=/^(PAID|CASH_CONFIRMED|CONFIRMED|VERIFIED|SUCCESS|SUCCESSFUL|COMPLETED)$/.test(payRaw);
 const isFailed=/^(FAILED|CASH_REJECTED|REJECTED|PAYMENT_FAILED|CANCELLED)$/.test(payRaw);
-const paymentDisplay=payRaw==='CASH_CONFIRMED'?'CASH PAYMENT CONFIRMED':payRaw.replace(/_/g,' ');
+const paymentDisplay=payRaw==='CASH_CONFIRMED'?'CASH CONFIRMED':payRaw.replace(/_/g,' ');
 const payColor=isPaid?C.green:isFailed?'#c23e3e':C.orange;
 const fee=Number(a.fee??SERVICES[a.type]?.fee??0);
 const amount='₹'+new Intl.NumberFormat('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number.isFinite(fee)?fee:0);
@@ -6298,7 +6298,7 @@ window.soumikSelectCash=async function(id){
  const a=find(id);if(!a)return alert('Application not found');
  if(busy.has('cash'))return;
  if(a.paymentStatus==='CASH_CONFIRMED'||a.paymentStatus==='PAID'){setStatus('Payment already confirmed.');return;}
- if(a.paymentStatus==='CASH_PENDING'){setStatus('Cash request is already pending. Please wait for the owner decision.');window.soumikStartCashStatusPolling?.(a);return;}
+ if(a.paymentStatus==='CASH_PENDING'){setStatus('Cash request is already pending. Please wait for the owner decision.');if(typeof window.so59ExistingCashPending==='function'){await window.so59ExistingCashPending(a)}else window.soumikStartCashStatusPolling?.(a);return;}
  if(!await window.soumikConfirmCashRequest(a))return;
  busy.add('cash');setStatus('Saving Cash Request to Supabase…'); const cashBusyButton=document.querySelector('.soumik-pay-option[onclick*="soumikSelectCash"]'); if(cashBusyButton){cashBusyButton.classList.add('is-loading');cashBusyButton.setAttribute('aria-busy','true');cashBusyButton.disabled=true;}
  try{
@@ -6326,7 +6326,9 @@ window.soumikSelectCash=async function(id){
   const statusEl=document.getElementById('soumikCheckoutStatus');
   // V57: Do not offer the final application PDF while cash is pending.
   window.soumikNotify?.('Cash request saved to Supabase: '+a.id,'success');
-  // V57: Stay on the checkout so the applicant can see the cash request status.
+  // V59: Issue a clearly PENDING cash acknowledgement, then return Home.
+  try{save()}catch(storageError){console.warn('Cash request local save:',storageError)}
+  if(typeof window.so59CashRequestSaved==='function') await window.so59CashRequestSaved(a);
  }catch(e){
   console.error('Cash request save failed',e);
   setStatus('Cash request failed: '+(e?.message||'Please try again.'));
@@ -6679,13 +6681,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(status==='CONFIRMED'){
      a.paymentStatus='CASH_CONFIRMED';a.paymentMethod='Cash';a.paymentDate=d.confirmed_at||a.paymentDate||'';a.cashConfirmedAt=d.confirmed_at||a.cashConfirmedAt||'';a.status=a.status==='Payment Pending'?'Submitted':a.status;stop();
      const el=document.getElementById('soumikCheckoutStatus');if(el){el.textContent='✓ Cash Payment Completed — Owner Confirmed. Final Application PDF is now available.';if(!document.getElementById('so57-cash-download')){const b=document.createElement('button');b.type='button';b.id='so57-cash-download';b.className='btn green';b.textContent='⬇ Download Final Application PDF';b.style.margin='12px 0';b.onclick=()=>window.soumikApplicationPdf?.(a.id);el.insertAdjacentElement('afterend',b);}}
-     window.soumikNotify?.('Cash payment confirmed successfully','success');
+     window.soumikNotify?.('Cash payment confirmed successfully','success');if(typeof window.so59OutcomeFromCheckout==='function')setTimeout(()=>window.so59OutcomeFromCheckout(a),350);
      // Offer the chosen Design 1 PDF once. Browser policy may require the manual button.
      if(!a._so58PaymentOnly&&!a._so58AutoDownloadAttempted&&document.visibilityState==='visible'&&document.querySelector('#app .soumik-checkout')){a._so58AutoDownloadAttempted=true;Promise.resolve().then(()=>window.soumikApplicationPdf?.(a.id)).catch(e=>console.warn('Cash auto PDF:',e))}
      // The manual PDF button remains available if the browser blocks automatic downloads.
     }else if(status==='REJECTED'||status==='CANCELLED'){
      a.paymentStatus='CASH_REJECTED';try{save()}catch(_){}stop();
-     const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='✕ Cash request rejected/cancelled. You may submit another cash request without a retry limit.';
+     const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='✕ Cash request rejected/cancelled. You may submit another cash request without a retry limit.';if(typeof window.so59OutcomeFromCheckout==='function')setTimeout(()=>window.so59OutcomeFromCheckout(a),350);
     }else{
      if(status==='PENDING')a.paymentStatus='CASH_PENDING';
      const el=document.getElementById('soumikCheckoutStatus');if(el)el.textContent='💵 Cash Payment — Awaiting Owner Confirmation. Tracking ID: '+a.id;
@@ -7123,6 +7125,11 @@ window.SOUMIK_RAZORPAY_TEST_ONLY = false;
             // can cancel the download or block it after an async payment callback.
             // Provide a user-initiated retry on this page and a separate Home button.
             try{window.soumikShowPaidReceiptActions?.(a,verified,response,receiptReady);}catch(e){console.warn('Receipt actions:',e)}
+            // V59: A second, Design #1 application PDF is available after VERIFIED online payment.
+            // Do not show success or change state before razorpay-verify-payment returns PAID.
+            if(typeof window.so59OnlineVerified==='function'){
+              try{await window.so59OnlineVerified(a,verified)}catch(postError){console.warn('Online receipt / Home:',postError)}
+            }
             resolve();
           }catch(e){reject(e);}},
           modal:{ondismiss:()=>reject(Error('Payment window closed. If money was debited, contact support with your payment reference before retrying.'))}
@@ -10524,6 +10531,150 @@ header.top .soumik-language-control:focus-within{outline:3px solid #80bfff!impor
     }
     return result;
   };
+})();
+</script>
+
+
+<style id="so59-cash-result-css">
+.so59-home-result{max-width:1250px;margin:16px auto 20px;padding:18px 20px;border:1px solid #9bc4ef;border-left:5px solid #0872de;border-radius:17px;background:linear-gradient(115deg,#f3f8ff,#fff);box-shadow:0 9px 26px #14316c20;color:#092b69}
+.so59-home-result[data-kind="confirmed"],.so59-home-result[data-kind="paid"]{border-left-color:#078b5b;background:linear-gradient(115deg,#e9fbf1,#fff)}
+.so59-home-result[data-kind="rejected"]{border-left-color:#c03949;background:linear-gradient(115deg,#fff1f2,#fff)}
+.so59-home-result h3{font-size:19px;margin:0 0 6px;color:inherit}
+.so59-home-result p{margin:4px 0 11px;line-height:1.55;font-size:14px}
+.so59-home-result code{font-weight:900;color:#063c98;font-size:14px;letter-spacing:.4px}
+.so59-home-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.so59-home-actions button{font:700 13px/1.3 inherit;min-height:40px;border-radius:10px;border:1px solid #aac8f2;padding:9px 14px;background:white;color:#063c8c;cursor:pointer}
+.so59-home-actions button.so59-primary{color:white;border-color:#0e62d7;background:linear-gradient(105deg,#0658dc,#087ce7)}
+.so59-home-result .so59-note{font-weight:700;color:#79451d}
+@media(max-width:640px){.so59-home-result{margin:12px 9px 18px;padding:15px}.so59-home-actions button{flex:1 1 150px}}
+</style>
+<script id="so59-cash-online-home-receipts">
+(()=>{'use strict';
+const CASH_KEY='so59_last_cash_tracking';
+const LAST_KEY='so59_latest_tracking';
+const ONLINE_KEY='so59_last_online_tracking';
+const here=()=>!!document.getElementById('serviceCards');
+const find=id=>typeof state!=='undefined'&&Array.isArray(state.applications)?state.applications.find(a=>String(a.id)===String(id)):null;
+const norm=v=>String(v??'').replace(/\D/g,'').replace(/^91(?=\d{10}$)/,'');
+const upper=v=>String(v||'').toUpperCase();
+const paid=a=>['PAID','CASH_CONFIRMED'].includes(upper(a?.paymentStatus));
+const getClient=()=>{window.soumikSupabaseReady?.();return window.soumikSupabase};
+const store=(key,val)=>{try{sessionStorage.setItem(key,String(val))}catch(_){}};
+const stored=key=>{try{return sessionStorage.getItem(key)||''}catch(_){return ''}};
+let active='',timer=null,checkBusy=false,startedAt=0;
+function stop(){if(timer)clearInterval(timer);timer=null;active='';}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function lang(){const l=stored('soumik_lang')||document.getElementById('lang')?.value||'en';return ['en','bn','hi'].includes(l)?l:'en'}
+function tr(en,bn,hi){return lang()==='bn'?bn:lang()==='hi'?hi:en}
+function statusText(st){return st==='CASH_CONFIRMED'?tr('Cash Payment Confirmed — Owner Approved','ক্যাশ পেমেন্ট নিশ্চিত — ওনার অনুমোদিত','नकद भुगतान पुष्टि — मालिक द्वारा स्वीकृत'):st==='CASH_REJECTED'?tr('Cash Request Rejected — Not Paid','ক্যাশ অনুরোধ বাতিল — পেমেন্ট হয়নি','नकद अनुरोध अस्वीकृत — भुगतान नहीं हुआ'):st==='PAID'?tr('Online Payment Completed — Verified','অনলাইন পেমেন্ট সফল — যাচাই হয়েছে','ऑनलाइन भुगतान सफल — सत्यापित'):tr('Cash Request Submitted — Awaiting Owner Confirmation','ক্যাশ অনুরোধ জমা হয়েছে — ওনার অনুমোদন বাকি','नकद अनुरोध जमा — मालिक की पुष्टि बाकी')}
+function last(){let a=find(stored(LAST_KEY));if(a)return a;a=find(stored(CASH_KEY));if(a)return a;a=find(stored(ONLINE_KEY));return a||null}
+function refreshPanel(){
+ const old=document.getElementById('so59-home-result');if(!here()){old?.remove();return}
+ const a=last();if(!a){old?.remove();return}
+ const st=upper(a.paymentStatus),isCash=st.startsWith('CASH')||/^cash$/i.test(a.paymentMethod||'');
+ if(!isCash&&st!=='PAID'){old?.remove();return}
+ let root=old;if(!root){root=document.createElement('section');root.id='so59-home-result';root.className='so59-home-result';root.setAttribute('role','status');const app=document.getElementById('app');app?.insertBefore(root,app.firstChild)}
+ if(!root)return;
+ root.dataset.kind=st==='CASH_CONFIRMED'?'confirmed':st==='CASH_REJECTED'?'rejected':st==='PAID'?'paid':'pending';
+ const title=statusText(st);const notice=st==='CASH_PENDING'?tr('Request received. Cash has NOT been confirmed. Download the pending acknowledgement and check status after the Owner decides.','অনুরোধ জমা হয়েছে, কিন্তু ক্যাশ পেমেন্ট এখনও নিশ্চিত নয়। Pending PDF ডাউনলোড করো এবং ওনার সিদ্ধান্ত পরীক্ষা করো।','अनुरोध जमा हुआ, लेकिन नकद भुगतान अभी पुष्टि नहीं हुआ। Pending PDF डाउनलोड करें और मालिक का निर्णय जाँचें।'):st==='CASH_REJECTED'?tr('The Owner rejected the cash request. The status PDF is NOT a paid receipt.','ওনার ক্যাশ অনুরোধ বাতিল করেছেন। এই PDF পেমেন্টের রসিদ নয়।','मालिक ने नकद अनुरोध अस्वीकार किया। यह PDF भुगतान की रसीद नहीं है।'):st==='CASH_CONFIRMED'?tr('Owner-confirmed cash payment. Design #1 final PDF includes the uploaded photo and signature, where available.','ওনার ক্যাশ পেমেন্ট নিশ্চিত করেছেন। ফাইনাল PDF-তে আপলোড করা ছবি ও স্বাক্ষর থাকবে।','मालिक ने नकद भुगतान की पुष्टि की। अंतिम PDF में अपलोड की गई फोटो और हस्ताक्षर होंगे।'):tr('Payment verified by Razorpay. Download the final application PDF and online payment receipt.','Razorpay পেমেন্ট যাচাই হয়েছে। ফাইনাল আবেদন PDF ও অনলাইন রসিদ ডাউনলোড করো।','Razorpay भुगतान सत्यापित। अंतिम आवेदन PDF और ऑनलाइन रसीद डाउनलोड करें।');
+ root.innerHTML=`<h3>${esc(title)}</h3><p>${esc(tr('Application Tracking ID','আবেদনের ট্র্যাকিং আইডি','आवेदन ट्रैकिंग आईडी'))}: <code>${esc(a.id)}</code></p><p class="so59-note">${esc(notice)}</p><div class="so59-home-actions" id="so59-actions"></div><small id="so59-feedback" aria-live="polite"></small>`;
+ const actions=root.querySelector('#so59-actions');
+ function btn(t,fun,primary=false){const b=document.createElement('button');b.type='button';b.textContent=t;b.className=primary?'so59-primary':'';b.addEventListener('click',async()=>{if(b.disabled)return;b.disabled=true;try{await fun()}catch(e){message(e?.message||'Action failed')}finally{b.disabled=false}});actions.appendChild(b)}
+ function message(t){const e=root.querySelector('#so59-feedback');if(e)e.textContent=String(t||'')}
+ if(isCash){
+  if(st==='CASH_PENDING')btn(tr('⬇ Pending Cash PDF','⬇ পেন্ডিং ক্যাশ PDF','⬇ लंबित नकद PDF'),async()=>{await window.so59DownloadCashStatus(a.id,'PENDING');message('PDF download requested. This is NOT proof of payment.');},true);
+  if(st==='CASH_REJECTED')btn(tr('⬇ Rejected Request PDF','⬇ বাতিল অনুরোধ PDF','⬇ अस्वीकृत अनुरोध PDF'),async()=>{await window.so59DownloadCashStatus(a.id,'REJECTED');message('Rejected request PDF download requested.');});
+  if(st==='CASH_CONFIRMED')btn(tr('⬇ Final Application PDF','⬇ ফাইনাল আবেদন PDF','⬇ अंतिम आवेदन PDF'),async()=>{const ok=await window.soumikApplicationPdf?.(a.id);message(ok===false?'Complete identity verification in Tracking to access your application.':'Final PDF download requested. Check Downloads.');},true);
+  btn(tr('↻ Check Owner Decision','↻ ওনার সিদ্ধান্ত দেখুন','↻ मालिक का निर्णय जाँचें'),async()=>{message('Checking Supabase…');await refreshCashStatus(a,true);});
+ }else if(st==='PAID'){
+  btn(tr('⬇ Final Application PDF','⬇ ফাইনাল আবেদন PDF','⬇ अंतिम आवेदन PDF'),async()=>{await window.soumikApplicationPdf?.(a.id);message('Application PDF download requested.');},true);
+  btn(tr('⬇ Online Paid Receipt','⬇ অনলাইন পেমেন্ট রসিদ','⬇ ऑनलाइन भुगतान रसीद'),async()=>{await window.soumikDownloadPaidReceipt?.(a.id);message('Paid receipt download requested.');});
+ }
+ btn(tr('Track Application','আবেদন ট্র্যাক করুন','आवेदन ट्रैक करें'),()=>{go('tracking')});
+}
+// Make a real A4 PDF from the SAME Design #1 receipt canvas. Pending and rejected
+// downloads are visibly labelled NOT PAID, never falsely presented as paid receipts.
+function canvasPdf(canvas){
+ const b64=canvas.toDataURL('image/jpeg',.91).split(',')[1],bin=atob(b64),enc=new TextEncoder(),chunks=[];let length=0;const offsets=[0];
+ const add=x=>{const b=enc.encode(x);chunks.push(b);length+=b.length};
+ const object=(n,head,bytes,tail='')=>{offsets[n]=length;add(n+' 0 obj\n'+head);if(bytes){chunks.push(bytes);length+=bytes.length}if(tail)add(tail);add('\nendobj\n')};
+ add('%PDF-1.4\n');object(1,'<< /Type /Catalog /Pages 2 0 R >>');object(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');object(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+ const jpg=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)jpg[i]=bin.charCodeAt(i);
+ object(4,'<< /Type /XObject /Subtype /Image /Width '+canvas.width+' /Height '+canvas.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n',jpg,'\nendstream');
+ const content='q\n595.28 0 0 841.89 0 0 cm\n/Im0 Do\nQ\n';object(5,'<< /Length '+enc.encode(content).length+' >>\nstream\n'+content+'endstream');
+ const offset=length;add('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<=5;i++)add(String(offsets[i]).padStart(10,'0')+' 00000 n \n');add('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+offset+'\n%%EOF');return new Blob(chunks,{type:'application/pdf'});
+}
+function saveBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),90000)}
+window.so59DownloadCashStatus=async function(id,kind='PENDING'){
+ const a=find(id);if(!a||a._so58PaymentOnly)throw Error('Please verify your identity in Tracking to access the full application.');
+ if(typeof window.soumikBuildApplicationReceiptImage!=='function')throw Error('PDF renderer not loaded');
+ const copy={...a,paymentMethod:'Cash',paymentStatus:kind==='REJECTED'?'CASH_REJECTED':'CASH_PENDING',paymentDate:'',cashConfirmedAt:'',paidAt:'',paymentReceipt:null};
+ const c=await window.soumikBuildApplicationReceiptImage(copy),x=c.getContext('2d');if(!x)throw Error('PDF canvas unavailable');
+ const isRej=kind==='REJECTED';
+ x.fillStyle=isRej?'#fff0f0':'#fff4d5';x.fillRect(79,1598,c.width-158,45);x.strokeStyle=isRej?'#c23b3b':'#be7508';x.lineWidth=2;x.strokeRect(79,1598,c.width-158,45);
+ x.font='bold 19px Arial, sans-serif';x.textAlign='center';x.fillStyle=isRej?'#ad2d2d':'#935306';x.fillText(isRej?'CASH REQUEST REJECTED — NOT A PAID RECEIPT':'CASH REQUEST PENDING — NOT PROOF OF PAYMENT',c.width/2,1627);
+ const blob=canvasPdf(c);const clean=String(id).replace(/[^a-zA-Z0-9_-]/g,'');saveBlob(blob,'SOUMIK_ONLINE_CASH_'+(isRej?'REJECTED':'PENDING')+'_'+clean+'.pdf');return true;
+};
+async function fetchCash(a){
+ const number=norm(a.mobile||a.newMobile||a.phone||a.contactNumber);
+ if(!/^[6-9]\d{9}$/.test(number))throw Error('Valid application mobile required to check cash status');
+ const client=getClient();if(!client)throw Error('Supabase connection unavailable');
+ const {data,error}=await client.functions.invoke('cash-request-management',{body:{action:'status',tracking_id:a.id,customer_phone:number}});
+ if(error){let msg=error.message||'Status request failed';try{const e=await error.context?.clone?.().json();msg=e?.error||msg}catch(_){}throw Error(msg)}
+ if(data?.success!==true)throw Error(data?.error||'Status not verified');return data;
+}
+async function refreshCashStatus(a,manual=false){
+ if(checkBusy)return;checkBusy=true;
+ try{
+  const d=await fetchCash(a),st=upper(d.status),prev=upper(a.paymentStatus);
+  if(st==='CONFIRMED'){
+   a.paymentStatus='CASH_CONFIRMED';a.paymentMethod='Cash';if(a.status==='Payment Pending')a.status='Submitted';a.paymentDate=d.confirmed_at||a.paymentDate||'';a.cashConfirmedAt=d.confirmed_at||a.cashConfirmedAt||'';
+   try{save()}catch(_){}refreshPanel();stop();
+   if(prev!=='CASH_CONFIRMED'&&!a._so58PaymentOnly){
+     // Server verification is checked again in soumikApplicationPdf before issuing final PDF.
+     try{await window.soumikApplicationPdf(a.id)}catch(e){console.warn('Final receipt:',e)}
+   }
+   window.soumikNotify?.('✓ Owner confirmed your Cash Payment. Final PDF available.','success');
+  }else if(st==='REJECTED'||st==='CANCELLED'){
+   a.paymentStatus='CASH_REJECTED';a.paymentMethod='Cash';try{save()}catch(_){}stop();refreshPanel();
+   if(prev!=='CASH_REJECTED'&&!a._so58PaymentOnly){try{await window.so59DownloadCashStatus(a.id,'REJECTED')}catch(e){console.warn('Rejected status PDF:',e)}}
+  }else if(st==='PENDING'){
+   a.paymentStatus='CASH_PENDING';refreshPanel();
+  }else if(manual){throw Error('No active cash request found; contact support with your Tracking ID.')}
+ }catch(e){if(manual){window.soumikNotify?.('Cash status check failed: '+(e?.message||e),'warning');throw e}else console.warn('Cash status monitor:',e)}
+ finally{checkBusy=false}
+}
+function monitor(a){
+ if(!a||upper(a.paymentStatus)!=='CASH_PENDING')return;
+ stop();active=a.id;startedAt=Date.now();
+ const check=()=>{if(active!==a.id||Date.now()-startedAt>20*60*1000){stop();return}if(!here()||document.visibilityState==='hidden')return;refreshCashStatus(a,false).catch(e=>console.warn(e))};
+ timer=setInterval(check,15000);setTimeout(check,1200);
+}
+function home(id,key){store(key,id);store(LAST_KEY,id);stop();go('home');refreshPanel();}
+window.so59OutcomeFromCheckout=function(a){if(!a?.id)return;home(a.id,CASH_KEY)};
+window.so59CashRequestSaved=async function(a){
+ if(!a?.id)return;store(CASH_KEY,a.id);
+ try{await window.so59DownloadCashStatus(a.id,'PENDING')}catch(e){console.warn('Pending PDF was not downloaded:',e);window.soumikNotify?.('Cash request saved. Download your Pending PDF from Home if automatic download was blocked.','warning')}
+ home(a.id,CASH_KEY);monitor(a);
+};
+window.so59ExistingCashPending=async function(a){
+ store(CASH_KEY,a.id);try{await window.so59DownloadCashStatus(a.id,'PENDING')}catch(e){console.warn('Pending PDF:',e)}
+ home(a.id,CASH_KEY);monitor(a);
+};
+window.so59OnlineVerified=async function(a,verification){
+ if(!a?.id||verification?.verified!==true||verification.payment_status!=='PAID'||verification.tracking_id!==a.id)return;
+ a.paymentStatus='PAID';a.paymentMethod='Online';a.paymentDate=verification.paid_at||a.paymentDate||new Date().toISOString();
+ try{save()}catch(e){console.warn('Online verified save:',e)}
+ try{await window.soumikApplicationPdf(a.id)}catch(e){console.warn('Application PDF after online payment:',e)}
+ document.getElementById('soumik-paid-receipt-recovery')?.remove();
+ home(a.id,ONLINE_KEY);
+};
+// A cash request already pending in the screenshot can also be opened directly.
+window.so59CheckCashStatus=async function(id){const a=find(id);if(!a)throw Error('Application not loaded');await refreshCashStatus(a,true)};
+const oldGo=window.go;
+if(typeof oldGo==='function')window.go=function(page,...args){const result=oldGo.apply(this,[page,...args]);if(page==='home'){setTimeout(()=>{refreshPanel();const a=find(stored(CASH_KEY));if(a&&upper(a.paymentStatus)==='CASH_PENDING'&&stored(LAST_KEY)!==stored(ONLINE_KEY))monitor(a)},30)}return result};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{refreshPanel();const a=find(stored(CASH_KEY));if(a&&upper(a.paymentStatus)==='CASH_PENDING'&&stored(LAST_KEY)!==stored(ONLINE_KEY))monitor(a)},{once:true});
+else{refreshPanel();const a=find(stored(CASH_KEY));if(a&&upper(a.paymentStatus)==='CASH_PENDING'&&stored(LAST_KEY)!==stored(ONLINE_KEY))monitor(a)}
 })();
 </script>
 
